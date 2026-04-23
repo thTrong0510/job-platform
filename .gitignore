@@ -1,0 +1,150 @@
+# =========================
+
+# PYTHON
+
+# =========================
+
+**pycache**/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =========================
+
+# VIRTUAL ENVIRONMENT
+
+# =========================
+
+venv/
+env/
+ENV/
+.venv/
+
+# =========================
+
+# FLASK
+
+# =========================
+
+instance/
+.webassets-cache/
+
+# =========================
+
+# DATABASE
+
+# =========================
+
+*.db
+*.sqlite3
+
+# =========================
+
+# MIGRATIONS (optional)
+
+# Nếu muốn giữ migration thì xóa dòng dưới
+
+# =========================
+
+#migrations/
+
+# =========================
+
+# ENV FILES (QUAN TRỌNG)
+
+# =========================
+
+.env
+.env.*
+*.env
+
+# =========================
+
+# IDE
+
+# =========================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+
+# OS FILES
+
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+
+# LOG FILES
+
+# =========================
+
+*.log
+logs/
+
+# =========================
+
+# TEST / COVERAGE
+
+# =========================
+
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =========================
+
+# UPLOAD FOLDER (CV files)
+
+# =========================
+
+uploads/
+static/uploads/
+
+# =========================
+
+# CACHE
+
+# =========================
+
+.cache/
+*.cache
+
+# =========================
+
+# PYTHON TYPE CHECKING
+
+# =========================
+
+.mypy_cache/
+.pyre/
+.pytype/
+
+# =========================
+
+# Jupyter Notebook
+
+# =========================
+
+.ipynb_checkpoints/

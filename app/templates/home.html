@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <h2>Chào mừng {{ session.get("user_email") }} 👋</h2>
+        <p>Đây là trang dashboard của bạn.</p>
+    </div>
+{% endblock %}
