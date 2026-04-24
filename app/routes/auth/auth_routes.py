@@ -1,5 +1,5 @@
 from flask import Blueprint, session
-from services.auth.auth_service import AuthService
+from app.services.auth.auth_service import AuthService
 from flask import request, redirect, url_for, render_template
 from app import db
 from app.models.user import User
