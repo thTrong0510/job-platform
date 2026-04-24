@@ -1,0 +1,22 @@
+<div class="col-md-4 mb-3">
+    <div class="card shadow-sm h-100">
+        <div class="card-body">
+            <h6 class="card-title">{{ cv.title }}</h6>
+            <p class="text-muted small mb-2">
+                Uploaded at: {{ cv.created_at.strftime('%d/%m/%Y') }}
+            </p>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('candidate.view_cv_file', cv_id=cv.id) }}"
+                   class="btn btn-sm btn-outline-secondary">
+                    View
+                </a>
+
+                <a href="{{ url_for('candidate.delete_cv', cv_id=cv.id) }}"
+                   class="btn btn-sm btn-outline-danger">
+                    Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,8 +11,10 @@ def create_app():
     # register blueprints
     from routes.auth.auth_routes import auth_bp
     from .routes.main_routes import main_bp
+    from .routes.candidate.manage_cvs import candidate_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(candidate_bp)
 
     return app

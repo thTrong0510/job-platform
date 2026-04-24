@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Manage CV{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- ================= ONLINE CVS ================= -->
+    {% include "components/cv/cv_section_header.html" 
+        with context %}
+    
+    {% set title = "Online CVs" %}
+    {% set button_text = "Create Online CV" %}
+    {% set button_url = url_for('candidate.choose_template') %}
+
+    {% include "components/cv/cv_section_header.html" %}
+
+    {% if online_cvs %}
+        <div class="row">
+            {% for cv in online_cvs %}
+                {% include "components/cv/cv_card_online.html" %}
+            {% endfor %}
+        </div>
+    {% else %}
+        {% set message = "No online CV created yet." %}
+        {% include "components/cv/cv_empty.html" %}
+    {% endif %}
+
+
+    <hr class="my-5">
+
+
+    <!-- ================= UPLOAD CVS ================= -->
+    {% set title = "Uploaded CVs" %}
+    {% set button_text = "Upload CV" %}
+    {% set button_url = url_for('candidate.upload_cv') %}
+
+    {% include "components/cv/cv_section_header.html" %}
+
+    {% if upload_cvs %}
+        <div class="row">
+            {% for cv in upload_cvs %}
+                {% include "components/cv/cv_card_upload.html" %}
+            {% endfor %}
+        </div>
+    {% else %}
+        {% set message = "No uploaded CV yet." %}
+        {% include "components/cv/cv_empty.html" %}
+    {% endif %}
+
+</div>
+{% endblock %}

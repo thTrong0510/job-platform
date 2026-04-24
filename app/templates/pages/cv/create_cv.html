@@ -1,0 +1,246 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create CV{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h4 class="mb-3">
+                Template: {{ template.name }}
+            </h4>
+
+            <h3 class="mb-4">
+                {{ "Update CV" if data else "Create Online CV" }}
+            </h3>
+
+            <form method="POST"
+                  action="{% if data %}
+                            {{ url_for('candidate.update_cv', cv_id=cv.id) }}
+                          {% else %}
+                            {{ url_for('candidate.save_online_cv', template_id=template.id) }}
+                          {% endif %}">
+
+                <!-- ================= BASIC INFO ================= -->
+                <h5 class="border-bottom pb-2 mb-3">Basic Information</h5>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" name="full_name" class="form-control"
+                               value="{{ data.full_name if data else '' }}"
+                               placeholder="Full Name (e.g. Nguyen Van A)" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="email" name="email" class="form-control"
+                               value="{{ data.email if data else '' }}"
+                               placeholder="Email (e.g. example@gmail.com)" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" name="phone" class="form-control"
+                               value="{{ data.phone if data else '' }}"
+                               placeholder="Phone (e.g. 0901234567)">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="location" class="form-control"
+                               value="{{ data.location if data else '' }}"
+                               placeholder="Location (e.g. Ho Chi Minh City)">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <textarea name="summary" class="form-control" rows="3"
+                              placeholder="Professional Summary">{{ data.summary if data else '' }}</textarea>
+                </div>
+
+                <!-- ================= EXPERIENCE ================= -->
+                <h5 class="border-bottom pb-2 mb-3">Work Experience</h5>
+                <div id="experience-container">
+
+                    {% if data and data.experiences %}
+                        {% for exp in data.experiences %}
+                        <div class="card p-3 mb-3">
+                            <input type="text"
+                                   name="experiences[{{ loop.index0 }}][company]"
+                                   class="form-control mb-2"
+                                   value="{{ exp.company }}"
+                                   placeholder="Company Name">
+
+                            <input type="text"
+                                   name="experiences[{{ loop.index0 }}][position]"
+                                   class="form-control mb-2"
+                                   value="{{ exp.position }}"
+                                   placeholder="Position">
+
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <input type="text"
+                                           name="experiences[{{ loop.index0 }}][start_date]"
+                                           class="form-control"
+                                           value="{{ exp.start_date }}"
+                                           placeholder="Start Date">
+                                </div>
+                                <div class="col">
+                                    <input type="text"
+                                           name="experiences[{{ loop.index0 }}][end_date]"
+                                           class="form-control"
+                                           value="{{ exp.end_date }}"
+                                           placeholder="End Date">
+                                </div>
+                            </div>
+
+                            <textarea name="experiences[{{ loop.index0 }}][description]"
+                                      class="form-control"
+                                      placeholder="Describe your responsibilities">{{ exp.description }}</textarea>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+                <button type="button" class="btn btn-outline-primary btn-sm mb-4"
+                        onclick="addExperience()">+ Add Experience</button>
+
+                <!-- ================= EDUCATION ================= -->
+                <h5 class="border-bottom pb-2 mb-3">Education</h5>
+                <div id="education-container">
+
+                    {% if data and data.educations %}
+                        {% for edu in data.educations %}
+                        <div class="card p-3 mb-3">
+                            <input type="text"
+                                   name="educations[{{ loop.index0 }}][school]"
+                                   class="form-control mb-2"
+                                   value="{{ edu.school }}"
+                                   placeholder="School Name">
+
+                            <input type="text"
+                                   name="educations[{{ loop.index0 }}][degree]"
+                                   class="form-control mb-2"
+                                   value="{{ edu.degree }}"
+                                   placeholder="Degree">
+
+                            <div class="row">
+                                <div class="col">
+                                    <input type="text"
+                                           name="educations[{{ loop.index0 }}][start_date]"
+                                           class="form-control"
+                                           value="{{ edu.start_date }}"
+                                           placeholder="Start Date">
+                                </div>
+                                <div class="col">
+                                    <input type="text"
+                                           name="educations[{{ loop.index0 }}][end_date]"
+                                           class="form-control"
+                                           value="{{ edu.end_date }}"
+                                           placeholder="End Date">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+                <button type="button" class="btn btn-outline-primary btn-sm mb-4"
+                        onclick="addEducation()">+ Add Education</button>
+
+                <!-- ================= PROJECT ================= -->
+                <h5 class="border-bottom pb-2 mb-3">Projects</h5>
+                <div id="project-container">
+
+                    {% if data and data.projects %}
+                        {% for proj in data.projects %}
+                        <div class="card p-3 mb-3">
+                            <input type="text"
+                                   name="projects[{{ loop.index0 }}][name]"
+                                   class="form-control mb-2"
+                                   value="{{ proj.name }}"
+                                   placeholder="Project Name">
+
+                            <textarea name="projects[{{ loop.index0 }}][description]"
+                                      class="form-control"
+                                      placeholder="Project Description">{{ proj.description }}</textarea>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+                <button type="button" class="btn btn-outline-primary btn-sm mb-4"
+                        onclick="addProject()">+ Add Project</button>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success">
+                        {{ "Update CV" if data else "Save CV" }}
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+
+let expIndex = {{ data.experiences|length if data and data.experiences else 0 }};
+let eduIndex = {{ data.educations|length if data and data.educations else 0 }};
+let projIndex = {{ data.projects|length if data and data.projects else 0 }};
+
+function addExperience() {
+    const container = document.getElementById("experience-container");
+    container.insertAdjacentHTML("beforeend", `
+        <div class="card p-3 mb-3">
+            <input type="text" name="experiences[${expIndex}][company]" class="form-control mb-2" placeholder="Company Name">
+            <input type="text" name="experiences[${expIndex}][position]" class="form-control mb-2" placeholder="Position">
+            <div class="row mb-2">
+                <div class="col">
+                    <input type="text" name="experiences[${expIndex}][start_date]" class="form-control" placeholder="Start Date">
+                </div>
+                <div class="col">
+                    <input type="text" name="experiences[${expIndex}][end_date]" class="form-control" placeholder="End Date">
+                </div>
+            </div>
+            <textarea name="experiences[${expIndex}][description]" class="form-control" placeholder="Describe responsibilities"></textarea>
+        </div>
+    `);
+    expIndex++;
+}
+
+function addEducation() {
+    const container = document.getElementById("education-container");
+    container.insertAdjacentHTML("beforeend", `
+        <div class="card p-3 mb-3">
+            <input type="text" name="educations[${eduIndex}][school]" class="form-control mb-2" placeholder="School Name">
+            <input type="text" name="educations[${eduIndex}][degree]" class="form-control mb-2" placeholder="Degree">
+            <div class="row">
+                <div class="col">
+                    <input type="text" name="educations[${eduIndex}][start_date]" class="form-control" placeholder="Start Date">
+                </div>
+                <div class="col">
+                    <input type="text" name="educations[${eduIndex}][end_date]" class="form-control" placeholder="End Date">
+                </div>
+            </div>
+        </div>
+    `);
+    eduIndex++;
+}
+
+function addProject() {
+    const container = document.getElementById("project-container");
+    container.insertAdjacentHTML("beforeend", `
+        <div class="card p-3 mb-3">
+            <input type="text" name="projects[${projIndex}][name]" class="form-control mb-2" placeholder="Project Name">
+            <textarea name="projects[${projIndex}][description]" class="form-control" placeholder="Project Description"></textarea>
+        </div>
+    `);
+    projIndex++;
+}
+
+</script>
+
+{% endblock %}

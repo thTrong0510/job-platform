@@ -1,0 +1,41 @@
+{% extends "layouts/base.html" %}
+{% block title %}Choose CV Template{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <h3 class="mb-4">Choose a CV Template</h3>
+
+    <div class="row">
+
+        {% for t in templates %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+
+                <img src="{{ url_for('static', filename='images/' + t.preview) }}"
+                     class="card-img-top"
+                     alt="Preview"
+                     style="height:250px; object-fit:cover;">
+
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ t.name }}</h5>
+                    <p class="card-text text-muted">
+                        {{ t.description }}
+                    </p>
+
+                    <div class="mt-auto">
+                        <a href="{{ url_for('candidate.create_cv', template_id=t.id) }}"
+                           class="btn btn-primary w-100">
+                           Use This Template
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}
