@@ -10,7 +10,7 @@ class Application(db.Model):
 
     id = db.Column(db.BigInteger, primary_key=True)
 
-    email = db.Column(db.String(255), nullable=False, unique=True)
+    email = db.Column(db.String(255), nullable=False)
 
     job_id = db.Column(
         db.BigInteger,

@@ -3,6 +3,29 @@ from sqlalchemy import Enum
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.mysql import JSON
 
+class CVTemplate(db.Model):
+    __tablename__ = "cv_templates"
+
+    id = db.Column(db.BigInteger, primary_key=True)
+
+    name = db.Column(db.String(255), nullable=False)
+    slug = db.Column(db.String(255), unique=True, nullable=False)
+
+    description = db.Column(db.Text)
+    preview_image = db.Column(db.String(500))
+
+    html_content = db.Column(db.Text, nullable=False)
+    schema_version = db.Column(db.Integer, nullable=False, default=1)
+
+    is_active = db.Column(db.Boolean, default=True)
+
+    created_at = db.Column(db.DateTime, server_default=func.now())
+    updated_at = db.Column(db.DateTime,
+                           server_default=func.now(),
+                           onupdate=func.now())
+
+    cvs = db.relationship("CV", back_populates="template")
+
 class CV(db.Model):
     __tablename__ = "cvs"
 
@@ -14,6 +37,14 @@ class CV(db.Model):
         nullable=False
     )
 
+    template_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey("cv_templates.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    template_version = db.Column(db.Integer)
+
     title = db.Column(db.String(255), nullable=False)
 
     type = db.Column(
@@ -21,33 +52,22 @@ class CV(db.Model):
         nullable=False
     )
 
+    # ONLINE
     content_json = db.Column(JSON)
+
+    # UPLOAD
+    file_url = db.Column(db.String(500))
+    file_name = db.Column(db.String(255))
+    file_size = db.Column(db.BigInteger)
 
     is_default = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, server_default=func.now())
-    updated_at = db.Column(db.DateTime, server_default=func.now(), onupdate=func.now())
+    updated_at = db.Column(db.DateTime,
+                           server_default=func.now(),
+                           onupdate=func.now())
 
+    # Relationships
     candidate = db.relationship("Candidate", back_populates="cvs")
-    files = db.relationship("CVFile", back_populates="cv", cascade="all, delete")
+    template = db.relationship("CVTemplate", back_populates="cvs")
     skills = db.relationship("CVSkill", back_populates="cv", cascade="all, delete")
-
-
-class CVFile(db.Model):
-    __tablename__ = "cv_files"
-
-    id = db.Column(db.BigInteger, primary_key=True)
-
-    cv_id = db.Column(
-        db.BigInteger,
-        db.ForeignKey("cvs.id", ondelete="CASCADE"),
-        nullable=False
-    )
-
-    file_url = db.Column(db.String(500), nullable=False)
-    file_name = db.Column(db.String(255))
-    file_size = db.Column(db.BigInteger)
-
-    uploaded_at = db.Column(db.DateTime, server_default=func.now())
-
-    cv = db.relationship("CV", back_populates="files")
