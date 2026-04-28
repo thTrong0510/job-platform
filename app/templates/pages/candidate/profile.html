@@ -1,6 +1,54 @@
 {% extends "layouts/base.html" %}
 {% block title %}Candidate Profile{% endblock %}
 
+{% block extra_css %}
+<style>
+    .avatar-wrapper {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+}
+
+.avatar-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: 0.3s ease;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    transition: 0.3s ease;
+    text-align: center;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-wrapper:hover .avatar-img {
+    transform: scale(1.01);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container my-5">
     <div class="row">
@@ -12,8 +60,8 @@
                     <div class="avatar-wrapper mx-auto">
 
                         <img id="avatarPreview"
-                             src="{{ candidate.user.avatar_url if candidate.user and candidate.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
-                             class="avatar-img">
+                            src="{{ candidate.user.avatar_url if candidate.user and candidate.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
+                            class="avatar-img">
 
                         <div class="avatar-overlay" onclick="triggerAvatarUpload()">
                             <i class="bi bi-camera-fill fs-4"></i>
@@ -24,16 +72,10 @@
                     </div>
 
                     <!-- Hidden Upload Form -->
-                    <form id="avatarForm"
-                      action="{{ url_for('candidate_profile.upload_avatar') }}"
-                      method="POST"
-                      enctype="multipart/form-data">
+                    <form id="avatarForm" action="{{ url_for('candidate_profile.upload_avatar') }}" method="POST"
+                        enctype="multipart/form-data">
 
-                    <input type="file"
-                           id="avatarInput"
-                           name="avatar"
-                           accept="image/*"
-                           hidden>
+                        <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
                     </form>
 
                     <h4 class="fw-bold mt-3">
@@ -60,7 +102,7 @@
                     </p>
 
                     <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
-                       class="btn btn-outline-primary btn-sm mt-3">
+                        class="btn btn-outline-primary btn-sm mt-3">
                         Edit Profile
                     </a>
                 </div>
@@ -78,15 +120,15 @@
                     </div>
 
                     {% if candidate.skills %}
-                        {% for cs in candidate.skills %}
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <strong>{{ cs.skill.name }}</strong>
-                                </div>
-                            </div>
-                        {% endfor %}
+                    {% for cs in candidate.skills %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ cs.skill.name }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <p class="text-muted">Chưa cập nhật kỹ năng</p>
+                    <p class="text-muted">Chưa cập nhật kỹ năng</p>
                     {% endif %}
                 </div>
             </div>
@@ -99,8 +141,8 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Professional Summary</h5>
                         <a href="{{ url_for('candidate_profile.edit_profile', section='bio') }}"
-                           class="btn btn-sm btn-outline-secondary">
-                           Edit
+                            class="btn btn-sm btn-outline-secondary">
+                            Edit
                         </a>
                     </div>
                     <p>
@@ -115,27 +157,27 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Work Experience</h5>
                         <a href="{{ url_for('candidate_profile.edit_profile', section='experiences') }}"
-                           class="btn btn-sm btn-outline-secondary">
-                           Edit
+                            class="btn btn-sm btn-outline-secondary">
+                            Edit
                         </a>
                     </div>
 
                     {% if candidate.experiences %}
-                        {% for exp in candidate.experiences %}
-                            <div class="mb-4">
-                                <h6 class="fw-bold mb-1">{{ exp.position }}</h6>
-                                <div class="text-muted small mb-1">
-                                    {{ exp.company }}
-                                </div>
-                                <div class="text-muted small mb-2">
-                                    {{ exp.start_date }} - {{ exp.end_date if exp.end_date else "Present" }}
-                                </div>
-                                <p class="mb-0">{{ exp.description }}</p>
-                                <hr>
-                            </div>
-                        {% endfor %}
+                    {% for exp in candidate.experiences %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-1">{{ exp.position }}</h6>
+                        <div class="text-muted small mb-1">
+                            {{ exp.company }}
+                        </div>
+                        <div class="text-muted small mb-2">
+                            {{ exp.start_date }} - {{ exp.end_date if exp.end_date else "Present" }}
+                        </div>
+                        <p class="mb-0">{{ exp.description }}</p>
+                        <hr>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <p class="text-muted">Chưa cập nhật kinh nghiệm làm việc</p>
+                    <p class="text-muted">Chưa cập nhật kinh nghiệm làm việc</p>
                     {% endif %}
                 </div>
             </div>
@@ -146,26 +188,26 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Education</h5>
                         <a href="{{ url_for('candidate_profile.edit_profile', section='educations') }}"
-                           class="btn btn-sm btn-outline-secondary">
-                           Edit
+                            class="btn btn-sm btn-outline-secondary">
+                            Edit
                         </a>
                     </div>
 
                     {% if candidate.educations %}
-                        {% for edu in candidate.educations %}
-                            <div class="mb-4">
-                                <h6 class="fw-bold mb-1">{{ edu.degree }}</h6>
-                                <div class="text-muted small mb-1">
-                                    {{ edu.school }}
-                                </div>
-                                <div class="text-muted small">
-                                    From {{ edu.start_date }} to {{ edu.end_date }}
-                                </div>
-                                <hr>
-                            </div>
-                        {% endfor %}
+                    {% for edu in candidate.educations %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-1">{{ edu.degree }}</h6>
+                        <div class="text-muted small mb-1">
+                            {{ edu.school }}
+                        </div>
+                        <div class="text-muted small">
+                            From {{ edu.start_date }} to {{ edu.end_date }}
+                        </div>
+                        <hr>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <p class="text-muted">Chưa cập nhật thông tin học vấn</p>
+                    <p class="text-muted">Chưa cập nhật thông tin học vấn</p>
                     {% endif %}
                 </div>
             </div>

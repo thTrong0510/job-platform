@@ -37,3 +37,7 @@ class CVRepository:
     def delete(cv):
         db.session.delete(cv)
         db.session.commit()
+
+    @staticmethod
+    def exists_by_title(title):
+        return CV.query.filter_by(title=title).first() is not None

@@ -3,52 +3,35 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-    <h4 class="mb-4 text-center">Create Account</h4>
+<h4 class="mb-4 text-center">Create Account</h4>
 
-    <form method="POST">
-        <div class="mb-3">
-            <input type="email" 
-                   name="email" 
-                   class="form-control" 
-                   placeholder="Email"
-                   required>
-        </div>
-
-        <div class="mb-3">
-            <input type="text"
-                   name="fullname"
-                   class="form-control"
-                   placeholder="Full name"
-                   required>
-        </div>
-
-        <div class="mb-3">
-            <input type="password" 
-                   name="password" 
-                   class="form-control" 
-                   placeholder="Password"
-                   minlength="6"
-                   required>
-        </div>
-
-        <div class="mb-3">
-            <input type="password" 
-                   name="confirm_password" 
-                   class="form-control" 
-                   placeholder="Confirm Password"
-                   minlength="6"
-                   required>
-        </div>
-
-        <button class="btn btn-success w-100 mb-3">
-            Register
-        </button>
-    </form>
-
-    <div class="text-center">
-        <small>
-            Already have an account?
-            <a href="{{ url_for('auth.login') }}">Login here</a>
-        </small>
+<form method="POST">
+    <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email" required>
     </div>
+
+    <div class="mb-3">
+        <input type="text" name="fullname" class="form-control" placeholder="Full name" required>
+    </div>
+
+    <div class="mb-3">
+        <input type="password" name="password" class="form-control" placeholder="Password" minlength="6" required>
+    </div>
+
+    <div class="mb-3">
+        <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" minlength="6"
+            required>
+    </div>
+
+    <button class="btn btn-success w-100 mb-3">
+        Register
+    </button>
+</form>
+
+<div class="text-center">
+    <small>
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}">Login here</a>
+    </small>
+</div>
 {% endblock %}

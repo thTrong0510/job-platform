@@ -1,6 +1,54 @@
 {% extends "layouts/base.html" %}
 {% block title %}Create CV{% endblock %}
 
+{% block extra_css %}
+<style>
+.avatar-wrapper {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+}
+
+.avatar-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: 0.3s ease;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    transition: 0.3s ease;
+    text-align: center;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-wrapper:hover .avatar-img {
+    transform: scale(1.01);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-lg my-5">
 
@@ -19,12 +67,10 @@
         </span>
     </div>
 
-    <form method="POST"
-          enctype="multipart/form-data"
-          action="{% if data %}
-                    {{ url_for('candidate.update_cv', cv_id=cv.id) }}
+    <form method="POST" enctype="multipart/form-data" action="{% if data %}
+                    {{ url_for('candidate.edit_cv', cv_id=cv.id) }}
                   {% else %}
-                    {{ url_for('candidate.save_online_cv', template_id=template.id) }}
+                    {{ url_for('candidate.create_cv_by_template', template_id=template.id) }}
                   {% endif %}">
 
         <!-- ================= BASIC INFO ================= -->
@@ -37,76 +83,62 @@
 
                 {% if template.slug == "Classic-Plus" %}
                 <div class="text-center mb-4">
-
                     <div class="avatar-wrapper mx-auto position-relative">
-
                         <img id="avatarPreview"
-                             src="{{ data.avatar if data and data.avatar else user.avatar_url if user and user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
-                             class="avatar-img">
+                            src="{{ data.avatar if data and data.avatar else user.avatar_url if user and user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
+                            class="avatar-img">
 
                         <div class="avatar-overlay" onclick="triggerAvatarUpload()">
                             <i class="bi bi-camera-fill fs-4"></i>
                             <div class="mt-1 small">
-                                {{ "Update Avatar" if (data and data.avatar) or (user and user.avatar_url) else "Add Avatar" }}
+                                {{ "Update Avatar" if (data and data.avatar) or (user and user.avatar_url) else "Add
+                                Avatar" }}
                             </div>
                         </div>
-
                     </div>
 
                     <!-- Hidden input (nằm trong form chính) -->
-                    <input type="file"
-                           id="avatarInput"
-                           name="avatar"
-                           accept="image/*"
-                           hidden
-                           onchange="previewAvatar(event)">
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden
+                        onchange="previewAvatar(event)">
                 </div>
                 {% endif %}
 
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">CV Title</label>
-                        <input type="text" name="title"
-                               class="form-control"
-                               value="{{ data.title if data else '' }}"
-                               required>
+                        <input type="text" name="title" class="form-control" value="{{ cv.title if cv else '' }}"
+                            required>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="full_name"
-                               class="form-control"
-                               value="{{ data.full_name if data and data.full_name else candidate.full_name if candidate else '' }}"
-                               required>
+                        <input type="text" name="full_name" class="form-control"
+                            value="{{ data.full_name if data and data.full_name else candidate.full_name if candidate else '' }}"
+                            required>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
-                        <input type="email" name="email"
-                               class="form-control"
-                               value="{{ data.email if data and data.email else user.email if user else '' }}"
-                               required>
+                        <input type="email" name="email" class="form-control"
+                            value="{{ data.email if data and data.email else user.email if user else '' }}" required>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Phone</label>
-                        <input type="text" name="phone"
-                               class="form-control"
-                               value="{{ data.phone if data and data.phone else candidate.phone if candidate else '' }}">
+                        <input type="text" name="phone" class="form-control"
+                            value="{{ data.phone if data and data.phone else candidate.phone if candidate else '' }}">
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Location</label>
-                        <input type="text" name="location"
-                               class="form-control"
-                               value="{{ data.location if data and data.location else candidate.location if candidate else '' }}">
+                        <input type="text" name="location" class="form-control"
+                            value="{{ data.location if data and data.location else candidate.location if candidate else '' }}">
                     </div>
 
                     <div class="col-12">
                         <label class="form-label">Professional Summary</label>
-                        <textarea name="summary"
-                                  class="form-control"
-                                  rows="3">{{ data.summary if data and data.summary else candidate.bio if candidate else '' }}</textarea>
+                        <textarea name="summary" class="form-control"
+                            rows="3">{{ data.summary if data and data.summary else candidate.bio if candidate else '' }}</textarea>
                     </div>
                 </div>
             </div>
@@ -121,30 +153,33 @@
                     <h5 class="fw-bold border-start border-4 border-success ps-3 m-0">
                         Work Experience
                     </h5>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-success"
-                            onclick="addExperience()">
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="addExperience()">
                         + Add
                     </button>
                 </div>
 
                 <div id="experience-container">
                     {% set experiences = data.experiences if data and data.experiences
-                     else candidate.experiences if candidate and candidate.experiences
-                     else [] %}
+                    else candidate.experiences if candidate and candidate.experiences
+                    else [] %}
                     {% for exp in experiences %}
                     <div class="card p-3 mb-3">
-                        <input type="text" name="experiences[{{ loop.index0 }}][company]" class="form-control mb-2" value="{{ exp.company }}" placeholder="Company Name">
-                        <input type="text" name="experiences[{{ loop.index0 }}][position]" class="form-control mb-2" value="{{ exp.position }}" placeholder="Position">
+                        <input type="text" name="experiences[{{ loop.index0 }}][company]" class="form-control mb-2"
+                            value="{{ exp.company }}" placeholder="Company Name">
+                        <input type="text" name="experiences[{{ loop.index0 }}][position]" class="form-control mb-2"
+                            value="{{ exp.position }}" placeholder="Position">
                         <div class="row mb-2">
                             <div class="col">
-                                <input type="text" name="experiences[{{ loop.index0 }}][start_date]" class="form-control" value="{{ exp.start_date }}" placeholder="Start Date">
+                                <input type="text" name="experiences[{{ loop.index0 }}][start_date]"
+                                    class="form-control" value="{{ exp.start_date }}" placeholder="Start Date">
                             </div>
                             <div class="col">
-                                <input type="text" name="experiences[{{ loop.index0 }}][end_date]" class="form-control" value="{{ exp.end_date }}" placeholder="End Date">
+                                <input type="text" name="experiences[{{ loop.index0 }}][end_date]" class="form-control"
+                                    value="{{ exp.end_date }}" placeholder="End Date">
                             </div>
                         </div>
-                        <textarea name="experiences[{{ loop.index0 }}][description]" class="form-control" placeholder="Describe your responsibilities">{{ exp.description }}
+                        <textarea name="experiences[{{ loop.index0 }}][description]" class="form-control"
+                            placeholder="Describe your responsibilities">{{ exp.description }}
                         </textarea>
                     </div>
                     {% endfor %}
@@ -162,18 +197,27 @@
                     <h5 class="fw-bold border-start border-4 border-warning ps-3 m-0">
                         Education
                     </h5>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-warning"
-                            onclick="addEducation()">
+                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="addEducation()">
                         + Add
                     </button>
                 </div>
 
                 <div id="education-container">
                     {% set educations = data.educations if data and data.educations
-                     else candidate.educations if candidate and candidate.educations
-                     else [] %}
-                    {% for edu in educations %} <div class="card p-3 mb-3"> <input type="text" name="educations[{{ loop.index0 }}][school]" class="form-control mb-2" value="{{ edu.school }}" placeholder="School Name"> <input type="text" name="educations[{{ loop.index0 }}][degree]" class="form-control mb-2" value="{{ edu.degree }}" placeholder="Degree"> <div class="row"> <div class="col"> <input type="text" name="educations[{{ loop.index0 }}][start_date]" class="form-control" value="{{ edu.start_date }}" placeholder="Start Date"> </div> <div class="col"> <input type="text" name="educations[{{ loop.index0 }}][end_date]" class="form-control" value="{{ edu.end_date }}" placeholder="End Date"> </div> </div> </div> {% endfor %}
+                    else candidate.educations if candidate and candidate.educations
+                    else [] %}
+                    {% for edu in educations %} <div class="card p-3 mb-3"> <input type="text"
+                            name="educations[{{ loop.index0 }}][school]" class="form-control mb-2"
+                            value="{{ edu.school }}" placeholder="School Name"> <input type="text"
+                            name="educations[{{ loop.index0 }}][degree]" class="form-control mb-2"
+                            value="{{ edu.degree }}" placeholder="Degree">
+                        <div class="row">
+                            <div class="col"> <input type="text" name="educations[{{ loop.index0 }}][start_date]"
+                                    class="form-control" value="{{ edu.start_date }}" placeholder="Start Date"> </div>
+                            <div class="col"> <input type="text" name="educations[{{ loop.index0 }}][end_date]"
+                                    class="form-control" value="{{ edu.end_date }}" placeholder="End Date"> </div>
+                        </div>
+                    </div> {% endfor %}
                 </div>
 
             </div>
@@ -188,15 +232,54 @@
                     <h5 class="fw-bold border-start border-4 border-info ps-3 m-0">
                         Projects
                     </h5>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-info"
-                            onclick="addProject()">
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="addProject()">
                         + Add
                     </button>
                 </div>
 
                 <div id="project-container">
-                    {% if data and data.projects %} {% for proj in data.projects %} <div class="card p-3 mb-3"> <input type="text" name="projects[{{ loop.index0 }}][name]" class="form-control mb-2" value="{{ proj.name }}" placeholder="Project Name"> <textarea name="projects[{{ loop.index0 }}][description]" class="form-control" placeholder="Project Description">{{ proj.description }}</textarea> </div> {% endfor %} {% endif %}
+                    {% if data and data.projects %} {% for proj in data.projects %} <div class="card p-3 mb-3"> <input
+                            type="text" name="projects[{{ loop.index0 }}][name]" class="form-control mb-2"
+                            value="{{ proj.name }}" placeholder="Project Name"> <textarea
+                            name="projects[{{ loop.index0 }}][description]" class="form-control"
+                            placeholder="Project Description">{{ proj.description }}</textarea> </div> {% endfor %} {%
+                    endif %}
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold border-start border-4 border-info ps-3 m-0">
+                        Skill
+                    </h5>
+                </div>
+
+                <div id="skill-container">
+                    {% if cv_skills %}
+                    {% set selected_ids = cv_skills | map(attribute='skill_id') | list %}
+                    {% elif candidate and candidate.skills %}
+                    {% set selected_ids = candidate.skills | map(attribute='skill_id') | list %}
+                    {% else %}
+                    {% set selected_ids = [] %}
+                    {% endif %}
+                    <select name="skills" id="skillsSelect" class="form-select" multiple>
+
+                        {% for skill in all_skills %}
+                        <option value="{{ skill.id }}" {% if skill.id in selected_ids %}selected{% endif %}>
+                            {{ skill.name }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <small class="text-muted">
+                        You can select multiple skills relevant to this CV.
+                    </small>
                 </div>
 
             </div>
@@ -206,8 +289,7 @@
         <!-- ===== SAVE BUTTON ===== -->
         <div class="card shadow-sm border-0">
             <div class="card-body p-4 text-end">
-                <button type="submit"
-                        class="btn btn-primary btn-lg px-5">
+                <button type="submit" class="btn btn-primary btn-lg px-5">
                     {{ "Update CV" if data else "Save CV" }}
                 </button>
             </div>
@@ -218,16 +300,17 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <!-- ================= SCRIPT ================= -->
 <script>
 
-let expIndex = {{ data.experiences|length if data and data.experiences else 0 }};
-let eduIndex = {{ data.educations|length if data and data.educations else 0 }};
-let projIndex = {{ data.projects|length if data and data.projects else 0 }};
+    let expIndex = {{ data.experiences| length if data and data.experiences else 0 }};
+    let eduIndex = {{ data.educations| length if data and data.educations else 0 }};
+    let projIndex = {{ data.projects| length if data and data.projects else 0 }};
 
-function addExperience() {
-    const container = document.getElementById("experience-container");
-    container.insertAdjacentHTML("beforeend", `
+    function addExperience() {
+        const container = document.getElementById("experience-container");
+        container.insertAdjacentHTML("beforeend", `
         <div class="card p-3 mb-3">
             <input type="text" name="experiences[${expIndex}][company]" class="form-control mb-2" placeholder="Company Name">
             <input type="text" name="experiences[${expIndex}][position]" class="form-control mb-2" placeholder="Position">
@@ -242,12 +325,12 @@ function addExperience() {
             <textarea name="experiences[${expIndex}][description]" class="form-control" placeholder="Describe responsibilities"></textarea>
         </div>
     `);
-    expIndex++;
-}
+        expIndex++;
+    }
 
-function addEducation() {
-    const container = document.getElementById("education-container");
-    container.insertAdjacentHTML("beforeend", `
+    function addEducation() {
+        const container = document.getElementById("education-container");
+        container.insertAdjacentHTML("beforeend", `
         <div class="card p-3 mb-3">
             <input type="text" name="educations[${eduIndex}][school]" class="form-control mb-2" placeholder="School Name">
             <input type="text" name="educations[${eduIndex}][degree]" class="form-control mb-2" placeholder="Degree">
@@ -261,61 +344,69 @@ function addEducation() {
             </div>
         </div>
     `);
-    eduIndex++;
-}
+        eduIndex++;
+    }
 
-function addProject() {
-    const container = document.getElementById("project-container");
-    container.insertAdjacentHTML("beforeend", `
+    function addProject() {
+        const container = document.getElementById("project-container");
+        container.insertAdjacentHTML("beforeend", `
         <div class="card p-3 mb-3">
             <input type="text" name="projects[${projIndex}][name]" class="form-control mb-2" placeholder="Project Name">
             <textarea name="projects[${projIndex}][description]" class="form-control" placeholder="Project Description"></textarea>
         </div>
     `);
-    projIndex++;
-}
+        projIndex++;
+    }
 
-function previewAvatar(event) {
-    const reader = new FileReader();
-    reader.onload = function () {
-        const output = document.getElementById('avatarPreview');
-        output.src = reader.result;
-    };
-    reader.readAsDataURL(event.target.files[0]);
-}
+    function previewAvatar(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const output = document.getElementById('avatarPreview');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
 
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
 
-    const avatarImg = document.getElementById("avatarPreview");
-    const avatarInput = document.getElementById("avatarInput");
+        const avatarImg = document.getElementById("avatarPreview");
+        const avatarInput = document.getElementById("avatarInput");
 
-    function triggerAvatarUpload() {
-        avatarInput.click();
-    }
-
-    // Click vào ảnh
-    avatarImg.addEventListener("click", function () {
-        avatarInput.click();
-    });
-
-    // Khi chọn ảnh → preview ngay (KHÔNG submit)
-    avatarInput.addEventListener("change", function (event) {
-        if (avatarInput.files.length > 0) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                avatarImg.src = reader.result;
-            };
-            reader.readAsDataURL(event.target.files[0]);
+        function triggerAvatarUpload() {
+            avatarInput.click();
         }
-    });
 
-    // Cho overlay dùng được
-    window.triggerAvatarUpload = triggerAvatarUpload;
-});
+        // Click vào ảnh
+        avatarImg.addEventListener("click", function () {
+            avatarInput.click();
+        });
+
+        // Khi chọn ảnh → preview ngay (KHÔNG submit)
+        avatarInput.addEventListener("change", function (event) {
+            if (avatarInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    avatarImg.src = reader.result;
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        });
+
+        // Cho overlay dùng được
+        window.triggerAvatarUpload = triggerAvatarUpload;
+    });
 </script>
 
-
+<script>
+    $(document).ready(function () {
+        $('#skillsSelect').select2({
+            placeholder: "Select skills",
+            width: '100%',
+            allowClear: true
+        });
+    });
+</script>
 {% endblock %}

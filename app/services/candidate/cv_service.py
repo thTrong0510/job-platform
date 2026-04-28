@@ -1,20 +1,16 @@
-from os import abort
-
 from app import db
 from app.models.cv import CV
-from app.models.skill import CVSkill
-from app.models.skill import Skill
 from app.models.cv import CVTemplate
-import json
 
 from common.CVFormBuilder import CVFormBuilder
 from repositories.candidate.cv_repository import CVRepository
+from repositories.candidate.cv_skill_repository import CVSkillRepository
 
 
 class CVService:
 
     @staticmethod
-    def create_online_cv(candidate_id, template_id, form_data, avatar_url):
+    def create_online_cv(candidate_id, template_id, form_data, avatar_url, title):
 
         template = CVTemplate.query.get(template_id)
 
@@ -25,7 +21,7 @@ class CVService:
             candidate_id=candidate_id,
             template_id=template_id,
             template_version=template.schema_version,
-            title=form_data.get("title", ["My CV"])[0],
+            title=title,
             type="ONLINE",
             content_json=content_json
         )
@@ -36,18 +32,7 @@ class CVService:
         # Save skills nếu bạn muốn
         skills = form_data.get("skills[]", [])
 
-        for skill_name in skills:
-            skill = Skill.query.filter_by(name=skill_name).first()
-
-            if skill:
-                cv_skill = CVSkill(
-                    cv_id=new_cv.id,
-                    skill_id=skill.id,
-                    level="INTERMEDIATE"
-                )
-                db.session.add(cv_skill)
-
-        db.session.commit()
+        CVSkillRepository.add_cv_skill(new_cv.id, skills)
 
         return new_cv
 
@@ -66,20 +51,18 @@ class CVService:
         if not cv:
             return None
 
-        # if cv.candidate_id != candidate_id:
-        #     abort(403)
-
         return cv
 
     @staticmethod
-    def update_online_cv(cv_id: int, new_json: dict):
+    def update_online_cv(cv_id: int, new_json: dict, skills: list, title: str):
         cv = CVService.get_cv_for_view(cv_id)
 
-        # if cv.type != "ONLINE":
-        #     abort(400)
-
         cv.content_json = new_json
+        cv.title = title
         CVRepository.save(cv)
+
+        CVSkillRepository.delete_by_cv(cv_id)
+        CVSkillRepository.add_cv_skill(cv_id, skills)
 
         return cv
 
@@ -88,3 +71,7 @@ class CVService:
         cv = CVService.get_cv_for_view(cv_id)
 
         CVRepository.delete(cv)
+
+    @staticmethod
+    def exists_by_title(title: str):
+        return CVRepository.exists_by_title(title)

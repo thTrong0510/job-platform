@@ -14,18 +14,20 @@ def view_profile():
 
     candidate = CandidateService.get_candidate_profile(candidate_id)
 
-    # if not candidate:
-    #     abort(404)
-
     return render_template(
         "pages/candidate/profile.html",
         candidate=candidate
     )
 
-@candidate_profile_bp.route("/profile/edit", methods=["GET"])
+@candidate_profile_bp.route("/profile/edit", methods=["GET", "POST"])
 @login_required
 def edit_profile():
     candidate_id = get_current_candidate().id
+
+    if request.method == "POST":
+        CandidateService.update_profile(candidate_id, request.form)
+        return redirect(url_for("candidate_profile.view_profile"))
+
     section = request.args.get("section", "basic")
     candidate = CandidateService.get_full_profile(candidate_id)
     all_skills = SkillService.get_all_skills()
@@ -39,15 +41,6 @@ def edit_profile():
         all_skills=all_skills,
         section=section
     )
-
-@candidate_profile_bp.route("/profile/edit", methods=["POST"])
-@login_required
-def update_profile():
-    candidate_id = get_current_candidate().id
-
-    CandidateService.update_profile(candidate_id, request.form)
-
-    return redirect(url_for("candidate_profile.view_profile"))
 
 @candidate_profile_bp.route("/upload-avatar", methods=["POST"])
 @login_required

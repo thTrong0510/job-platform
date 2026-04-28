@@ -50,10 +50,6 @@ class CVSkill(db.Model):
         primary_key=True
     )
 
-    level = db.Column(
-        Enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED', name='cv_skill_level')
-    )
-
     cv = db.relationship("CV", back_populates="skills")
     skill = db.relationship("Skill")
 
@@ -75,10 +71,6 @@ class JobSkill(db.Model):
         db.BigInteger,
         db.ForeignKey("skills.id", ondelete="RESTRICT"),
         primary_key=True
-    )
-
-    required_level = db.Column(
-        Enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED', name='job_skill_level')
     )
 
     job = db.relationship("Job", back_populates="skills")
