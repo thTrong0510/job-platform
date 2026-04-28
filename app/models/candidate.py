@@ -23,6 +23,17 @@ class Candidate(db.Model):
     created_at = db.Column(db.DateTime, server_default=func.now())
     updated_at = db.Column(db.DateTime, server_default=func.now(), onupdate=func.now())
 
-    user = db.relationship("User", back_populates="candidate")
+    user = db.relationship("User", back_populates="candidate", uselist=False)
     cvs = db.relationship("CV", back_populates="candidate", cascade="all, delete")
-    skills = db.relationship("CandidateSkill", back_populates="candidate", cascade="all, delete")
+    skills = db.relationship("CandidateSkill", back_populates="candidate", cascade="all, delete-orphan")
+    experiences = db.relationship(
+        "CandidateExperience",
+        back_populates="candidate",
+        cascade="all, delete-orphan",
+        lazy=False
+    )
+    educations = db.relationship(
+        "CandidateEducation",
+        back_populates="candidate",
+        cascade="all, delete-orphan",
+        lazy=False)

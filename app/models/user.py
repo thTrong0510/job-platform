@@ -10,6 +10,8 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
+    avatar_url = db.Column(db.String(500))
+
     role = db.Column(
         Enum('CANDIDATE', 'EMPLOYER', 'ADMIN', name='user_role'),
         nullable=False

@@ -1,52 +1,126 @@
 {% extends "layouts/base.html" %}
-
 {% block title %}Manage CV{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-5">
 
-    <!-- ================= ONLINE CVS ================= -->
-    {% include "components/cv/cv_section_header.html" 
-        with context %}
-    
-    {% set title = "Online CVs" %}
-    {% set button_text = "Create Online CV" %}
-    {% set button_url = url_for('candidate.choose_template') %}
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold mb-1">My Online CV</h2>
+            <p class="text-muted mb-0">
+                You have {{ online_cvs|length }} CV{{ '' if online_cvs|length == 1 else 's' }} created
+            </p>
+        </div>
 
-    {% include "components/cv/cv_section_header.html" %}
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('candidate.upload_cv') }}"
+               class="btn btn-outline-secondary">
+                Upload CV
+            </a>
 
+            <a href="{{ url_for('candidate.choose_template') }}"
+               class="btn btn-primary">
+                + Create New CV
+            </a>
+        </div>
+    </div>
+
+
+    <!-- ================= CV GRID ================= -->
     {% if online_cvs %}
-        <div class="row">
-            {% for cv in online_cvs %}
-                {% include "components/cv/cv_card_online.html" %}
-            {% endfor %}
+    <div class="row g-4">
+
+        {% for cv in online_cvs %}
+        <div class="col-lg-4 col-md-6">
+            <div class="cv-card position-relative p-4 h-100"
+             style="background: linear-gradient(135deg,
+             hsl({{ 30 + loop.index0 * 40 }}, 70%, 50%),
+             hsl({{ 200 + loop.index0 * 30 }}, 70%, 45%)
+             );">
+
+                <!-- CV TITLE -->
+                <h5 class="fw-bold text-white mb-2">
+                    {{ cv.name }}
+                </h5>
+
+                <p class="small text-white-50 mb-4">
+                    Last updated:
+                    {{ cv.updated_at.strftime('%d %b %Y') if cv.updated_at else 'Recently' }}
+                </p>
+
+                <!-- ACTIONS -->
+                <div class="cv-actions">
+                    <a href="{{ url_for('candidate.view_cv', cv_id=cv.id) }}"
+                       class="btn btn-light btn-sm">
+                        View
+                    </a>
+
+                    <a href="{{ url_for('candidate.edit_cv', cv_id=cv.id) }}"
+                       class="btn btn-outline-light btn-sm">
+                        Edit
+                    </a>
+
+                    <a href="{{ url_for('candidate.delete_cv', cv_id=cv.id) }}"
+                       class="btn btn-outline-danger btn-sm">
+                        Delete
+                    </a>
+                </div>
+
+            </div>
         </div>
+        {% endfor %}
+
+    </div>
+
     {% else %}
-        {% set message = "No online CV created yet." %}
-        {% include "components/cv/cv_empty.html" %}
-    {% endif %}
+    <!-- ================= EMPTY STATE ================= -->
+    <div class="text-center py-5">
 
-
-    <hr class="my-5">
-
-
-    <!-- ================= UPLOAD CVS ================= -->
-    {% set title = "Uploaded CVs" %}
-    {% set button_text = "Upload CV" %}
-    {% set button_url = url_for('candidate.upload_cv') %}
-
-    {% include "components/cv/cv_section_header.html" %}
-
-    {% if upload_cvs %}
-        <div class="row">
-            {% for cv in upload_cvs %}
-                {% include "components/cv/cv_card_upload.html" %}
-            {% endfor %}
+        <div class="empty-icon mb-4">
+            📄
         </div>
-    {% else %}
-        {% set message = "No uploaded CV yet." %}
-        {% include "components/cv/cv_empty.html" %}
+
+        <h4 class="fw-bold mb-3">No CV created yet</h4>
+
+        <p class="text-muted mb-4">
+            Create your first professional CV and start applying for jobs.
+        </p>
+
+        <a href="{{ url_for('candidate.choose_template') }}"
+           class="btn btn-primary btn-lg">
+            Create Your First CV
+        </a>
+
+    </div>
     {% endif %}
 
 </div>
+
+
+<style>
+.cv-card {
+    border-radius: 16px;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.cv-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.cv-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.empty-icon {
+    font-size: 70px;
+    opacity: 0.6;
+}
+</style>
+
 {% endblock %}

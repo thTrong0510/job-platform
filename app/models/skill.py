@@ -27,12 +27,6 @@ class CandidateSkill(db.Model):
         primary_key=True
     )
 
-    level = db.Column(
-        Enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED', name='skill_level'),
-    )
-
-    years_of_experience = db.Column(db.Integer)
-
     candidate = db.relationship("Candidate", back_populates="skills")
     skill = db.relationship("Skill")
 

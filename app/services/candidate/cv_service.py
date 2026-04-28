@@ -14,17 +14,18 @@ from repositories.candidate.cv_repository import CVRepository
 class CVService:
 
     @staticmethod
-    def create_online_cv(candidate_id, template_id, form_data):
+    def create_online_cv(candidate_id, template_id, form_data, avatar_url):
 
         template = CVTemplate.query.get(template_id)
 
         content_json = CVFormBuilder.build_from_request(form_data)
+        content_json['avatar'] = avatar_url
 
         new_cv = CV(
             candidate_id=candidate_id,
             template_id=template_id,
             template_version=template.schema_version,
-            title=form_data.get("full_name", ["My CV"])[0],
+            title=form_data.get("title", ["My CV"])[0],
             type="ONLINE",
             content_json=content_json
         )
@@ -59,7 +60,7 @@ class CVService:
         return online_cvs, upload_cvs
 
     @staticmethod
-    def get_cv_for_view(cv_id: int, candidate_id: int):
+    def get_cv_for_view(cv_id: int):
         cv = CVRepository.get_by_id(cv_id)
 
         if not cv:
@@ -71,8 +72,8 @@ class CVService:
         return cv
 
     @staticmethod
-    def update_online_cv(cv_id: int, candidate_id: int, new_json: dict):
-        cv = CVService.get_cv_for_view(cv_id, candidate_id)
+    def update_online_cv(cv_id: int, new_json: dict):
+        cv = CVService.get_cv_for_view(cv_id)
 
         # if cv.type != "ONLINE":
         #     abort(400)
@@ -83,7 +84,7 @@ class CVService:
         return cv
 
     @staticmethod
-    def delete_cv(cv_id: int, candidate_id: int):
-        cv = CVService.get_cv_for_view(cv_id, candidate_id)
+    def delete_cv(cv_id: int):
+        cv = CVService.get_cv_for_view(cv_id)
 
         CVRepository.delete(cv)

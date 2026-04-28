@@ -2,188 +2,222 @@
 {% block title %}Create CV{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="card shadow-sm">
-        <div class="card-body">
+<div class="container-lg my-5">
 
-            <h4 class="mb-3">
-                Template: {{ template.name }}
-            </h4>
-
-            <h3 class="mb-4">
+    <!-- ===== HEADER ===== -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">
                 {{ "Update CV" if data else "Create Online CV" }}
             </h3>
+            <small class="text-muted">
+                Template: {{ template.name }}
+            </small>
+        </div>
+        <span class="badge bg-primary fs-6 px-3 py-2">
+            {{ "Editing" if data else "New CV" }}
+        </span>
+    </div>
 
-            <form method="POST"
-                  action="{% if data %}
-                            {{ url_for('candidate.update_cv', cv_id=cv.id) }}
-                          {% else %}
-                            {{ url_for('candidate.save_online_cv', template_id=template.id) }}
-                          {% endif %}">
+    <form method="POST"
+          enctype="multipart/form-data"
+          action="{% if data %}
+                    {{ url_for('candidate.update_cv', cv_id=cv.id) }}
+                  {% else %}
+                    {{ url_for('candidate.save_online_cv', template_id=template.id) }}
+                  {% endif %}">
 
-                <!-- ================= BASIC INFO ================= -->
-                <h5 class="border-bottom pb-2 mb-3">Basic Information</h5>
+        <!-- ================= BASIC INFO ================= -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-4">
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <input type="text" name="full_name" class="form-control"
-                               value="{{ data.full_name if data else '' }}"
-                               placeholder="Full Name (e.g. Nguyen Van A)" required>
-                    </div>
-                    <div class="col-md-6">
-                        <input type="email" name="email" class="form-control"
-                               value="{{ data.email if data else '' }}"
-                               placeholder="Email (e.g. example@gmail.com)" required>
-                    </div>
-                </div>
+                <h5 class="fw-bold mb-4 border-start border-4 border-primary ps-3">
+                    Basic Information
+                </h5>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <input type="text" name="phone" class="form-control"
-                               value="{{ data.phone if data else '' }}"
-                               placeholder="Phone (e.g. 0901234567)">
-                    </div>
-                    <div class="col-md-6">
-                        <input type="text" name="location" class="form-control"
-                               value="{{ data.location if data else '' }}"
-                               placeholder="Location (e.g. Ho Chi Minh City)">
-                    </div>
-                </div>
+                {% if template.slug == "Classic-Plus" %}
+                <div class="text-center mb-4">
 
-                <div class="mb-4">
-                    <textarea name="summary" class="form-control" rows="3"
-                              placeholder="Professional Summary">{{ data.summary if data else '' }}</textarea>
-                </div>
+                    <div class="avatar-wrapper mx-auto position-relative">
 
-                <!-- ================= EXPERIENCE ================= -->
-                <h5 class="border-bottom pb-2 mb-3">Work Experience</h5>
-                <div id="experience-container">
+                        <img id="avatarPreview"
+                             src="{{ data.avatar if data and data.avatar else user.avatar_url if user and user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
+                             class="avatar-img">
 
-                    {% if data and data.experiences %}
-                        {% for exp in data.experiences %}
-                        <div class="card p-3 mb-3">
-                            <input type="text"
-                                   name="experiences[{{ loop.index0 }}][company]"
-                                   class="form-control mb-2"
-                                   value="{{ exp.company }}"
-                                   placeholder="Company Name">
-
-                            <input type="text"
-                                   name="experiences[{{ loop.index0 }}][position]"
-                                   class="form-control mb-2"
-                                   value="{{ exp.position }}"
-                                   placeholder="Position">
-
-                            <div class="row mb-2">
-                                <div class="col">
-                                    <input type="text"
-                                           name="experiences[{{ loop.index0 }}][start_date]"
-                                           class="form-control"
-                                           value="{{ exp.start_date }}"
-                                           placeholder="Start Date">
-                                </div>
-                                <div class="col">
-                                    <input type="text"
-                                           name="experiences[{{ loop.index0 }}][end_date]"
-                                           class="form-control"
-                                           value="{{ exp.end_date }}"
-                                           placeholder="End Date">
-                                </div>
-                            </div>
-
-                            <textarea name="experiences[{{ loop.index0 }}][description]"
-                                      class="form-control"
-                                      placeholder="Describe your responsibilities">{{ exp.description }}</textarea>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-
-                </div>
-
-                <button type="button" class="btn btn-outline-primary btn-sm mb-4"
-                        onclick="addExperience()">+ Add Experience</button>
-
-                <!-- ================= EDUCATION ================= -->
-                <h5 class="border-bottom pb-2 mb-3">Education</h5>
-                <div id="education-container">
-
-                    {% if data and data.educations %}
-                        {% for edu in data.educations %}
-                        <div class="card p-3 mb-3">
-                            <input type="text"
-                                   name="educations[{{ loop.index0 }}][school]"
-                                   class="form-control mb-2"
-                                   value="{{ edu.school }}"
-                                   placeholder="School Name">
-
-                            <input type="text"
-                                   name="educations[{{ loop.index0 }}][degree]"
-                                   class="form-control mb-2"
-                                   value="{{ edu.degree }}"
-                                   placeholder="Degree">
-
-                            <div class="row">
-                                <div class="col">
-                                    <input type="text"
-                                           name="educations[{{ loop.index0 }}][start_date]"
-                                           class="form-control"
-                                           value="{{ edu.start_date }}"
-                                           placeholder="Start Date">
-                                </div>
-                                <div class="col">
-                                    <input type="text"
-                                           name="educations[{{ loop.index0 }}][end_date]"
-                                           class="form-control"
-                                           value="{{ edu.end_date }}"
-                                           placeholder="End Date">
-                                </div>
+                        <div class="avatar-overlay" onclick="triggerAvatarUpload()">
+                            <i class="bi bi-camera-fill fs-4"></i>
+                            <div class="mt-1 small">
+                                {{ "Update Avatar" if (data and data.avatar) or (user and user.avatar_url) else "Add Avatar" }}
                             </div>
                         </div>
-                        {% endfor %}
-                    {% endif %}
 
+                    </div>
+
+                    <!-- Hidden input (nằm trong form chính) -->
+                    <input type="file"
+                           id="avatarInput"
+                           name="avatar"
+                           accept="image/*"
+                           hidden
+                           onchange="previewAvatar(event)">
                 </div>
+                {% endif %}
 
-                <button type="button" class="btn btn-outline-primary btn-sm mb-4"
-                        onclick="addEducation()">+ Add Education</button>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">CV Title</label>
+                        <input type="text" name="title"
+                               class="form-control"
+                               value="{{ data.title if data else '' }}"
+                               required>
+                    </div>
 
-                <!-- ================= PROJECT ================= -->
-                <h5 class="border-bottom pb-2 mb-3">Projects</h5>
-                <div id="project-container">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name"
+                               class="form-control"
+                               value="{{ data.full_name if data and data.full_name else candidate.full_name if candidate else '' }}"
+                               required>
+                    </div>
 
-                    {% if data and data.projects %}
-                        {% for proj in data.projects %}
-                        <div class="card p-3 mb-3">
-                            <input type="text"
-                                   name="projects[{{ loop.index0 }}][name]"
-                                   class="form-control mb-2"
-                                   value="{{ proj.name }}"
-                                   placeholder="Project Name">
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email"
+                               class="form-control"
+                               value="{{ data.email if data and data.email else user.email if user else '' }}"
+                               required>
+                    </div>
 
-                            <textarea name="projects[{{ loop.index0 }}][description]"
-                                      class="form-control"
-                                      placeholder="Project Description">{{ proj.description }}</textarea>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
+                    <div class="col-md-6">
+                        <label class="form-label">Phone</label>
+                        <input type="text" name="phone"
+                               class="form-control"
+                               value="{{ data.phone if data and data.phone else candidate.phone if candidate else '' }}">
+                    </div>
 
+                    <div class="col-md-6">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location"
+                               class="form-control"
+                               value="{{ data.location if data and data.location else candidate.location if candidate else '' }}">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Professional Summary</label>
+                        <textarea name="summary"
+                                  class="form-control"
+                                  rows="3">{{ data.summary if data and data.summary else candidate.bio if candidate else '' }}</textarea>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <button type="button" class="btn btn-outline-primary btn-sm mb-4"
-                        onclick="addProject()">+ Add Project</button>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success">
-                        {{ "Update CV" if data else "Save CV" }}
+        <!-- ================= EXPERIENCE ================= -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold border-start border-4 border-success ps-3 m-0">
+                        Work Experience
+                    </h5>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-success"
+                            onclick="addExperience()">
+                        + Add
                     </button>
                 </div>
 
-            </form>
+                <div id="experience-container">
+                    {% set experiences = data.experiences if data and data.experiences
+                     else candidate.experiences if candidate and candidate.experiences
+                     else [] %}
+                    {% for exp in experiences %}
+                    <div class="card p-3 mb-3">
+                        <input type="text" name="experiences[{{ loop.index0 }}][company]" class="form-control mb-2" value="{{ exp.company }}" placeholder="Company Name">
+                        <input type="text" name="experiences[{{ loop.index0 }}][position]" class="form-control mb-2" value="{{ exp.position }}" placeholder="Position">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <input type="text" name="experiences[{{ loop.index0 }}][start_date]" class="form-control" value="{{ exp.start_date }}" placeholder="Start Date">
+                            </div>
+                            <div class="col">
+                                <input type="text" name="experiences[{{ loop.index0 }}][end_date]" class="form-control" value="{{ exp.end_date }}" placeholder="End Date">
+                            </div>
+                        </div>
+                        <textarea name="experiences[{{ loop.index0 }}][description]" class="form-control" placeholder="Describe your responsibilities">{{ exp.description }}
+                        </textarea>
+                    </div>
+                    {% endfor %}
+                </div>
 
+            </div>
         </div>
-    </div>
-</div>
 
+
+        <!-- ================= EDUCATION ================= -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold border-start border-4 border-warning ps-3 m-0">
+                        Education
+                    </h5>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-warning"
+                            onclick="addEducation()">
+                        + Add
+                    </button>
+                </div>
+
+                <div id="education-container">
+                    {% set educations = data.educations if data and data.educations
+                     else candidate.educations if candidate and candidate.educations
+                     else [] %}
+                    {% for edu in educations %} <div class="card p-3 mb-3"> <input type="text" name="educations[{{ loop.index0 }}][school]" class="form-control mb-2" value="{{ edu.school }}" placeholder="School Name"> <input type="text" name="educations[{{ loop.index0 }}][degree]" class="form-control mb-2" value="{{ edu.degree }}" placeholder="Degree"> <div class="row"> <div class="col"> <input type="text" name="educations[{{ loop.index0 }}][start_date]" class="form-control" value="{{ edu.start_date }}" placeholder="Start Date"> </div> <div class="col"> <input type="text" name="educations[{{ loop.index0 }}][end_date]" class="form-control" value="{{ edu.end_date }}" placeholder="End Date"> </div> </div> </div> {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ================= PROJECT ================= -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold border-start border-4 border-info ps-3 m-0">
+                        Projects
+                    </h5>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-info"
+                            onclick="addProject()">
+                        + Add
+                    </button>
+                </div>
+
+                <div id="project-container">
+                    {% if data and data.projects %} {% for proj in data.projects %} <div class="card p-3 mb-3"> <input type="text" name="projects[{{ loop.index0 }}][name]" class="form-control mb-2" value="{{ proj.name }}" placeholder="Project Name"> <textarea name="projects[{{ loop.index0 }}][description]" class="form-control" placeholder="Project Description">{{ proj.description }}</textarea> </div> {% endfor %} {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ===== SAVE BUTTON ===== -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 text-end">
+                <button type="submit"
+                        class="btn btn-primary btn-lg px-5">
+                    {{ "Update CV" if data else "Save CV" }}
+                </button>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <!-- ================= SCRIPT ================= -->
 <script>
 
@@ -241,6 +275,47 @@ function addProject() {
     projIndex++;
 }
 
+function previewAvatar(event) {
+    const reader = new FileReader();
+    reader.onload = function () {
+        const output = document.getElementById('avatarPreview');
+        output.src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const avatarImg = document.getElementById("avatarPreview");
+    const avatarInput = document.getElementById("avatarInput");
+
+    function triggerAvatarUpload() {
+        avatarInput.click();
+    }
+
+    // Click vào ảnh
+    avatarImg.addEventListener("click", function () {
+        avatarInput.click();
+    });
+
+    // Khi chọn ảnh → preview ngay (KHÔNG submit)
+    avatarInput.addEventListener("change", function (event) {
+        if (avatarInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                avatarImg.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    });
+
+    // Cho overlay dùng được
+    window.triggerAvatarUpload = triggerAvatarUpload;
+});
+</script>
+
 
 {% endblock %}

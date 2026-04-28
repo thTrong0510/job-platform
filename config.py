@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
+import cloudinary
 
 load_dotenv()
 
@@ -17,3 +18,12 @@ class Config:
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+def init_cloudinary(app):
+
+    cloudinary.config(
+        cloud_name=app.config["CLOUDINARY_CLOUD_NAME"],
+        api_key=app.config["CLOUDINARY_API_KEY"],
+        api_secret=app.config["CLOUDINARY_API_SECRET"],
+        secure=True
+    )

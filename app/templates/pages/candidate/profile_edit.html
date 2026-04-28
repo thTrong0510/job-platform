@@ -1,0 +1,291 @@
+{% extends "layouts/base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h4 class="mb-4">
+                Edit {{ section|capitalize }}
+            </h4>
+
+            <form method="POST">
+                <input type="hidden" name="section" value="{{ section }}">
+
+                {% set show_basic = section in ['basic', 'all'] %}
+                {% set show_bio = section in ['bio', 'all'] %}
+                {% set show_skills = section in ['skills', 'all'] %}
+                {% set show_experiences = section in ['experiences', 'all'] %}
+                {% set show_educations = section in ['educations', 'all'] %}
+
+                <!-- ================= BASIC ================= -->
+                {% if show_basic %}
+                <h5 class="mb-3">Basic Information</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input class="form-control" name="full_name"
+                           value="{{ candidate.full_name or '' }}"
+                           placeholder="Enter your full name">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Current Title</label>
+                    <input class="form-control" name="current_title"
+                           value="{{ candidate.current_title or '' }}"
+                           placeholder="Software Engineer, Backend Developer...">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input class="form-control" name="phone"
+                           value="{{ candidate.phone or '' }}"
+                           placeholder="Enter phone number">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Location</label>
+                    <input class="form-control" name="location"
+                           value="{{ candidate.location or '' }}"
+                           placeholder="City, Country">
+                </div>
+                {% endif %}
+
+                <!-- ================= BIO ================= -->
+                {% if show_bio %}
+                <h5 class="mb-3">Professional Summary</h5>
+                <div class="mb-4">
+                    <textarea class="form-control" name="bio" rows="4"
+                              placeholder="Write a short professional summary...">{{ candidate.bio or '' }}</textarea>
+                </div>
+                {% endif %}
+
+                <!-- ================= EXPERIENCES ================= -->
+                {% if show_experiences %}
+                <h5 class="mb-3 d-flex justify-content-between">
+                    Work Experience
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="addExperience()">+ Add</button>
+                </h5>
+
+                <div id="experience-container">
+
+                {% set experiences = candidate.experiences if candidate.experiences else [{}] %}
+
+                {% for exp in experiences %}
+                <div class="card p-3 mb-3 experience-item">
+                    <input class="form-control mb-2"
+                           name="experiences[{{ loop.index0 }}][company]"
+                           value="{{ exp.company if exp.company else '' }}"
+                           placeholder="Company Name">
+
+                    <input class="form-control mb-2"
+                           name="experiences[{{ loop.index0 }}][position]"
+                           value="{{ exp.position if exp.position else '' }}"
+                           placeholder="Position">
+
+                        <label class="form-label">Start Date</label>
+                        <input type="date"
+                               class="form-control mb-2 start-date"
+                               name="experiences[{{ loop.index0 }}][start_date]"
+                               value="{{ exp.start_date.strftime('%Y-%m-%d') if exp.start_date else '' }}">
+
+                        <label class="form-label">End Date</label>
+                        <input type="date"
+                               class="form-control mb-2 end-date"
+                               name="experiences[{{ loop.index0 }}][end_date]"
+                               value="{{ exp.end_date.strftime('%Y-%m-%d') if exp.end_date else '' }}">
+
+                    <textarea class="form-control mb-2"
+                              name="experiences[{{ loop.index0 }}][description]"
+                              placeholder="Describe your responsibilities...">{{ exp.description if exp.description else '' }}</textarea>
+
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="this.closest('.experience-item').remove()">
+                        Remove
+                    </button>
+                </div>
+                {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- ================= EDUCATIONS ================= -->
+                {% if show_educations %}
+                <h5 class="mb-3 d-flex justify-content-between">
+                    Education
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="addEducation()">+ Add</button>
+                </h5>
+
+                <div id="education-container">
+
+                {% set educations = candidate.educations if candidate.educations else [{}] %}
+
+                {% for edu in educations %}
+                <div class="card p-3 mb-3 education-item">
+                    <input class="form-control mb-2"
+                           name="educations[{{ loop.index0 }}][school]"
+                           value="{{ edu.school if edu.school else '' }}"
+                           placeholder="School Name">
+
+                    <input class="form-control mb-2"
+                           name="educations[{{ loop.index0 }}][degree]"
+                           value="{{ edu.degree if edu.degree else '' }}"
+                           placeholder="Degree / Major">
+
+                    <label class="form-label">Start Date</label>
+                    <input type="date"
+                           class="form-control mb-2 start-date"
+                           name="educations[{{ loop.index0 }}][start_date]"
+                           value="{{ edu.start_date.strftime('%Y-%m-%d') if edu.start_date else '' }}">
+
+                    <label class="form-label">End Date</label>
+                    <input type="date"
+                           class="form-control mb-2 end-date"
+                           name="educations[{{ loop.index0 }}][end_date]"
+                           value="{{ edu.end_date.strftime('%Y-%m-%d') if edu.end_date else '' }}">
+
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="this.closest('.education-item').remove()">
+                        Remove
+                    </button>
+                </div>
+                {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if show_skills %}
+                <h5 class="mb-3">Skills</h5>
+
+                <div class="card p-3 mb-3">
+
+                    {% set selected_ids = candidate.skills | map(attribute='skill_id') | list %}
+
+                    <select name="skills"
+                            id="skillsSelect"
+                            class="form-select"
+                            multiple>
+
+                        {% for skill in all_skills %}
+                            <option value="{{ skill.id }}"
+                                {% if skill.id in selected_ids %}selected{% endif %}>
+                                {{ skill.name }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <button class="btn btn-success">Save Changes</button>
+                    <a href="{{ url_for('candidate_profile.view_profile') }}"
+                       class="btn btn-secondary">Cancel</a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+function addExperience() {
+    const container = document.getElementById("experience-container");
+    const index = container.children.length;
+
+    container.insertAdjacentHTML("beforeend", `
+        <div class="card p-3 mb-3 experience-item">
+            <input class="form-control mb-2"
+                name="experiences[${index}][company]"
+                placeholder="Company Name">
+            <input class="form-control mb-2"
+                name="experiences[${index}][position]"
+                placeholder="Position">
+            <label class="form-label">Start Date</label>
+            <input type="date" class="form-control mb-2"
+                name="experiences[${index}][start_date]"
+                placeholder="Start Date">
+            <label class="form-label">End Date</label>
+            <input type="date" class="form-control mb-2"
+                name="experiences[${index}][end_date]"
+                placeholder="End Date">
+            <textarea class="form-control mb-2"
+                name="experiences[${index}][description]"
+                placeholder="Describe your responsibilities..."></textarea>
+            <button type="button" class="btn btn-sm btn-outline-danger"
+                onclick="this.closest('.experience-item').remove()">Remove</button>
+        </div>
+    `);
+}
+
+function addEducation() {
+    const container = document.getElementById("education-container");
+    const index = container.children.length;
+
+    container.insertAdjacentHTML("beforeend", `
+        <div class="card p-3 mb-3 education-item">
+            <input class="form-control mb-2"
+                name="educations[${index}][school]"
+                placeholder="School Name">
+            <input class="form-control mb-2"
+                name="educations[${index}][degree]"
+                placeholder="Degree / Major">
+            <label class="form-label">Start Date</label>
+            <input type="date" class="form-control mb-2"
+                name="educations[${index}][start_date]"
+                placeholder="Start Date">
+            <label class="form-label">End Date</label>
+            <input type="date" class="form-control mb-2"
+                name="educations[${index}][end_date]"
+                placeholder="End Date">
+            <button type="button" class="btn btn-sm btn-outline-danger"
+                onclick="this.closest('.education-item').remove()">Remove</button>
+        </div>
+    `);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    function validateDates(block) {
+        const startInput = block.querySelector(".start-date");
+        const endInput = block.querySelector(".end-date");
+
+        if (!startInput || !endInput) return;
+
+        startInput.addEventListener("change", function () {
+            if (endInput.value && endInput.value < startInput.value) {
+                alert("End date cannot be before start date.");
+                endInput.value = "";
+            }
+        });
+
+        endInput.addEventListener("change", function () {
+            if (startInput.value && endInput.value < startInput.value) {
+                alert("End date cannot be before start date.");
+                endInput.value = "";
+            }
+        });
+    }
+
+    document.querySelectorAll(".education-block").forEach(validateDates);
+
+});
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#skillsSelect').select2({
+            placeholder: "Select skills",
+            width: '100%',
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

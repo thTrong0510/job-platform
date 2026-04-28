@@ -1,8 +1,10 @@
 from flask import Blueprint, session
-from services.auth.auth_service import AuthService
+from app.services.auth.auth_service import AuthService
 from flask import request, redirect, url_for, render_template
-from app import db
 from app.models.user import User
+from app.models.candidate import Candidate
+from services.candidate.candidate_service import CandidateService
+from services.candidate.user_service import UserService
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -11,6 +13,7 @@ def register():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
+        fullname = request.form.get("fullname")
 
         user = User(
             email=email,
@@ -19,8 +22,14 @@ def register():
         )
         user.set_password(password)
 
-        db.session.add(user)
-        db.session.commit()
+        UserService.save_user(user)
+
+        candidate = Candidate(
+            full_name=fullname,
+            user=user
+        )
+
+        CandidateService.save_candidate(candidate)
 
         return redirect(url_for("auth.login"))
 

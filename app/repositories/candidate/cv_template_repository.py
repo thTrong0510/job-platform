@@ -1,7 +1,7 @@
 from app.models.cv import CVTemplate
 
 
-class TemplateRepository:
+class CVTemplateRepository:
 
     @staticmethod
     def get_active_templates():
