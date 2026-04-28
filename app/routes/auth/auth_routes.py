@@ -36,6 +36,12 @@ def login():
 
         if user and user.check_password(password):
             session["user_id"] = user.id
+            session["role"] = user.role
+
+            if user.role == "EMPLOYER" and user.employer:
+                session["employer_id"] = user.employer.id
+                return redirect(url_for("employer_jobs.index"))
+
             return redirect("/")
 
         return "Login failed"
