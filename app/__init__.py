@@ -13,10 +13,12 @@ def create_app():
     from .routes.main_routes import main_bp
     from .routes.candidate.cv_upload_routes import cv_upload_bp
     from .routes.candidate.job_routes import job_bp
+    from .routes.employer.employer_auth_routes import employer_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(job_bp)
     app.register_blueprint(cv_upload_bp)
+    app.register_blueprint(employer_bp)
 
     return app

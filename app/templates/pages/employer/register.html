@@ -1,0 +1,246 @@
+{% extends "layouts/employer_base.html" %}
+{% block title %}Đăng ký Nhà tuyển dụng – JobPlatform{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: #f0faf2; }
+
+    .register-wrap { max-width: 720px; margin: 48px auto; padding: 0 16px 60px; }
+
+    .register-card { border: none; border-radius: 20px; box-shadow: 0 8px 32px rgba(58,119,52,.12); overflow: hidden; }
+
+    .card-head {
+        background: linear-gradient(135deg, #2d4a3e, #3a7734);
+        padding: 36px 40px 28px; color: #fff;
+    }
+    .card-head h2 { font-weight: 800; font-size: 1.5rem; margin-bottom: 6px; }
+    .card-head p  { color: rgba(255,255,255,.75); margin: 0; font-size: .9rem; }
+
+    /* progress pills */
+    .step-pills { display: flex; gap: 8px; margin-bottom: 28px; }
+    .step-pill   { flex: 1; height: 4px; border-radius: 4px; background: rgba(255,255,255,.25); }
+    .step-pill.done { background: #b0d4b8; }
+
+    .card-body-inner { padding: 36px 40px; background: #fff; }
+
+    /* section divider */
+    .form-section {
+        font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+        text-transform: uppercase; color: #6b7280;
+        display: flex; align-items: center; gap: 10px;
+        margin: 28px 0 16px;
+    }
+    .form-section::before, .form-section::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+
+    .form-label { font-weight: 600; font-size: .88rem; color: #374151; margin-bottom: 5px; }
+    .form-label .req { color: #ef4444; margin-left: 2px; }
+
+    .form-control, .form-select {
+        border-radius: 10px; border: 1.5px solid #e5e7eb;
+        padding: 10px 14px; font-size: .9rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #3a7734;
+        box-shadow: 0 0 0 3px rgba(58,119,52,.12);
+    }
+    textarea.form-control { resize: vertical; min-height: 90px; }
+
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .form-control { padding-left: 42px; }
+    .input-icon-wrap .field-icon {
+        position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+        color: #9ca3af; font-size: 1rem; pointer-events: none;
+    }
+
+    /* password strength */
+    .strength-bar  { height: 4px; border-radius: 4px; background: #e5e7eb; margin-top: 6px; }
+    .strength-fill { height: 100%; border-radius: 4px; width: 0; transition: width .3s, background .3s; }
+
+    .btn-register {
+        background: linear-gradient(135deg, #2d4a3e, #3a7734);
+        color: #fff; border: none; border-radius: 12px;
+        padding: 14px; font-weight: 700; font-size: 1rem;
+        width: 100%; transition: opacity .2s;
+    }
+    .btn-register:hover { opacity: .9; color: #fff; }
+
+    .notice-box {
+        background: #f0faf2; border-left: 3px solid #3a7734;
+        border-radius: 8px; padding: 12px 16px; font-size: .84rem; color: #374151;
+    }
+    .notice-box i { color: #3a7734; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-wrap">
+
+    <a href="{{ url_for('employer.home') }}"
+       class="d-inline-flex align-items-center gap-2 text-muted text-decoration-none mb-4 fw-medium"
+       style="font-size:.9rem;">
+        <i class="bi bi-arrow-left"></i> Quay lại trang nhà tuyển dụng
+    </a>
+
+    <div class="register-card card">
+
+        <div class="card-head">
+            <div class="step-pills">
+                <div class="step-pill done"></div>
+                <div class="step-pill"></div>
+                <div class="step-pill"></div>
+            </div>
+            <h2><i class="bi bi-building me-2"></i>Đăng ký Nhà tuyển dụng</h2>
+            <p>Tạo tài khoản để bắt đầu đăng tin tuyển dụng trên JobPlatform</p>
+        </div>
+
+        <div class="card-body-inner">
+
+            <div class="notice-box mb-4">
+                <i class="bi bi-shield-check-fill me-2"></i>
+                Tài khoản sẽ được Admin kiểm duyệt trong <strong>1–3 ngày làm việc</strong>.
+                Mỗi công ty chỉ được đăng ký <strong>1 tài khoản</strong>.
+            </div>
+
+            <form method="POST" action="{{ url_for('employer.register') }}" novalidate id="registerForm">
+
+                <div class="form-section">Thông tin tài khoản</div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email công ty <span class="req">*</span></label>
+                    <div class="input-icon-wrap">
+                        <i class="bi bi-envelope field-icon"></i>
+                        <input type="email" name="email" class="form-control"
+                               placeholder="hr@company.com" required
+                               value="{{ request.form.get('email', '') }}">
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Mật khẩu <span class="req">*</span></label>
+                        <div class="input-icon-wrap">
+                            <i class="bi bi-lock field-icon"></i>
+                            <input type="password" name="password" id="password"
+                                   class="form-control" placeholder="Tối thiểu 6 ký tự"
+                                   minlength="6" required>
+                        </div>
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <small class="text-muted" id="strengthText"></small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Xác nhận mật khẩu <span class="req">*</span></label>
+                        <div class="input-icon-wrap">
+                            <i class="bi bi-lock-fill field-icon"></i>
+                            <input type="password" name="confirm_password" id="confirmPassword"
+                                   class="form-control" placeholder="Nhập lại mật khẩu"
+                                   minlength="6" required>
+                        </div>
+                        <small class="d-none text-danger mt-1" id="pwMismatch">
+                            <i class="bi bi-exclamation-circle me-1"></i>Mật khẩu không khớp
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-section">Thông tin công ty</div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tên công ty <span class="req">*</span></label>
+                    <div class="input-icon-wrap">
+                        <i class="bi bi-building field-icon"></i>
+                        <input type="text" name="company_name" class="form-control"
+                               placeholder="Công ty TNHH ABC Technology"
+                               required maxlength="255"
+                               value="{{ request.form.get('company_name', '') }}">
+                    </div>
+                    <small class="text-muted">Tên chính xác như trên Giấy phép kinh doanh</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Địa chỉ / Khu vực <span class="text-muted fw-normal">(tuỳ chọn)</span></label>
+                    <div class="input-icon-wrap">
+                        <i class="bi bi-geo-alt field-icon"></i>
+                        <input type="text" name="location" class="form-control"
+                               placeholder="Hà Nội, TP.HCM, Đà Nẵng..."
+                               value="{{ request.form.get('location', '') }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Website công ty <span class="text-muted fw-normal">(tuỳ chọn)</span></label>
+                    <div class="input-icon-wrap">
+                        <i class="bi bi-globe2 field-icon"></i>
+                        <input type="url" name="company_website" class="form-control"
+                               placeholder="https://company.com"
+                               value="{{ request.form.get('company_website', '') }}">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Giới thiệu công ty <span class="text-muted fw-normal">(tuỳ chọn)</span></label>
+                    <textarea name="company_description" class="form-control"
+                              placeholder="Mô tả ngắn về lĩnh vực hoạt động, văn hoá công ty..."
+                              maxlength="1000">{{ request.form.get('company_description', '') }}</textarea>
+                    <small class="text-muted">Tối đa 1000 ký tự</small>
+                </div>
+
+                <button type="submit" class="btn-register btn mb-3">
+                    <i class="bi bi-send-fill me-2"></i>Gửi yêu cầu đăng ký
+                </button>
+
+                <p class="text-center text-muted mb-0" style="font-size:.88rem;">
+                    Đã có tài khoản?
+                    <a href="{{ url_for('employer.login') }}"
+                       class="fw-semibold text-decoration-none" style="color:#3a7734;">
+                        Đăng nhập tại đây
+                    </a>
+                </p>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const pwInput      = document.getElementById('password');
+const strengthFill = document.getElementById('strengthFill');
+const strengthText = document.getElementById('strengthText');
+const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+const labels = ['Yếu','Trung bình','Khá','Mạnh'];
+
+pwInput.addEventListener('input', () => {
+    const val = pwInput.value;
+    let score = 0;
+    if (val.length >= 8)          score++;
+    if (/[A-Z]/.test(val))        score++;
+    if (/[0-9]/.test(val))        score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const pct = val.length === 0 ? 0 : Math.max(1, score) * 25;
+    strengthFill.style.width      = pct + '%';
+    strengthFill.style.background = colors[Math.max(0, score - 1)];
+    strengthText.textContent       = val.length ? labels[Math.max(0, score - 1)] : '';
+    strengthText.style.color       = colors[Math.max(0, score - 1)];
+});
+
+const confirmPw  = document.getElementById('confirmPassword');
+const pwMismatch = document.getElementById('pwMismatch');
+function checkMatch() {
+    if (!confirmPw.value.length) { pwMismatch.classList.add('d-none'); return; }
+    pwMismatch.classList.toggle('d-none', pwInput.value === confirmPw.value);
+}
+pwInput.addEventListener('input', checkMatch);
+confirmPw.addEventListener('input', checkMatch);
+
+document.getElementById('registerForm').addEventListener('submit', e => {
+    if (pwInput.value !== confirmPw.value) {
+        e.preventDefault();
+        pwMismatch.classList.remove('d-none');
+        confirmPw.focus();
+    }
+});
+</script>
+{% endblock %}
