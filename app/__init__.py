@@ -20,10 +20,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(job_bp)
     app.register_blueprint(cv_upload_bp)
-<<<<<<< HEAD
     app.register_blueprint(employer_bp)
-=======
     app.register_blueprint(employer_job_bp)
->>>>>>> feature/JHQ-25
 
     return app
