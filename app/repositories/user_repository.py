@@ -26,3 +26,4 @@ class UserRepository:
 
         user.avatar_url = avatar_url
         db.session.commit()
+        return user

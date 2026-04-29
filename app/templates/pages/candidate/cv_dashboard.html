@@ -30,8 +30,8 @@
     <div class="row g-4">
 
         {% for cv in online_cvs %}
-            <div class="col-lg-4 col-md-6">
-               <div class="cv-card p-4 h-100">
+        <div class="col-lg-4 col-md-6">
+            <div class="cv-card p-4 h-100">
 
                 <!-- CV TITLE -->
                 <h5 class="fw-semibold mb-2 text-dark">
@@ -45,22 +45,16 @@
 
                 <!-- ACTIONS -->
                 <div class="cv-actions">
-                    <a href="{{ url_for('candidate.view_cv', cv_id=cv.id) }}"
-                       class="btn btn-sm btn-dark">
+                    <a href="{{ url_for('candidate.view_cv', cv_id=cv.id) }}" class="btn btn-sm btn-dark">
                         View
                     </a>
 
-                    <a href="{{ url_for('candidate.edit_cv', cv_id=cv.id) }}"
-                       class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ url_for('candidate.edit_cv', cv_id=cv.id) }}" class="btn btn-sm btn-outline-secondary">
                         Edit
                     </a>
 
-                    <button type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteModal"
-                            data-cv-id="{{ cv.id }}"
-                            data-cv-title="{{ cv.title }}">
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                        data-bs-target="#deleteModal" data-cv-id="{{ cv.id }}" data-cv-title="{{ cv.title }}">
                         Delete
                     </button>
                 </div>
@@ -135,32 +129,32 @@
 
 <style>
     body {
-    background-color: #f5f5f5;
-}
+        background-color: #f5f5f5;
+    }
 
-.cv-card {
-    background: #ffffff;
-    border-radius: 14px;
-    border: 1px solid #e8e8e8;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-}
+    .cv-card {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e8e8e8;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
 
-.cv-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
+    .cv-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
 
-.cv-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+    .cv-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
 
-.empty-icon {
-    font-size: 70px;
-    opacity: 0.4;
-}
+    .empty-icon {
+        font-size: 70px;
+        opacity: 0.4;
+    }
 </style>
 
 {% endblock %}

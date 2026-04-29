@@ -1,0 +1,337 @@
+{% extends "layouts/base.html" %}
+{% block title %}Explore Career Opportunities{% endblock %}
+
+{% block content %}
+
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-5 fw-bold text-white mb-2">Find Your Dream Career</h1>
+        <p class="lead text-white-50 mb-5">Connect with the best companies around the world.</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <form method="GET" action="{{ url_for('jobs.job_list') }}" id="searchForm" class="search-card p-2">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4 border-start d-none d-md-block">
+                        <div class="input-group input-group-lg border-0">
+                            <span class="input-group-text bg-transparent border-0">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                            </span>
+                            <input type="text" name="location" list="locationOptions"
+                                class="form-control border-0 fs-6 shadow-none" placeholder="City, location..."
+                                value="{{ filters.location or '' }}" autocomplete="off">
+
+                            <datalist id="locationOptions">
+                                {% for loc in locations %}
+                                <option value="{{ loc }}">
+                                    {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="input-group input-group-lg border-0">
+                            <span class="input-group-text bg-transparent border-0"><i
+                                    class="bi bi-search text-primary"></i></span>
+                            <input type="text" name="keyword" class="form-control border-0 fs-6 shadow-none"
+                                placeholder="Job title, keywords, or company" value="{{ filters.keyword }}">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100 btn-lg rounded-pill fw-bold"
+                            style="background-color: #3A7734">
+                            Find Jobs
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm filter-card sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold mb-0">Filters</h6>
+                        <a href="{{ url_for('jobs.job_list') }}" class="text-decoration-none small">Clear All</a>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="filter-label fw-bold text-uppercase mb-3 d-block">Monthly Salary Range</label>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <input type="number" name="salary_min" form="searchForm"
+                                class="form-control form-control-sm border-light bg-light" placeholder="Min"
+                                value="{{ filters.salary_min }}">
+                            <span class="text-muted">-</span>
+                            <input type="number" name="salary_max" form="searchForm"
+                                class="form-control form-control-sm border-light bg-light" placeholder="Max"
+                                value="{{ filters.salary_max }}">
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="filter-label fw-bold text-uppercase mb-3 d-block">Max Experience</label>
+                        <select name="experience" form="searchForm" class="form-select border-light bg-light rounded-3">
+                            <option value="">No limit</option>
+                            <option value="1" {% if filters.experience=='1' %}selected{% endif %}>Under 1 year</option>
+                            <option value="3" {% if filters.experience=='3' %}selected{% endif %}>Under 3 years</option>
+                            <option value="5" {% if filters.experience=='5' %}selected{% endif %}>Under 5 years</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" form="searchForm" class="btn btn-dark w-100 btn-apply-filter fw-bold">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1">Recommended for you</h4>
+                    <p class="text-muted mb-0 small">Showing {{ pagination.total }} active positions</p>
+                </div>
+                <div class="d-none d-md-flex gap-2">
+                    {% if filters.keyword %}
+                    <span class="badge bg-light text-dark border p-2 px-3 rounded-pill">"{{ filters.keyword }}"</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if jobs %}
+            <div class="row g-3">
+                {% for job in jobs %}
+                <div class="col-12">
+                    <div class="card job-card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <div class="row align-items-start">
+                                <div class="col-auto">
+                                    <div class="company-logo-box">
+                                        {{ job.employer.company_name[0] | upper }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="fw-bold mb-1">
+                                            <a href="{{ url_for('jobs.job_detail', job_id=job.id) }}"
+                                                class="text-dark text-decoration-none">
+                                                {{ job.title }}
+                                            </a>
+                                        </h5>
+                                        <span class="salary-badge small">
+                                            <i class="bi bi-currency-dollar me-1"></i>
+                                            {% if job.salary_min and job.salary_max %}
+                                            {{ job.salary_min }} - {{ job.salary_max }}
+                                            {% else %}
+                                            Negotiable
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <p class="text-primary fw-medium mb-3">{{ job.employer.company_name }}</p>
+
+                                    <div class="d-flex flex-wrap gap-3 mb-3">
+                                        <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ job.location
+                                            or 'Remote' }}</span>
+                                        <span class="text-muted small"><i class="bi bi-briefcase me-1"></i>{{
+                                            job.experience_required or '0' }}+ Years</span>
+                                        <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{
+                                            job.created_at.strftime('%b %d, %Y') }}</span>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <p class="text-muted small mb-0 d-none d-md-block">{{ (job.description or
+                                            '')[:140] }}...</p>
+                                        <div class="ms-auto">
+                                            <a href="{{ url_for('jobs.job_detail', job_id=job.id) }}"
+                                                class="btn btn-outline-primary rounded-pill px-4 btn-sm">Details</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        {% for js in job.skills %}
+                                        <span class="badge bg-secondary-subtle text-secondary fw-normal rounded-pill"
+                                            style="font-size: 0.9rem; background-color: #b0d4b8">
+                                            {{ js.skill.name }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% macro page_url(p) %}
+            ?keyword={{ filters.keyword | urlencode }}&location={{ filters.location | urlencode }}&salary_min={{
+            filters.salary_min }}&salary_max={{ filters.salary_max }}&experience={{ filters.experience }}&page={{ p }}
+            {% endmacro %}
+
+            {% if pagination.pages > 1 %}
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center">
+
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ page_url(pagination.page - 1) }}">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </li>
+
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ page_url(p) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ page_url(pagination.page + 1) }}">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="card border-0 shadow-sm rounded-4 text-center py-5 mt-4">
+                <div class="card-body">
+                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80"
+                        class="mb-4 opacity-50" alt="no results">
+                    <h5 class="fw-bold">No jobs found matching your criteria</h5>
+                    <p class="text-muted">Try broadening your search or adjusting the filters.</p>
+                    <a href="{{ url_for('jobs.job_list') }}" class="btn btn-primary rounded-pill px-4 mt-2">Browse All
+                        Jobs</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --primary-gradient: linear-gradient(135deg, #b0d4b8 0%, #5b7d6f 100%);
+    }
+
+    .hero-section {
+        background: var(--primary-gradient);
+        padding: 80px 0 100px 0;
+        margin-bottom: -60px;
+        /* Tạo hiệu ứng search bar đè lên */
+    }
+
+    .search-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+    }
+
+    .filter-card {
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .job-card {
+        border-radius: 16px;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #fff;
+    }
+
+    .job-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06) !important;
+        border-color: #5b7d6f;
+    }
+
+    .company-logo-box {
+        width: 64px;
+        height: 64px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #11557C;
+        font-size: 1.5rem;
+        border: 1px solid #eee;
+    }
+
+    .salary-badge {
+        background: #e8f3ee;
+        color: #198754;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        border: none;
+        color: #444;
+        font-weight: 500;
+    }
+
+    .pagination .active .page-link {
+        background: #5b7d6f;
+        box-shadow: 0 4px 10px rgba(133, 182, 65, 0.3);
+    }
+
+    .filter-label {
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: #adb5bd;
+    }
+
+    .btn-apply-filter {
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .salary-chip {
+        transition: all 0.2s;
+        border: 1px solid #dee2e6;
+        color: #6c757d;
+        background: transparent;
+    }
+
+    .salary-chip:hover,
+    .salary-chip.active {
+        background: #5b7d6f !important;
+        color: white !important;
+        border-color: #5b7d6f;
+    }
+</style>
+
+<script>
+    // Logic chip lương vẫn giữ nguyên nhưng thêm class active
+    document.querySelectorAll('.salary-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const form = document.getElementById('searchForm');
+            form.querySelector('[name="salary_min"]').value = btn.dataset.min;
+            form.querySelector('[name="salary_max"]').value = btn.dataset.max;
+
+            document.querySelectorAll('.salary-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

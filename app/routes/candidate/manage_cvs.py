@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash, render_template_string
+from flask import Blueprint, render_template, redirect, url_for, request, flash, render_template_string
 from app.common.decorators import login_required
 from app.common.info import get_current_candidate
 from common.CVFormBuilder import CVFormBuilder
@@ -7,7 +7,7 @@ from app.services.candidate.cv_service import CVService
 from app.services.candidate.cv_skill_service import CVSkillService
 from app.services.candidate.cv_template_service import CvTemplateService
 from app.services.candidate.skill_service import SkillService
-from app.services.candidate.user_service import UserService
+from common.info import get_current_user
 
 candidate_bp = Blueprint("candidate", __name__, url_prefix="/candidate")
 
@@ -30,8 +30,8 @@ def choose_template():
 @candidate_bp.route("/create-cv-by-template/<int:template_id>", methods=["GET", "POST"])
 def create_cv_by_template(template_id):
 
-    candidate_id = session.get("user_id")
-    user = UserService.get_user_by_id(candidate_id)
+    candidate_id = get_current_candidate().id
+    user = get_current_user()
 
     if request.method == "POST":
 
@@ -141,4 +141,4 @@ def delete_cv(cv_id):
 @candidate_bp.route("/", methods=["GET"])
 @login_required
 def upload_cv():
-    return render_template("/pages/home.html")
+    return redirect(url_for("cv_upload.index"))
