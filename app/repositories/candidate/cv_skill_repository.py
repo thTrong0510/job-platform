@@ -1,6 +1,5 @@
 from app.models.skill import CVSkill
-from app import db
-
+from app.extensions import db
 
 class CVSkillRepository:
 

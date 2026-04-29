@@ -1,5 +1,5 @@
-from repositories.candidate.cv_skill_repository import CVSkillRepository
-from repositories.candidate.skill_repository import SkillRepository
+from app.repositories.candidate.cv_skill_repository import CVSkillRepository
+from app.repositories.candidate.skill_repository import SkillRepository
 
 
 class CVSkillService:

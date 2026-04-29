@@ -1,7 +1,5 @@
 from app.repositories.user_repository import UserRepository
-
-from common.CloudinaryUtil import CloudinaryUtil
-
+from app.common.CloudinaryUtil import CloudinaryUtil
 
 class UserService:
     def save_user(user):

@@ -2,9 +2,9 @@ from app import db
 from app.models.cv import CV
 from app.models.cv import CVTemplate
 
-from common.CVFormBuilder import CVFormBuilder
-from repositories.candidate.cv_repository import CVRepository
-from repositories.candidate.cv_skill_repository import CVSkillRepository
+from app.common.CVFormBuilder import CVFormBuilder
+from app.repositories.candidate.cv_repository import CVRepository
+from app.repositories.candidate.cv_skill_repository import CVSkillRepository
 
 
 class CVService:

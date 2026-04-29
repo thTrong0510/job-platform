@@ -1,5 +1,4 @@
-from . import db
-from sqlalchemy import Enum
+from app.extensions import db
 
 class Skill(db.Model):
     __tablename__ = "skills"

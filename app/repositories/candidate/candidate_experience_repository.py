@@ -1,4 +1,4 @@
-from app import db
+from app.extensions import db
 from app.models.candidateExperience import CandidateExperience
 import re
 

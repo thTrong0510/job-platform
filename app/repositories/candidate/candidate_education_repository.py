@@ -1,10 +1,7 @@
-from app import db
+from app.extensions import db
 from app.models.candidateEducation import CandidateEducation
 import re
-
 from app.models.candidate import Candidate
-
-
 class CandidateEducationRepository:
 
     @staticmethod

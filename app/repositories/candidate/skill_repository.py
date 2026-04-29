@@ -1,6 +1,5 @@
 from app.models.skill import Skill
 
-
 class SkillRepository:
     @staticmethod
     def get_all_skills():

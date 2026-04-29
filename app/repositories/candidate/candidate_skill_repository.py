@@ -1,4 +1,4 @@
-from app import db
+from app.extensions import db
 from app.models.skill import CandidateSkill
 from app.models.candidate import Candidate
 

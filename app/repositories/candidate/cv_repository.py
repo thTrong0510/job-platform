@@ -1,6 +1,5 @@
 from app.models.cv import CV
-from app import db
-
+from app.extensions import db
 
 class CVRepository:
 

@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, session, abort, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from app.services.candidate.candidate_service import CandidateService
 from app.common.decorators import login_required
-from common.info import get_current_candidate
-from services.candidate.skill_service import SkillService
-from services.candidate.user_service import UserService
+from app.common.info import get_current_candidate
+from app.services.candidate.skill_service import SkillService
+from app.services.candidate.user_service import UserService
 
 candidate_profile_bp = Blueprint("candidate_profile", __name__, url_prefix="/candidate")
 

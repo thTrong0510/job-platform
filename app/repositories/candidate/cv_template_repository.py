@@ -1,6 +1,5 @@
 from app.models.cv import CVTemplate
 
-
 class CVTemplateRepository:
 
     @staticmethod

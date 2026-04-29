@@ -1,4 +1,4 @@
-from . import db
+from app.extensions import db
 from sqlalchemy import Enum
 from sqlalchemy.sql import func
 from werkzeug.security import check_password_hash, generate_password_hash

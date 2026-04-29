@@ -1,4 +1,4 @@
-from repositories.candidate.cv_template_repository import CVTemplateRepository
+from app.repositories.candidate.cv_template_repository import CVTemplateRepository
 
 class CvTemplateService:
     @staticmethod

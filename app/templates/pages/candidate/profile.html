@@ -46,6 +46,21 @@
 .avatar-wrapper:hover .avatar-img {
     transform: scale(1.01);
 }
+
+.skill-badge {
+    background: #f1f1f1;
+    color: #333;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #e2e2e2;
+    transition: all 0.2s ease;
+}
+
+.skill-badge:hover {
+    background: #e8e8e8;
+}
 </style>
 {% endblock %}
 
@@ -119,17 +134,17 @@
                         </a>
                     </div>
 
-                    {% if candidate.skills %}
+                {% if candidate.skills %}
+                <div class="d-flex flex-wrap gap-2">
                     {% for cs in candidate.skills %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <strong>{{ cs.skill.name }}</strong>
-                        </div>
-                    </div>
+                        <span class="skill-badge">
+                            {{ cs.skill.name }}
+                        </span>
                     {% endfor %}
-                    {% else %}
-                    <p class="text-muted">Chưa cập nhật kỹ năng</p>
-                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-muted">Chưa cập nhật kỹ năng</p>
+                {% endif %}
                 </div>
             </div>
         </div>

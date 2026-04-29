@@ -1,4 +1,4 @@
-from . import db
+from app.extensions import db
 from sqlalchemy.sql import func
 
 class JobRecommendation(db.Model):

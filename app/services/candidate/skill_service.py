@@ -1,4 +1,4 @@
-from repositories.candidate.skill_repository import SkillRepository
+from app.repositories.candidate.skill_repository import SkillRepository
 
 
 class SkillService:

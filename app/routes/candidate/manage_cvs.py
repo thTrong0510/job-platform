@@ -2,12 +2,12 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 from app.common.decorators import login_required
 from app.common.info import get_current_candidate
 from common.CVFormBuilder import CVFormBuilder
-from services.candidate.candidate_service import CandidateService
-from services.candidate.cv_service import CVService
-from services.candidate.cv_skill_service import CVSkillService
-from services.candidate.cv_template_service import CvTemplateService
-from services.candidate.skill_service import SkillService
-from services.candidate.user_service import UserService
+from app.services.candidate.candidate_service import CandidateService
+from app.services.candidate.cv_service import CVService
+from app.services.candidate.cv_skill_service import CVSkillService
+from app.services.candidate.cv_template_service import CvTemplateService
+from app.services.candidate.skill_service import SkillService
+from app.services.candidate.user_service import UserService
 
 candidate_bp = Blueprint("candidate", __name__, url_prefix="/candidate")
 

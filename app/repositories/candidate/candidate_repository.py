@@ -1,9 +1,7 @@
 from sqlalchemy.orm import joinedload
-
 from app.extensions import db
 from app.models.candidate import Candidate
 from app.models.skill import CandidateSkill
-
 
 class CandidateRepository:
 
