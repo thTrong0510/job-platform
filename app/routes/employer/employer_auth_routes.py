@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.services.employer.employer_auth_service import EmployerAuthService
-from common.decorators import employer_required
-from common.info import get_current_user
+from app.common.decorators import employer_required
+from app.common.info import get_current_user
 
 employer_bp = Blueprint("employer", __name__, url_prefix="/employer")
 

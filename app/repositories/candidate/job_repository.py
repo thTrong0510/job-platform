@@ -1,6 +1,5 @@
-from datetime import datetime
-
-from app.models import Employer, Skill, JobSkill
+from app.models.employer import Employer
+from app.models.skill import Skill, JobSkill
 from app.models.job import Job
 from sqlalchemy import or_
 from app.extensions import db

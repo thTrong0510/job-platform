@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.common.decorators import login_required
 from app.services.candidate.cv_upload_service import CVUploadService
-from common.info import get_current_user
+from app.common.info import get_current_user
 
 cv_upload_bp = Blueprint("cv_upload", __name__, url_prefix="/candidate/cv-upload")
 

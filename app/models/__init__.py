@@ -1,4 +1,3 @@
-from app.extensions import db
 # import all models to register metadata
 from .user import User
 from .candidate import Candidate
@@ -10,3 +9,4 @@ from .application import Application
 from .recommendation import JobRecommendation
 from .candidateEducation import CandidateEducation
 from .candidateExperience import CandidateExperience
+from .notification import Notification

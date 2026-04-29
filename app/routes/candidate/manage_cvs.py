@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, render_template_string
 from app.common.decorators import login_required
 from app.common.info import get_current_candidate
-from common.CVFormBuilder import CVFormBuilder
+from app.common.CVFormBuilder import CVFormBuilder
 from app.services.candidate.candidate_service import CandidateService
 from app.services.candidate.cv_service import CVService
 from app.services.candidate.cv_skill_service import CVSkillService
 from app.services.candidate.cv_template_service import CvTemplateService
 from app.services.candidate.skill_service import SkillService
-from common.info import get_current_user
+from app.common.info import get_current_user
 
 candidate_bp = Blueprint("candidate", __name__, url_prefix="/candidate")
 

@@ -3,7 +3,7 @@ from flask import Blueprint, request, render_template, session, flash, url_for, 
 
 from app.repositories.employer.skill_repository import SkillRepository
 from app.services.employer.job_service import JobService
-from common.info import get_current_employer
+from app.common.info import get_current_employer
 
 employer_job_bp = Blueprint('employer_jobs',__name__, url_prefix='/employer/jobs')
 
