@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nhà tuyển dụng – JobPlatform{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --ep:       #3a7734;
+            --ep-dark:  #2d4a3e;
+            --ep-mid:   #5b7d6f;
+            --ep-light: #e8f3ee;
+            --ep-pale:  #b0d4b8;
+            --sb-w:     248px;
+        }
+
+        /* ── Topbar ── */
+        .emp-topbar {
+            background: var(--ep-dark);
+            height: 60px;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1030;
+            display: flex; align-items: center; padding: 0 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.25);
+        }
+        .emp-brand {
+            font-weight: 800; font-size: 1.15rem; color: #fff;
+            text-decoration: none; letter-spacing: .02em; margin-right: auto;
+        }
+        .emp-brand span { color: var(--ep-pale); }
+        .emp-badge {
+            font-size: .6rem; font-weight: 700; letter-spacing: .06em;
+            background: var(--ep); border-radius: 4px;
+            padding: 2px 7px; vertical-align: middle; margin-left: 8px;
+        }
+        .topbar-user { color: rgba(255,255,255,.75); font-size: .85rem; }
+
+        /* ── Sidebar ── */
+        .emp-sidebar {
+            width: var(--sb-w);
+            background: #fff;
+            border-right: 1px solid #e5e7eb;
+            position: fixed; top: 60px; bottom: 0; left: 0;
+            overflow-y: auto; z-index: 1020;
+            padding-bottom: 32px;
+            display: flex; flex-direction: column;
+        }
+
+        .sb-company {
+            padding: 20px 16px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+        }
+        .sb-avatar {
+            width: 56px; height: 56px; border-radius: 12px;
+            background: var(--ep-light); color: var(--ep);
+            font-weight: 800; font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px; border: 2px solid var(--ep-pale);
+        }
+
+        .sb-section {
+            font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+            text-transform: uppercase; color: #9ca3af;
+            padding: 18px 20px 6px; margin: 0;
+        }
+
+        .sb-link {
+            display: flex; align-items: center; gap: 11px;
+            padding: 10px 20px; color: #374151;
+            font-size: .88rem; font-weight: 500;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+        .sb-link i { font-size: 1rem; color: #9ca3af; width: 18px; text-align: center; flex-shrink: 0; }
+        .sb-link:hover,
+        .sb-link.active {
+            background: var(--ep-light);
+            color: var(--ep);
+            border-left-color: var(--ep);
+        }
+        .sb-link:hover i, .sb-link.active i { color: var(--ep); }
+        .sb-link.active { font-weight: 600; }
+        .sb-link .soon {
+            margin-left: auto; font-size: .6rem; font-weight: 600;
+            background: #f3f4f6; color: #9ca3af;
+            border-radius: 4px; padding: 1px 6px;
+        }
+        .sb-link.danger { color: #dc2626; }
+        .sb-link.danger i { color: #dc2626; }
+        .sb-link.danger:hover { background: #fef2f2; border-left-color: #dc2626; }
+
+        /* ── Main area ── */
+        .emp-main {
+            margin-left: var(--sb-w);
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+            background: #f3f4f6;
+            padding: 32px;
+        }
+
+        /* ── Flash toast ── */
+        .flash-toast {
+            position: fixed; top: 70px; right: 20px;
+            z-index: 1060; min-width: 320px; max-width: 420px;
+            animation: slideIn .3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{# ── Topbar ── #}
+<header class="emp-topbar">
+    <a class="emp-brand" href="{{ url_for('employer.home') }}">
+        Job<span>Platform</span>
+        <span class="emp-badge">EMPLOYER</span>
+    </a>
+
+    {% if session.get("user_id") and session.get("user_role") == "EMPLOYER" %}
+        <span class="topbar-user d-none d-md-inline me-3">
+            <i class="bi bi-person-circle me-1"></i>{{ session.get("user_email") }}
+        </span>
+        <a href="{{ url_for('employer.logout') }}"
+           class="btn btn-sm btn-outline-light rounded-pill px-3">
+            <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+        </a>
+    {% else %}
+        <a href="{{ url_for('employer.login') }}"
+           class="btn btn-sm btn-outline-light rounded-pill px-3 me-2">Đăng nhập</a>
+        <a href="{{ url_for('employer.register') }}"
+           class="btn btn-sm rounded-pill px-3 fw-semibold"
+           style="background:var(--ep-pale); color:var(--ep-dark);">Đăng ký</a>
+    {% endif %}
+</header>
+
+{# ── Sidebar ── #}
+{% if session.get("user_id") and session.get("user_role") == "EMPLOYER" %}
+<aside class="emp-sidebar">
+
+    <div class="sb-company">
+        <div class="sb-avatar">
+            {% if employer is defined and employer %}
+                {{ employer.company_name[0] | upper }}
+            {% else %}E{% endif %}
+        </div>
+        <p class="fw-bold mb-0" style="font-size:.88rem; line-height:1.3;">
+            {% if employer is defined and employer %}
+                {{ employer.company_name }}
+            {% else %}Công ty của bạn{% endif %}
+        </p>
+        <span class="badge mt-1"
+              style="background:#d1f0e0; color:#0b6e37; font-size:.68rem;">
+            <i class="bi bi-patch-check-fill me-1"></i>Đã xác thực
+        </span>
+    </div>
+
+    <p class="sb-section">Tổng quan</p>
+    <a href="{{ url_for('employer.dashboard') }}"
+       class="sb-link {% if request.endpoint == 'employer.dashboard' %}active{% endif %}">
+        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+    </a>
+
+    <p class="sb-section">Tuyển dụng</p>
+    <a href="#" class="sb-link">
+        <i class="bi bi-plus-circle-fill"></i> Đăng tin tuyển dụng
+        <span class="soon">Sắp ra mắt</span>
+    </a>
+    <a href="#" class="sb-link">
+        <i class="bi bi-briefcase-fill"></i> Tin tuyển dụng của tôi
+        <span class="soon">Sắp ra mắt</span>
+    </a>
+    <a href="#" class="sb-link">
+        <i class="bi bi-people-fill"></i> Quản lý hồ sơ ứng tuyển
+        <span class="soon">Sắp ra mắt</span>
+    </a>
+
+    <p class="sb-section">Tài khoản</p>
+    <a href="#" class="sb-link">
+        <i class="bi bi-building-fill"></i> Hồ sơ công ty
+        <span class="soon">Sắp ra mắt</span>
+    </a>
+    <a href="{{ url_for('employer.logout') }}" class="sb-link danger">
+        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+    </a>
+
+</aside>
+{% endif %}
+
+{# ── Flash messages ── #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible flash-toast shadow" role="alert">
+            {% if category == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+            {% elif category == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endwith %}
+
+{# ── Content ── #}
+<main class="{% if session.get('user_id') and session.get('user_role') == 'EMPLOYER' %}emp-main{% endif %}">
+    {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelectorAll('.flash-toast').forEach(el => {
+        setTimeout(() => { try { new bootstrap.Alert(el).close(); } catch(e){} }, 5000);
+    });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
