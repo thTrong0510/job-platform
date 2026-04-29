@@ -16,3 +16,14 @@ class UserRepository:
         db.session.add(user)
         db.session.commit()
         return user
+
+    @staticmethod
+    def update_avatar(user_id, avatar_url):
+        user = User.query.get(user_id)
+
+        if not user:
+            raise Exception("User not found")
+
+        user.avatar_url = avatar_url
+        db.session.commit()
+        return user

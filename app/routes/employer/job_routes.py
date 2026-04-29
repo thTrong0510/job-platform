@@ -3,16 +3,14 @@ from flask import Blueprint, request, render_template, session, flash, url_for, 
 
 from app.repositories.employer.skill_repository import SkillRepository
 from app.services.employer.job_service import JobService
+from common.info import get_current_employer
 
 employer_job_bp = Blueprint('employer_jobs',__name__, url_prefix='/employer/jobs')
-
-def get_employer_id():
-    return session.get("employer_id")
 
 @employer_job_bp.route('/create', methods=['GET', 'POST'])
 @employer_required
 def create():
-    employer_id = get_employer_id()
+    employer_id = get_current_employer().id
     if not employer_id:
         flash("Unauthorized", "danger")
         return redirect(url_for('auth.login'))
@@ -38,7 +36,7 @@ def create():
 @employer_job_bp.route("/", methods=["GET"])
 @employer_required
 def index():
-    employer_id = get_employer_id()
+    employer_id = get_current_employer().id
     keyword = request.args.get("keyword", "").strip()
     status = request.args.get("status", "")
 
@@ -61,7 +59,7 @@ def index():
 @employer_job_bp.route("/<int:job_id>", methods=["GET"])
 @employer_required
 def detail(job_id):
-    employer_id = get_employer_id()
+    employer_id = get_current_employer().id
     job, skills = JobService.get_job_detail(job_id, employer_id=employer_id)
 
     if not job:

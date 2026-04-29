@@ -1,65 +1,69 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/employer_base.html" %}
 
 {% block title %}Đăng tin tuyển dụng mới{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4 py-4" style="max-width: 900px;">
 
-  <h2 class="fw-bold mb-1">Đăng tin tuyển dụng mới</h2>
-  <p class="text-muted mb-4 small">Điền đầy đủ thông tin để thu hút ứng viên phù hợp nhất</p>
+	<h2 class="fw-bold mb-1">Đăng tin tuyển dụng mới</h2>
+	<p class="text-muted mb-4 small">Điền đầy đủ thông tin để thu hút ứng viên phù hợp nhất</p>
 
-  <form method="POST" action="{{ url_for('employer_jobs.create') }}">
+	<form method="POST" action="{{ url_for('employer_jobs.create') }}">
 
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-        <h4 class="fw-semibold mb-0">
-          <i class="bi bi-info-circle text-primary me-2"></i>Thông tin cơ bản
-        </h4>
-      </div>
-      <div class="card-body px-4 pb-4">
-        <div class="mb-3">
-          <label class="form-label fw-medium">Vị trí tuyển dụng<span class="text-danger">*</span></label>
-          <input type="text" name="title" class="form-control" value="{{ form.title if form else '' }}"
-                 placeholder="VD: Senior Backend Developer, Marketing Manager..." required >
-        </div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label fw-medium">Địa điểm</label>
-                <input type="text" name="location" class="form-control" value="{{ form.location if form else '' }}"
-                       placeholder="Tỉnh/thành phố ..VD: HCM, Ha Noi, Remote...">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-medium">Hạn nộp hồ sơ <span class="text-danger">*</span></label>
-                <input type="date" name="end_date" class="form-control" value="{{ form.end_date if form else '' }}" required>
-            </div>
+		<div class="card border-0 shadow-sm mb-4">
+			<div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+				<h4 class="fw-semibold mb-0">
+					<i class="bi bi-info-circle text-primary me-2"></i>Thông tin cơ bản
+				</h4>
+			</div>
+			<div class="card-body px-4 pb-4">
+				<div class="mb-3">
+					<label class="form-label fw-medium">Vị trí tuyển dụng<span class="text-danger">*</span></label>
+					<input type="text" name="title" class="form-control" value="{{ form.title if form else '' }}"
+						placeholder="VD: Senior Backend Developer, Marketing Manager..." required>
+				</div>
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label class="form-label fw-medium">Địa điểm</label>
+						<input type="text" name="location" class="form-control"
+							value="{{ form.location if form else '' }}"
+							placeholder="Tỉnh/thành phố ..VD: HCM, Ha Noi, Remote...">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label fw-medium">Hạn nộp hồ sơ <span class="text-danger">*</span></label>
+						<input type="date" name="end_date" class="form-control"
+							value="{{ form.end_date if form else '' }}" required>
+					</div>
 
 
-            <div class="col-md-4">
-                <label class="form-label fw-medium">Mức lương tối thiểu</label>
-                <input type="number" name="salary_min" class="form-control" value="{{ form.salary_min if form else '' }}" min="0" placeholder="VD: 1000.00">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-medium">Mức lương tối đa</label>
-                <input type="number" name="salary_max" class="form-control" value="{{ form.salary_max if form else '' }}" min="0" placeholder="VD: 2000.00">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-medium">Kinh nghiệm yêu cầu (năm)</label>
-                <input type="number" name="experience_required" class="form-control" value="{{ form.experience_required if form else '' }}" min="0" placeholder="0">
-            </div>
-        </div>
-      </div>
-    </div>
+					<div class="col-md-4">
+						<label class="form-label fw-medium">Mức lương tối thiểu</label>
+						<input type="number" name="salary_min" class="form-control"
+							value="{{ form.salary_min if form else '' }}" min="0" placeholder="VD: 1000.00">
+					</div>
+					<div class="col-md-4">
+						<label class="form-label fw-medium">Mức lương tối đa</label>
+						<input type="number" name="salary_max" class="form-control"
+							value="{{ form.salary_max if form else '' }}" min="0" placeholder="VD: 2000.00">
+					</div>
+					<div class="col-md-4">
+						<label class="form-label fw-medium">Kinh nghiệm yêu cầu (năm)</label>
+						<input type="number" name="experience_required" class="form-control"
+							value="{{ form.experience_required if form else '' }}" min="0" placeholder="0">
+					</div>
+				</div>
+			</div>
+		</div>
 
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-        <h4 class="fw-semibold mb-0">
-          <i class="bi bi-file-text text-primary me-2"></i>Mô tả công việc<span class="text-danger">*</span>
-        </h4>
-      </div>
-      <div class="card-body px-4 pb-4">
-        <div class="mb-0">
-          <textarea name="description" class="form-control" rows="8"
-            placeholder="Job Description:
+		<div class="card border-0 shadow-sm mb-4">
+			<div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+				<h4 class="fw-semibold mb-0">
+					<i class="bi bi-file-text text-primary me-2"></i>Mô tả công việc<span class="text-danger">*</span>
+				</h4>
+			</div>
+			<div class="card-body px-4 pb-4">
+				<div class="mb-0">
+					<textarea name="description" class="form-control" rows="8" placeholder="Job Description:
     - Develop and maintain web systems
     - Work with frontend/backend teams
 Requirements:
@@ -68,125 +72,124 @@ Requirements:
 Benefits:
     - Young, dynamic work environment
 Location: Center building, 123 Hoang Dieu Street, District 4, Ho Chi Minh City"
-            required>{{ form.description if form else '' }}</textarea>
-          <div class="form-text">Mô tả càng chi tiết, ứng viên càng dễ đánh giá sự phù hợp</div>
-        </div>
-      </div>
-    </div>
+						required>{{ form.description if form else '' }}</textarea>
+					<div class="form-text">Mô tả càng chi tiết, ứng viên càng dễ đánh giá sự phù hợp</div>
+				</div>
+			</div>
+		</div>
 
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-body p-4">
-        <div class="d-flex align-items-center justify-content-between mb-4" >
-          <h4 class="fw-semibold mb-0"><i class="bi bi-tags text-primary me-2"></i>Kỹ năng yêu cầu</h4>
-          <span class="badge bg-primary rounded-pill" id="selectedCount" >Đã chọn: 0</span>
-        </div>
+		<div class="card border-0 shadow-sm mb-4">
+			<div class="card-body p-4">
+				<div class="d-flex align-items-center justify-content-between mb-4">
+					<h4 class="fw-semibold mb-0"><i class="bi bi-tags text-primary me-2"></i>Kỹ năng yêu cầu</h4>
+					<span class="badge bg-primary rounded-pill" id="selectedCount">Đã chọn: 0</span>
+				</div>
 
-        <div id="selectedSkillsArea" class="row g-2 mb-3 p-3 bg-light rounded-3 d-none border border-dashed border-primary">
-            <div class="col-12 mb-2">
-                <small class="text-primary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 1px;">Kỹ năng đã chọn</small>
-            </div>
-            </div>
+				<div id="selectedSkillsArea"
+					class="row g-2 mb-3 p-3 bg-light rounded-3 d-none border border-dashed border-primary">
+					<div class="col-12 mb-2">
+						<small class="text-primary fw-bold text-uppercase"
+							style="font-size: 10px; letter-spacing: 1px;">Kỹ năng đã
+							chọn</small>
+					</div>
+				</div>
 
-        <div class="input-group mb-3">
-          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-          <input type="text" id="skillSearch" class="form-control border-start-0 ps-0" placeholder="Tìm kỹ năng khác ...">
-        </div>
+				<div class="input-group mb-3">
+					<span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+					<input type="text" id="skillSearch" class="form-control border-start-0 ps-0"
+						placeholder="Tìm kỹ năng khác ...">
+				</div>
 
-        <div id="skillList" class="row g-2 overflow-auto" style="max-height: 300px; padding-right: 5px;">
-          {% for skill in all_skills %}
-          <div class="col-md-6 skill-item" data-id="{{ skill.id }}" data-name="{{ skill.name | lower }}">
-            <div class="border rounded-3 p-3 skill-card h-100" id="card-{{ skill.id }}">
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="form-check mb-0 w-100 cursor-pointer">
-                  <input class="form-check-input skill-checkbox" type="checkbox"
-                         name="skills[]" value="{{ skill.id }}" id="skill-{{ skill.id }}"
-                         data-skill-name="{{ skill.name }}"
-                         {% if selected_skill_ids is defined and skill.id in selected_skill_ids %}
-                            checked
-                         {% endif %}
-                         onchange="handleSkillChange({{ skill.id }}, this.checked)">
-                  <label class="form-check-label fw-semibold ms-2 cursor-pointer" for="skill-{{ skill.id }}">
-                    {{ skill.name }}
-                  </label>
-                </div>
-              </div>
+				<div id="skillList" class="row g-2 overflow-auto" style="max-height: 300px; padding-right: 5px;">
+					{% for skill in all_skills %}
+					<div class="col-md-6 skill-item" data-id="{{ skill.id }}" data-name="{{ skill.name | lower }}">
+						<div class="border rounded-3 p-3 skill-card h-100" id="card-{{ skill.id }}">
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="form-check mb-0 w-100 cursor-pointer">
+									<input class="form-check-input skill-checkbox" type="checkbox" name="skills[]"
+										value="{{ skill.id }}" id="skill-{{ skill.id }}"
+										data-skill-name="{{ skill.name }}" {% if selected_skill_ids is defined and
+										skill.id in selected_skill_ids %} checked {% endif %}
+										onchange="handleSkillChange({{ skill.id }}, this.checked)">
+									<label class="form-check-label fw-semibold ms-2 cursor-pointer"
+										for="skill-{{ skill.id }}">
+										{{ skill.name }}
+									</label>
+								</div>
+							</div>
 
-              <div class="level-select mt-2 d-none" id="level-container-{{ skill.id }}">
-                <select name="levels[{{ skill.id }}]" class="form-select form-select-sm border-primary-subtle">
-                  <option value="BEGINNER">Cơ bản</option>
-                  <option value="INTERMEDIATE" selected>Trung cấp</option>
-                  <option value="ADVANCED">Nâng cao</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
+							<div class="level-select mt-2 d-none" id="level-container-{{ skill.id }}">
+							</div>
+						</div>
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
 
-    <div class="d-flex gap-2 justify-content-end">
-      <button type="submit" style="background-color: #3A7734; border-color: #3A7734 " class="btn btn-primary px-5">
-        <i class="bi bi-send me-1"></i>Post
-      </button>
-    </div>
-  </form>
+		<div class="d-flex gap-2 justify-content-end">
+			<button type="submit" style="background-color: #3A7734; border-color: #3A7734 "
+				class="btn btn-primary px-5">
+				<i class="bi bi-send me-1"></i>Post
+			</button>
+		</div>
+	</form>
 </div>
 
 <script>
-function handleSkillChange(skillId, isChecked) {
-    const skillItem = document.querySelector(`.skill-item[data-id="${skillId}"]`);
-    const selectedArea = document.getElementById('selectedSkillsArea');
-    const skillList = document.getElementById('skillList');
-    const levelContainer = document.getElementById(`level-container-${skillId}`);
-    const card = document.getElementById(`card-${skillId}`);
-    const selectedCountBadge = document.getElementById('selectedCount');
+	function handleSkillChange(skillId, isChecked) {
+		const skillItem = document.querySelector(`.skill-item[data-id="${skillId}"]`);
+		const selectedArea = document.getElementById('selectedSkillsArea');
+		const skillList = document.getElementById('skillList');
+		const levelContainer = document.getElementById(`level-container-${skillId}`);
+		const card = document.getElementById(`card-${skillId}`);
+		const selectedCountBadge = document.getElementById('selectedCount');
 
-    if (isChecked) {
-        levelContainer.classList.remove('d-none');
-        card.classList.add('active', 'border-primary', 'shadow-sm');
+		if (isChecked) {
+			levelContainer.classList.remove('d-none');
+			card.classList.add('active', 'border-primary', 'shadow-sm');
 
-        selectedArea.appendChild(skillItem);
-        selectedArea.classList.remove('d-none');
-    } else {
-        levelContainer.classList.add('d-none');
-        card.classList.remove('active', 'border-primary', 'shadow-sm');
+			selectedArea.appendChild(skillItem);
+			selectedArea.classList.remove('d-none');
+		} else {
+			levelContainer.classList.add('d-none');
+			card.classList.remove('active', 'border-primary', 'shadow-sm');
 
-        skillList.appendChild(skillItem);
+			skillList.appendChild(skillItem);
 
-        if (selectedArea.querySelectorAll('.skill-item').length === 0) {
-            selectedArea.classList.add('d-none');
-        }
-    }
+			if (selectedArea.querySelectorAll('.skill-item').length === 0) {
+				selectedArea.classList.add('d-none');
+			}
+		}
 
-    const count = selectedArea.querySelectorAll('.skill-item').length;
-    selectedCountBadge.innerText = `Selected: ${count}`;
-}
+		const count = selectedArea.querySelectorAll('.skill-item').length;
+		selectedCountBadge.innerText = `Selected: ${count}`;
+	}
 
-function debounce(func, delay) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), delay);
-  };
-}
+	function debounce(func, delay) {
+		let timeout;
+		return function (...args) {
+			clearTimeout(timeout);
+			timeout = setTimeout(() => func.apply(this, args), delay);
+		};
+	}
 
-const handleSearch = function() {
-    const q = this.value.toLowerCase();
-    document.getElementById('skillList').querySelectorAll('.skill-item').forEach(item => {
-        const name = item.getAttribute('data-name').toLowerCase();
-        item.style.display = name.includes(q) ? '' : 'none';
-  });
-}
+	const handleSearch = function () {
+		const q = this.value.toLowerCase();
+		document.getElementById('skillList').querySelectorAll('.skill-item').forEach(item => {
+			const name = item.getAttribute('data-name').toLowerCase();
+			item.style.display = name.includes(q) ? '' : 'none';
+		});
+	}
 
-document.getElementById('skillSearch').addEventListener('input', debounce(handleSearch, 300))
+	document.getElementById('skillSearch').addEventListener('input', debounce(handleSearch, 300))
 
-document.addEventListener('DOMContentLoaded', function() {
-    const checkedSkills = document.querySelectorAll('.skill-checkbox:checked');
-    checkedSkills.forEach(checkbox => {
-        handleSkillChange(checkbox.value, true);
-    });
-});
+	document.addEventListener('DOMContentLoaded', function () {
+		const checkedSkills = document.querySelectorAll('.skill-checkbox:checked');
+		checkedSkills.forEach(checkbox => {
+			handleSkillChange(checkbox.value, true);
+		});
+	});
 
 </script>
 {% endblock %}

@@ -11,7 +11,6 @@ class JobService:
         for skill_id in skill_ids:
             result.append({
                 "skill_id": int(skill_id),
-                "required_level": form.get(f"levels[{skill_id}]", "INTERMEDIATE")
             })
         return result
 

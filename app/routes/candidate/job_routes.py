@@ -17,12 +17,6 @@ def job_list():
     pagination = JobService.search_job(filters, page)
     options = JobService.get_filter_options()
 
-    for job in pagination.items:
-        print("JOB:", job.id)
-        print("SKILLS:", job.skills)
-
-    print("PAGE: ", page)
-
     return render_template('pages/candidate/job_list.html',
                            jobs=pagination.items,
                            pagination=pagination,

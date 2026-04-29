@@ -1,0 +1,110 @@
+{% extends "layouts/base.html" %}
+{% block title %}Choose CV Template{% endblock %}
+
+{% block content %}
+
+<style>
+    .template-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #ffffff;
+    }
+
+    .template-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    .template-img-wrapper {
+        height: 360px;
+        background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        overflow: hidden;
+        padding-top: 15px;
+    }
+
+    .template-img {
+        width: 80%;
+        transition: transform 0.4s ease;
+    }
+
+    .template-card:hover .template-img {
+        transform: scale(1.15);
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #4e73df, #1cc88a);
+        border: none;
+        border-radius: 30px;
+        padding: 10px;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+
+    .btn-gradient:hover {
+        opacity: 0.9;
+    }
+
+    .section-title {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="container my-5">
+
+    <div class="text-center mb-5">
+        <h2 class="section-title">Choose Your CV Template</h2>
+        <p class="text-muted">Select a professional template to start building your CV</p>
+    </div>
+
+    <div class="row g-4">
+
+        {% for t in templates %}
+        <div class="col-lg-4 col-md-6">
+
+            <div class="card template-card h-100">
+
+                <div class="template-img-wrapper">
+                    <img src="{{ url_for('static', filename='images/' + t.preview) }}" class="w-100 template-img"
+                        alt="Preview">
+                </div>
+
+                <div class="card-body d-flex flex-column p-4">
+
+                    <div class="mb-2">
+                        <span class="badge bg-light text-dark border">
+                            Professional
+                        </span>
+                    </div>
+
+                    <h5 class="card-title fw-bold">
+                        {{ t.name }}
+                    </h5>
+
+                    <p class="card-text text-muted small mb-4">
+                        {{ t.description }}
+                    </p>
+
+                    <div class="mt-auto">
+                        <a href="{{ url_for('candidate.create_cv_by_template', template_id=t.id) }}"
+                            class="btn btn-gradient w-100">
+                            Use This Template
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}

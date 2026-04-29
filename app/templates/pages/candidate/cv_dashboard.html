@@ -1,0 +1,183 @@
+{% extends "layouts/base.html" %}
+{% block title %}Manage CV{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold mb-1">My Online CV</h2>
+            <p class="text-muted mb-0">
+                You have {{ online_cvs|length }} CV{{ '' if online_cvs|length == 1 else 's' }} created
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('candidate.upload_cv') }}" class="btn btn-outline-secondary">
+                Upload CV
+            </a>
+
+            <a href="{{ url_for('candidate.choose_template') }}" class="btn btn-primary">
+                + Create New CV
+            </a>
+        </div>
+    </div>
+
+
+    <!-- ================= CV GRID ================= -->
+    {% if online_cvs %}
+    <div class="row g-4">
+
+        {% for cv in online_cvs %}
+        <div class="col-lg-4 col-md-6">
+            <div class="cv-card p-4 h-100">
+
+                <!-- CV TITLE -->
+                <h5 class="fw-semibold mb-2 text-dark">
+                    {{ cv.title }}
+                </h5>
+
+                <p class="small text-muted mb-4">
+                    Last updated:
+                    {{ cv.updated_at.strftime('%d %b %Y') if cv.updated_at else 'Recently' }}
+                </p>
+
+                <!-- ACTIONS -->
+                <div class="cv-actions">
+                    <a href="{{ url_for('candidate.view_cv', cv_id=cv.id) }}" class="btn btn-sm btn-dark">
+                        View
+                    </a>
+
+                    <a href="{{ url_for('candidate.edit_cv', cv_id=cv.id) }}" class="btn btn-sm btn-outline-secondary">
+                        Edit
+                    </a>
+
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                        data-bs-target="#deleteModal" data-cv-id="{{ cv.id }}" data-cv-title="{{ cv.title }}">
+                        Delete
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+    <!-- ================= EMPTY STATE ================= -->
+    <div class="text-center py-5">
+
+        <div class="empty-icon mb-4">
+            📄
+        </div>
+
+        <h4 class="fw-bold mb-3">No CV created yet</h4>
+
+        <p class="text-muted mb-4">
+            Create your first professional CV and start applying for jobs.
+        </p>
+
+        <a href="{{ url_for('candidate.choose_template') }}" class="btn btn-primary btn-lg">
+            Create Your First CV
+        </a>
+
+    </div>
+    {% endif %}
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4">
+
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-danger">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        Are you sure you want to delete
+                        <strong id="cvTitleToDelete"></strong>?
+                    </p>
+                    <p class="text-muted small mb-0">
+                        This action cannot be undone.
+                    </p>
+                </div>
+
+                <div class="modal-footer border-0">
+
+                    <form id="deleteForm" method="POST">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="btn btn-danger">
+                            Yes, Delete
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<style>
+    body {
+        background-color: #f5f5f5;
+    }
+
+    .cv-card {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e8e8e8;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .cv-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .cv-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .empty-icon {
+        font-size: 70px;
+        opacity: 0.4;
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    var deleteModal = document.getElementById('deleteModal');
+
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+
+        var button = event.relatedTarget;
+
+        var cvId = button.getAttribute('data-cv-id');
+        var cvTitle = button.getAttribute('data-cv-title');
+
+        var form = document.getElementById('deleteForm');
+        var titleSpan = document.getElementById('cvTitleToDelete');
+
+        form.action = "/candidate/delete-cv/" + cvId;
+        titleSpan.textContent = cvTitle;
+
+    });
+</script>
+
+{% endblock %}

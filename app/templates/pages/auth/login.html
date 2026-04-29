@@ -3,23 +3,23 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-    <h4 class="mb-3 text-center">Login</h4>
+<h4 class="mb-3 text-center">Login</h4>
 
-    <form method="POST">
-        <div class="mb-3">
-            <input type="email" name="email" class="form-control" placeholder="Email" required>
-        </div>
-
-        <div class="mb-3">
-            <input type="password" name="password" class="form-control" placeholder="Password" required>
-        </div>
-
-        <button class="btn btn-primary w-100">Login</button>
-    </form>
-    <div class="text-center">
-        <small>
-            Don't have an account?
-            <a href="{{ url_for('auth.register') }}">Register here</a>
-        </small>
+<form method="POST">
+    <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email" required>
     </div>
+
+    <div class="mb-3">
+        <input type="password" name="password" class="form-control" placeholder="Password" required>
+    </div>
+
+    <button class="btn btn-primary w-100">Login</button>
+</form>
+<div class="text-center">
+    <small>
+        Don't have an account?
+        <a href="{{ url_for('auth.register') }}">Register here</a>
+    </small>
+</div>
 {% endblock %}

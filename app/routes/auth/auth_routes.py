@@ -4,16 +4,16 @@ from flask import request, redirect, url_for, render_template
 from app.models.user import User
 from app.models.candidate import Candidate
 from app.services.candidate.user_service import UserService
-from services.candidate.candidate_service import CandidateService
+from app.services.candidate.candidate_service import CandidateService
 
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        fullname = request.form.get("fullname")
         email = request.form.get("email")
         password = request.form.get("password")
+        fullname = request.form.get("fullname")
 
         user = User(
             email=email,
@@ -44,12 +44,10 @@ def login():
         user = AuthService.login(email)
 
         if user and user.check_password(password):
-            session["user_id"] = user.id
-            session["role"] = user.role
-
-            if user.role == "EMPLOYER" and user.employer:
-                session["employer_id"] = user.employer.id
-                return redirect(url_for("employer_jobs.index"))
+            session["user_id"]    = user.id
+            session["user_email"] = user.email
+            session["user_role"]  = user.role
+            session["candidate_id"] = user.candidate.id
 
             return redirect("/")
 

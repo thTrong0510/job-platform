@@ -1,106 +1,101 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/employer_base.html" %}
 
 {% block title %}{{ job.title }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4 py-4" style="max-width: 960px;">
 
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body px-4 py-4">
-      <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
-        <div>
-          <h3 class="fw-bold mb-2">{{ job.title }}</h3>
-        </div>
-        <div class="d-flex gap-2 flex-shrink-0">
-          {% if job.status == 'OPEN' %}
-            <span class="badge fs-6 rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">
-              <i class="bi bi-broadcast me-1"></i>Đang tuyển
-            </span>
-          {% else %}
-            <span class="badge fs-6 rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2">
-              <i class="bi bi-archive me-1"></i>Đã đóng
-            </span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
+	<div class="card border-0 shadow-sm mb-4">
+		<div class="card-body px-4 py-4">
+			<div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+				<div>
+					<h3 class="fw-bold mb-2">{{ job.title }}</h3>
+				</div>
+				<div class="d-flex gap-2 flex-shrink-0">
+					{% if job.status == 'OPEN' %}
+					<span
+						class="badge fs-6 rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">
+						<i class="bi bi-broadcast me-1"></i>Đang tuyển
+					</span>
+					{% else %}
+					<span
+						class="badge fs-6 rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2">
+						<i class="bi bi-archive me-1"></i>Đã đóng
+					</span>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
 
-  <div class="row g-4">
-    <div class="col-md-8">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-          <h5 class="fw-semibold">
-            <i class="bi bi-file-text text-primary me-2"></i>Mô tả công việc
-          </h5>
-        </div>
-        <div class="card-body px-4 pb-4" style="white-space: pre-wrap; line-height: 1.7;">{{- job.description }}</div>
-      </div>
-    </div>
+	<div class="row g-4">
+		<div class="col-md-8">
+			<div class="card border-0 shadow-sm h-100">
+				<div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+					<h5 class="fw-semibold">
+						<i class="bi bi-file-text text-primary me-2"></i>Mô tả công việc
+					</h5>
+				</div>
+				<div class="card-body px-4 pb-4" style="white-space: pre-wrap; line-height: 1.7;">{{- job.description }}
+				</div>
+			</div>
+		</div>
 
-    {# ── Sidebar: kỹ năng ──────────────────────────────────── #}
-    <div class="col-md-4">
+		{# ── Sidebar: kỹ năng ──────────────────────────────────── #}
+		<div class="col-md-4">
 
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-          <h5 class="fw-semibold">
-            <i class="bi bi-info-circle text-primary me-2"></i>Thông tin nhanh
-          </h5>
-        </div>
-        <div class="card-body px-4 pb-4">
-          <dl class="row mb-0 small">
-            <dt class="col-5 text-muted fw-normal">Trạng thái</dt>
-            <dd class="col-7 fw-semibold">
-              {{ 'Đang tuyển' if job.status == 'OPEN' else 'Đã đóng' }}
-            </dd>
-            <dt class="col-5 text-muted fw-normal">Ngày đăng</dt>
-            <dd class="col-7">{{ job.created_at.strftime('%d/%m/%Y') }}</dd>
-            <dt class="col-5 text-muted fw-normal">Hạn nộp</dt>
-            <dd class="col-7">{{ job.end_date.strftime('%d/%m/%Y') if job.end_date else '—' }}</dd>
-            <dt class="col-5 text-muted fw-normal">Địa điểm</dt>
-            <dd class="col-7">{{ job.location }}</dd>
-            <dt class="col-5 text-muted fw-normal">Kinh nghiệm</dt>
-            <dd class="col-7">{{ job.experience_required or 0 }} năm</dd>
-            <dt class="col-5 text-muted fw-normal">Mức lương</dt>
-            <dd class="col-7">{% if job.salary_min and job.salary_max %}
-                    {{ job.salary_min }} - {{ job.salary_max }}
-                {% else %}
-                    Thỏa thuận
-                {% endif %}</dd>
-          </dl>
-        </div>
-      </div>
+			<div class="card border-0 shadow-sm mb-4">
+				<div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+					<h5 class="fw-semibold">
+						<i class="bi bi-info-circle text-primary me-2"></i>Thông tin nhanh
+					</h5>
+				</div>
+				<div class="card-body px-4 pb-4">
+					<dl class="row mb-0 small">
+						<dt class="col-5 text-muted fw-normal">Trạng thái</dt>
+						<dd class="col-7 fw-semibold">
+							{{ 'Đang tuyển' if job.status == 'OPEN' else 'Đã đóng' }}
+						</dd>
+						<dt class="col-5 text-muted fw-normal">Ngày đăng</dt>
+						<dd class="col-7">{{ job.created_at.strftime('%d/%m/%Y') }}</dd>
+						<dt class="col-5 text-muted fw-normal">Hạn nộp</dt>
+						<dd class="col-7">{{ job.end_date.strftime('%d/%m/%Y') if job.end_date else '—' }}</dd>
+						<dt class="col-5 text-muted fw-normal">Địa điểm</dt>
+						<dd class="col-7">{{ job.location }}</dd>
+						<dt class="col-5 text-muted fw-normal">Kinh nghiệm</dt>
+						<dd class="col-7">{{ job.experience_required or 0 }} năm</dd>
+						<dt class="col-5 text-muted fw-normal">Mức lương</dt>
+						<dd class="col-7">{% if job.salary_min and job.salary_max %}
+							{{ job.salary_min }} - {{ job.salary_max }}
+							{% else %}
+							Thỏa thuận
+							{% endif %}</dd>
+					</dl>
+				</div>
+			</div>
 
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-          <h5 class="fw-semibold">
-            <i class="bi bi-tags text-primary me-2"></i>Kỹ năng yêu cầu
-          </h5>
-        </div>
-        <div class="card-body px-4 pb-4">
-          {% if job_skills %}
-            {% for js in job_skills %}
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="fw-medium">{{ js.skill.name }}</span>
-              <span class="badge rounded-pill
-                {% if js.required_level == 'ADVANCED' %}bg-danger-subtle text-danger
-                {% elif js.required_level == 'INTERMEDIATE' %}bg-warning-subtle text-warning
-                {% else %}bg-success-subtle text-success{% endif %}">
-                {% if js.required_level == 'BEGINNER' %}Cơ bản
-                {% elif js.required_level == 'INTERMEDIATE' %}Trung cấp
-                {% else %}Nâng cao{% endif %}
-              </span>
-            </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted small mb-0">Chưa có kỹ năng yêu cầu.</p>
-          {% endif %}
-        </div>
-      </div>
+			<div class="card border-0 shadow-sm mb-4">
+				<div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+					<h5 class="fw-semibold">
+						<i class="bi bi-tags text-primary me-2"></i>Kỹ năng yêu cầu
+					</h5>
+				</div>
+				<div class="card-body px-4 pb-4">
+					{% if job_skills %}
+					{% for js in job_skills %}
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<span class="fw-medium">{{ js.skill.name }}</span>
+					</div>
+					{% endfor %}
+					{% else %}
+					<p class="text-muted small mb-0">Chưa có kỹ năng yêu cầu.</p>
+					{% endif %}
+				</div>
+			</div>
 
 
-    </div>
-  </div>
+		</div>
+	</div>
 
 </div>
 

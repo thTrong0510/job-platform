@@ -1,151 +1,156 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/employer_base.html" %}
 
 {% block title %}Quản lý tin tuyển dụng{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4 py-4">
 
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h2 class="fw-bold mb-1">Tin tuyển dụng</h2>
-    </div>
-    <a href="{{ url_for('employer_jobs.create') }}" class="btn btn-primary d-flex align-items-center gap-2" >
-      <i class="bi bi-plus-lg"></i> Đăng tin mới
-    </a>
-  </div>
+	<div class="d-flex align-items-center justify-content-between mb-4">
+		<div>
+			<h2 class="fw-bold mb-1">Tin tuyển dụng</h2>
+		</div>
+		<a href="{{ url_for('employer_jobs.create') }}" class="btn btn-primary d-flex align-items-center gap-2">
+			<i class="bi bi-plus-lg"></i> Đăng tin mới
+		</a>
+	</div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-sm-4">
-      <div class="card border-0 shadow-sm h-100" style="background-color: #d6f5ff;">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-primary-subtle text-primary rounded-3 p-3 fs-4">
-            <i class="bi bi-briefcase"></i>
-          </div>
-          <div>
-            <div class="fs-2 fw-bold">{{ stats.total }}</div>
-            <div class="text-muted small">Số tin đã đăng</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-4">
-      <div class="card border-0 shadow-sm h-100" style="background-color: #b9f1e3">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-success-subtle text-success rounded-3 p-3 fs-4">
-            <i class="bi bi-broadcast"></i>
-          </div>
-          <div>
-            <div class="fs-2 fw-bold">{{ stats.open }}</div>
-            <div class="text-muted small">Đang tuyển</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-4">
-      <div class="card border-0 shadow-sm h-100" style="background-color: #ffb4b4">
-        <div class="card-body d-flex align-items-center gap-3">
-          <div class="icon-box bg-secondary-subtle text-secondary rounded-3 p-3 fs-4">
-            <i class="bi bi-archive"></i>
-          </div>
-          <div>
-            <div class="fs-2 fw-bold">{{ stats.closed }}</div>
-            <div class="text-muted small">Đã đóng</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+	<div class="row g-3 mb-4">
+		<div class="col-sm-4">
+			<div class="card border-0 shadow-sm h-100" style="background-color: #d6f5ff;">
+				<div class="card-body d-flex align-items-center gap-3">
+					<div class="icon-box bg-primary-subtle text-primary rounded-3 p-3 fs-4">
+						<i class="bi bi-briefcase"></i>
+					</div>
+					<div>
+						<div class="fs-2 fw-bold">{{ stats.total }}</div>
+						<div class="text-muted small">Số tin đã đăng</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="card border-0 shadow-sm h-100" style="background-color: #b9f1e3">
+				<div class="card-body d-flex align-items-center gap-3">
+					<div class="icon-box bg-success-subtle text-success rounded-3 p-3 fs-4">
+						<i class="bi bi-broadcast"></i>
+					</div>
+					<div>
+						<div class="fs-2 fw-bold">{{ stats.open }}</div>
+						<div class="text-muted small">Đang tuyển</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="card border-0 shadow-sm h-100" style="background-color: #ffb4b4">
+				<div class="card-body d-flex align-items-center gap-3">
+					<div class="icon-box bg-secondary-subtle text-secondary rounded-3 p-3 fs-4">
+						<i class="bi bi-archive"></i>
+					</div>
+					<div>
+						<div class="fs-2 fw-bold">{{ stats.closed }}</div>
+						<div class="text-muted small">Đã đóng</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-      <form method="GET" action="{{ url_for('employer_jobs.index') }}" class="row g-2 align-items-end">
-        <div class="col-md-8">
-          <label class="form-label small text-muted mb-1">Từ khoá</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" name="keyword" class="form-control border-start-0"
-                   placeholder="Tên vị trí, địa điểm..." value="{{ keyword }}">
-          </div>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label small text-muted mb-1">Trạng thái</label>
-          <select name="status" class="form-select">
-            <option value="">Tất cả</option>
-            <option value="OPEN"   {% if status == 'OPEN'   %}selected{% endif %}>Đang tuyển</option>
-            <option value="CLOSED" {% if status == 'CLOSED' %}selected{% endif %}>Đã đóng</option>
-          </select>
-        </div>
-        <div class="col-md-2 d-flex gap-2">
-          <button type="submit" class="btn btn-primary w-100" style="background-color: #3A7734; border-color: #3A7734">Lọc</button>
-        </div>
-      </form>
-    </div>
-  </div>
+	<div class="card border-0 shadow-sm mb-4">
+		<div class="card-body">
+			<form method="GET" action="{{ url_for('employer_jobs.index') }}" class="row g-2 align-items-end">
+				<div class="col-md-8">
+					<label class="form-label small text-muted mb-1">Từ khoá</label>
+					<div class="input-group">
+						<span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+						<input type="text" name="keyword" class="form-control border-start-0"
+							placeholder="Tên vị trí, địa điểm..." value="{{ keyword }}">
+					</div>
+				</div>
+				<div class="col-md-2">
+					<label class="form-label small text-muted mb-1">Trạng thái</label>
+					<select name="status" class="form-select">
+						<option value="">Tất cả</option>
+						<option value="OPEN" {% if status=='OPEN' %}selected{% endif %}>Đang tuyển</option>
+						<option value="CLOSED" {% if status=='CLOSED' %}selected{% endif %}>Đã đóng</option>
+					</select>
+				</div>
+				<div class="col-md-2 d-flex gap-2">
+					<button type="submit" class="btn btn-primary w-100"
+						style="background-color: #3A7734; border-color: #3A7734">Lọc</button>
+				</div>
+			</form>
+		</div>
+	</div>
 
-  {# -- Job list -- #}
-  {% if jobs %}
-  <div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th class="ps-4">Vị trí tuyển dụng</th>
-            <th>Địa điểm</th>
-            <th>Mức lương</th>
-            <th>Hạn nộp</th>
-            <th>Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for job in jobs %}
-          <tr>
-            <td class="ps-4">
-              <a href="{{ url_for('employer_jobs.detail', job_id=job.id) }}" class="fw-semibold text-decoration-none text-dark">
-                {{ job.title }}
-                <div class="small text-muted mt-1">
-                  Đăng {{ job.created_at.strftime('%d/%m/%Y') }}
-                </div>
-              </a>
-            </td>
-            <td>
-              <i class="bi bi-geo-alt text-muted me-1"></i>
-              {{ job.location or '—' }}
-            </td>
-            <td>
-                {% if job.salary_min and job.salary_max %}
-                    {{ job.salary_min }} - {{ job.salary_max }}
-                {% else %} Thỏa thuận
-                {% endif %}
-            </td>
-            <td>
-              {% if job.end_date %}
-                  {{ job.end_date.strftime('%d/%m/%Y') }}
-              {% endif %}
-            </td>
-            <td>
-              {% if job.status == 'OPEN' %}
-                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle">
-                  <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Đang tuyển
-                </span>
-              {% else %}
-                <span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle">
-                  <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Đã đóng
-                </span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+	{# -- Job list -- #}
+	{% if jobs %}
+	<div class="card border-0 shadow-sm">
+		<div class="table-responsive">
+			<table class="table table-hover align-middle mb-0">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-4">Vị trí tuyển dụng</th>
+						<th>Địa điểm</th>
+						<th>Mức lương</th>
+						<th>Hạn nộp</th>
+						<th>Trạng thái</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for job in jobs %}
+					<tr>
+						<td class="ps-4">
+							<a href="{{ url_for('employer_jobs.detail', job_id=job.id) }}"
+								class="fw-semibold text-decoration-none text-dark">
+								{{ job.title }}
+								<div class="small text-muted mt-1">
+									Đăng {{ job.created_at.strftime('%d/%m/%Y') }}
+								</div>
+							</a>
+						</td>
+						<td>
+							<i class="bi bi-geo-alt text-muted me-1"></i>
+							{{ job.location or '—' }}
+						</td>
+						<td>
+							{% if job.salary_min and job.salary_max %}
+							{{ job.salary_min }} - {{ job.salary_max }}
+							{% else %} Thỏa thuận
+							{% endif %}
+						</td>
+						<td>
+							{% if job.end_date %}
+							{{ job.end_date.strftime('%d/%m/%Y') }}
+							{% endif %}
+						</td>
+						<td>
+							{% if job.status == 'OPEN' %}
+							<span
+								class="badge rounded-pill bg-success-subtle text-success border border-success-subtle">
+								<i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Đang tuyển
+							</span>
+							{% else %}
+							<span
+								class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle">
+								<i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Đã đóng
+							</span>
+							{% endif %}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 
-  {% else %}
-  <div class="text-center py-5">
-    <i class="bi bi-inbox text-muted" style="font-size:3rem"></i>
-    <p class="mt-3 text-muted">Chưa có tin tuyển dụng nào. <a href="{{ url_for('employer_jobs.create') }}">Đăng tin ngay</a></p>
-  </div>
-  {% endif %}
+	{% else %}
+	<div class="text-center py-5">
+		<i class="bi bi-inbox text-muted" style="font-size:3rem"></i>
+		<p class="mt-3 text-muted">Chưa có tin tuyển dụng nào. <a href="{{ url_for('employer_jobs.create') }}">Đăng tin
+				ngay</a></p>
+	</div>
+	{% endif %}
 
 </div>
 

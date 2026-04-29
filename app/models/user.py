@@ -1,4 +1,4 @@
-from . import db
+from app.extensions import db
 from sqlalchemy import Enum
 from sqlalchemy.sql import func
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -9,6 +9,8 @@ class User(db.Model):
     id = db.Column(db.BigInteger, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+
+    avatar_url = db.Column(db.String(500))
 
     role = db.Column(
         Enum('CANDIDATE', 'EMPLOYER', 'ADMIN', name='user_role'),

@@ -15,7 +15,7 @@ class JobRepository:
     @staticmethod
     def save_job_skills(job_id, skills):
         for skill in skills:
-            job_skill = JobSkill(job_id=job_id, skill_id=skill.get('skill_id'), required_level=skill.get('required_level', "INTERMEDIATE"))
+            job_skill = JobSkill(job_id=job_id, skill_id=skill.get('skill_id'))
             db.session.add(job_skill)
         db.session.commit()
 

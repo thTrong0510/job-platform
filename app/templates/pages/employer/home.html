@@ -8,80 +8,140 @@
         background: linear-gradient(135deg, #2d4a3e 0%, #3a7734 60%, #5b7d6f 100%);
         padding: 100px 0 80px;
         text-align: center;
-        position: relative; overflow: hidden;
+        position: relative;
+        overflow: hidden;
     }
+
     .hero::before {
         content: '';
-        position: absolute; inset: 0;
+        position: absolute;
+        inset: 0;
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
+
     .hero-title {
         font-size: clamp(2rem, 5vw, 3rem);
-        font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 16px;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.2;
+        margin-bottom: 16px;
     }
-    .hero-title span { color: #b0d4b8; }
+
+    .hero-title span {
+        color: #b0d4b8;
+    }
+
     .hero-sub {
-        font-size: 1.1rem; color: rgba(255,255,255,.8);
-        max-width: 560px; margin: 0 auto 36px;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, .8);
+        max-width: 560px;
+        margin: 0 auto 36px;
     }
+
     .btn-primary-hero {
-        background: #fff; color: #3a7734;
-        font-weight: 700; font-size: 1rem;
-        padding: 14px 36px; border-radius: 50px; border: none;
+        background: #fff;
+        color: #3a7734;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 14px 36px;
+        border-radius: 50px;
+        border: none;
         transition: transform .2s, box-shadow .2s;
-        text-decoration: none; display: inline-block;
+        text-decoration: none;
+        display: inline-block;
     }
+
     .btn-primary-hero:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,.2);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
         color: #2d4a3e;
     }
+
     .btn-outline-hero {
-        background: transparent; color: #fff;
-        border: 2px solid rgba(255,255,255,.5);
-        font-weight: 600; font-size: 1rem;
-        padding: 12px 32px; border-radius: 50px;
+        background: transparent;
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, .5);
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 12px 32px;
+        border-radius: 50px;
         transition: border-color .2s, background .2s;
-        text-decoration: none; display: inline-block;
+        text-decoration: none;
+        display: inline-block;
     }
+
     .btn-outline-hero:hover {
-        border-color: #fff; background: rgba(255,255,255,.1); color: #fff;
+        border-color: #fff;
+        background: rgba(255, 255, 255, .1);
+        color: #fff;
     }
 
     /* ── Stats bar ── */
     .stats-bar {
         background: #fff;
-        box-shadow: 0 4px 24px rgba(0,0,0,.08);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
         border-radius: 16px;
         margin-top: -36px;
         padding: 28px 40px;
-        position: relative; z-index: 2;
+        position: relative;
+        z-index: 2;
     }
-    .stat-num   { font-size: 1.75rem; font-weight: 800; color: #3a7734; line-height: 1; }
-    .stat-label { font-size: .82rem; color: #6b7280; margin-top: 4px; }
-    .stat-divider { width: 1px; background: #e5e7eb; }
+
+    .stat-num {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #3a7734;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: .82rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .stat-divider {
+        width: 1px;
+        background: #e5e7eb;
+    }
 
     /* ── Feature cards ── */
     .feature-card {
-        border: none; border-radius: 16px; padding: 28px 24px;
-        transition: transform .25s, box-shadow .25s; height: 100%;
+        border: none;
+        border-radius: 16px;
+        padding: 28px 24px;
+        transition: transform .25s, box-shadow .25s;
+        height: 100%;
     }
+
     .feature-card:hover {
         transform: translateY(-6px);
-        box-shadow: 0 12px 32px rgba(0,0,0,.09);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .09);
     }
+
     .feature-icon {
-        width: 56px; height: 56px; border-radius: 14px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.6rem; margin-bottom: 16px;
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        margin-bottom: 16px;
     }
 
     /* ── Steps ── */
     .step-num {
-        width: 42px; height: 42px; border-radius: 50%;
-        background: #3a7734; color: #fff;
-        font-weight: 800; font-size: 1.1rem;
-        display: flex; align-items: center; justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #3a7734;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin: 0 auto 14px;
     }
 
@@ -89,17 +149,30 @@
     .notice-box {
         background: #f0faf2;
         border-left: 4px solid #3a7734;
-        border-radius: 12px; padding: 20px 24px;
+        border-radius: 12px;
+        padding: 20px 24px;
     }
-    .notice-box i { color: #3a7734; }
+
+    .notice-box i {
+        color: #3a7734;
+    }
 
     /* ── CTA bottom ── */
     .cta-bottom {
         background: linear-gradient(135deg, #2d4a3e, #3a7734);
-        border-radius: 20px; padding: 60px 40px; text-align: center;
+        border-radius: 20px;
+        padding: 60px 40px;
+        text-align: center;
     }
-    .cta-bottom .btn-light { color: #3a7734; font-weight: 700; }
-    .cta-bottom .btn-light:hover { color: #2d4a3e; }
+
+    .cta-bottom .btn-light {
+        color: #3a7734;
+        font-weight: 700;
+    }
+
+    .cta-bottom .btn-light:hover {
+        color: #2d4a3e;
+    }
 </style>
 {% endblock %}
 
@@ -108,8 +181,7 @@
 {# ── HERO ── #}
 <div class="hero">
     <div class="container position-relative">
-        <p class="text-uppercase fw-semibold mb-3"
-           style="color:#b0d4b8; letter-spacing:.1em; font-size:.85rem;">
+        <p class="text-uppercase fw-semibold mb-3" style="color:#b0d4b8; letter-spacing:.1em; font-size:.85rem;">
             <i class="bi bi-building me-2"></i>Dành cho nhà tuyển dụng
         </p>
         <h1 class="hero-title">
@@ -225,8 +297,10 @@
                 <h6 class="fw-bold mb-1" style="color:#3a7734;">Chính sách xác thực doanh nghiệp</h6>
                 <ul class="mb-0 text-muted small" style="line-height:1.9;">
                     <li>Mỗi công ty chỉ được đăng ký <strong>1 tài khoản duy nhất</strong> (HR đại diện tạo).</li>
-                    <li>Tài khoản sẽ được Admin kiểm duyệt <strong>tên và địa chỉ công ty</strong> trước khi kích hoạt.</li>
-                    <li>Người dùng có thể <strong>báo cáo công ty</strong> vi phạm thông qua nút báo cáo trên hệ thống.</li>
+                    <li>Tài khoản sẽ được Admin kiểm duyệt <strong>tên và địa chỉ công ty</strong> trước khi kích hoạt.
+                    </li>
+                    <li>Người dùng có thể <strong>báo cáo công ty</strong> vi phạm thông qua nút báo cáo trên hệ thống.
+                    </li>
                     <li>Tài khoản vi phạm chính sách sẽ bị tạm khóa hoặc xóa vĩnh viễn.</li>
                 </ul>
             </div>
@@ -240,12 +314,10 @@
         </h2>
         <p class="mb-4" style="color:rgba(255,255,255,.75);">Đăng ký ngay hôm nay — hoàn toàn miễn phí.</p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a href="{{ url_for('employer.register') }}"
-               class="btn btn-light fw-bold px-5 py-3 rounded-pill">
+            <a href="{{ url_for('employer.register') }}" class="btn btn-light fw-bold px-5 py-3 rounded-pill">
                 <i class="bi bi-rocket-takeoff-fill me-2"></i>Đăng ký ngay
             </a>
-            <a href="{{ url_for('employer.login') }}"
-               class="btn btn-outline-light fw-semibold px-5 py-3 rounded-pill">
+            <a href="{{ url_for('employer.login') }}" class="btn btn-outline-light fw-semibold px-5 py-3 rounded-pill">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
             </a>
         </div>

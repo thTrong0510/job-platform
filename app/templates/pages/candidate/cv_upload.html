@@ -61,9 +61,20 @@
         flex-shrink: 0;
     }
 
-    .file-icon.pdf { background: #fff0f0; color: #dc3545; }
-    .file-icon.doc { background: #e8f0fe; color: #0d6efd; }
-    .file-icon.docx { background: #e8f0fe; color: #0d6efd; }
+    .file-icon.pdf {
+        background: #fff0f0;
+        color: #dc3545;
+    }
+
+    .file-icon.doc {
+        background: #e8f0fe;
+        color: #0d6efd;
+    }
+
+    .file-icon.docx {
+        background: #e8f0fe;
+        color: #0d6efd;
+    }
 
     /* ===== Alert toast ===== */
     .alert-float {
@@ -76,8 +87,15 @@
     }
 
     @keyframes slideIn {
-        from { opacity: 0; transform: translateX(30px); }
-        to   { opacity: 1; transform: translateX(0); }
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 </style>
 {% endblock %}
@@ -86,12 +104,12 @@
 
 <!-- Flash messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible alert-float shadow" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    {% endfor %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} alert-dismissible alert-float shadow" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
 {% endwith %}
 
 <div class="row g-4">
@@ -102,31 +120,29 @@
             <div class="card-body p-4">
                 <h5 class="fw-bold mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                         class="bi bi-cloud-upload me-2 text-primary" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd"
-                              d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16
+                        class="bi bi-cloud-upload me-2 text-primary" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16
                               7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C14.previous 10
                               15 9.01 15 7.773c0-1.216-.91-2.228-2.09-2.418l-.ktl.335-.08-.012C12.71 2.019
                               10.559.5 8 .5a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153
                               2.055v.448l-.445.049C2.064 4.323 1 5.gifted 1 7.15 1 8.627 2.186 10 3.781
                               10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.15 0 5.11 1.46 3.5
-                              3.406 3.25v-.068c0-.878.5-1.944 1-2.5z"/>
-                        <path fill-rule="evenodd"
-                              d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5
-                              0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708z"/>
+                              3.406 3.25v-.068c0-.878.5-1.944 1-2.5z" />
+                        <path fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5
+                              0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708z" />
                     </svg>
                     Tải lên CV
                 </h5>
                 <p class="text-muted small mb-4">Hỗ trợ .pdf, .doc, .docx · Tối đa 5MB</p>
 
                 {% if not candidate %}
-                    <div class="alert alert-warning">
-                        <strong>Chú ý:</strong> Bạn chưa có hồ sơ ứng viên.
-                        Vui lòng tạo hồ sơ trước khi tải CV.
-                    </div>
+                <div class="alert alert-warning">
+                    <strong>Chú ý:</strong> Bạn chưa có hồ sơ ứng viên.
+                    Vui lòng tạo hồ sơ trước khi tải CV.
+                </div>
                 {% else %}
-                <form action="{{ url_for('cv_upload.upload') }}" method="POST"
-                      enctype="multipart/form-data" id="upload-form">
+                <form action="{{ url_for('cv_upload.upload') }}" method="POST" enctype="multipart/form-data"
+                    id="upload-form">
 
                     <!-- Drop zone -->
                     <div class="drop-zone mb-3" id="drop-zone">
@@ -134,11 +150,10 @@
                         <p class="mb-1 fw-semibold">Kéo & thả file vào đây</p>
                         <p class="text-muted small mb-3">hoặc</p>
                         <button type="button" class="btn btn-outline-primary btn-sm px-4"
-                                onclick="document.getElementById('cv_file').click()">
+                            onclick="document.getElementById('cv_file').click()">
                             Chọn file từ máy tính
                         </button>
-                        <input type="file" id="cv_file" name="cv_file"
-                               accept=".pdf,.doc,.docx" class="d-none">
+                        <input type="file" id="cv_file" name="cv_file" accept=".pdf,.doc,.docx" class="d-none">
                     </div>
 
                     <!-- File preview sau khi chọn -->
@@ -157,8 +172,7 @@
                             Tiêu đề CV <span class="text-muted fw-normal">(tuỳ chọn)</span>
                         </label>
                         <input type="text" id="title" name="title" class="form-control"
-                               placeholder="Ví dụ: CV Frontend Developer 2024"
-                               maxlength="255">
+                            placeholder="Ví dụ: CV Frontend Developer 2024" maxlength="255">
                     </div>
 
                     <button type="submit" id="submit-btn" class="btn btn-primary w-100" disabled>
@@ -183,58 +197,54 @@
                 </div>
 
                 {% if cvs %}
-                    <div class="d-flex flex-column gap-3">
+                <div class="d-flex flex-column gap-3">
                     {% for cv in cvs %}
-                        {% set ext = cv.file_name.rsplit('.', 1)[-1].lower() if cv.file_name else 'pdf' %}
-                        <div class="cv-card p-3 d-flex align-items-center gap-3">
+                    {% set ext = cv.file_name.rsplit('.', 1)[-1].lower() if cv.file_name else 'pdf' %}
+                    <div class="cv-card p-3 d-flex align-items-center gap-3">
 
-                            <!-- Icon loại file -->
-                            <div class="file-icon {{ ext }}">
-                                {{ ext.upper()[:3] }}
-                            </div>
+                        <!-- Icon loại file -->
+                        <div class="file-icon {{ ext }}">
+                            {{ ext.upper()[:3] }}
+                        </div>
 
-                            <!-- Thông tin CV -->
-                            <div class="flex-grow-1 overflow-hidden">
-                                <p class="mb-0 fw-semibold text-truncate">{{ cv.title }}</p>
-                                <div class="d-flex gap-3 mt-1">
-                                    <small class="text-muted">
-                                        📁 {{ cv.file_name }}
-                                    </small>
-                                    <small class="text-muted">
-                                        💾 {{ (cv.file_size / 1024)|round(1) }} KB
-                                    </small>
-                                </div>
+                        <!-- Thông tin CV -->
+                        <div class="flex-grow-1 overflow-hidden">
+                            <p class="mb-0 fw-semibold text-truncate">{{ cv.title }}</p>
+                            <div class="d-flex gap-3 mt-1">
                                 <small class="text-muted">
-                                    🕐 {{ cv.created_at.strftime('%d/%m/%Y %H:%M') if cv.created_at else '—' }}
+                                    📁 {{ cv.file_name }}
+                                </small>
+                                <small class="text-muted">
+                                    💾 {{ (cv.file_size / 1024)|round(1) }} KB
                                 </small>
                             </div>
-
-                            <!-- Actions -->
-                            <div class="d-flex gap-2 flex-shrink-0">
-                                <a href="{{ cv.file_url }}" target="_blank"
-                                   class="btn btn-sm btn-outline-secondary" title="Xem CV">
-                                    👁️
-                                </a>
-
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Xóa CV"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal"
-                                        data-cv-id="{{ cv.id }}"
-                                        data-cv-title="{{ cv.title }}">
-                                    🗑️
-                                </button>
-                            </div>
+                            <small class="text-muted">
+                                🕐 {{ cv.created_at.strftime('%d/%m/%Y %H:%M') if cv.created_at else '—' }}
+                            </small>
                         </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2 flex-shrink-0">
+                            <a href="{{ cv.file_url }}" target="_blank" class="btn btn-sm btn-outline-secondary"
+                                title="Xem CV">
+                                👁️
+                            </a>
+
+                            <button type="button" class="btn btn-sm btn-outline-danger" title="Xóa CV"
+                                data-bs-toggle="modal" data-bs-target="#deleteModal" data-cv-id="{{ cv.id }}"
+                                data-cv-title="{{ cv.title }}">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
                     {% endfor %}
-                    </div>
+                </div>
                 {% else %}
-                    <div class="text-center py-5 text-muted">
-                        <div style="font-size: 3.5rem;">📂</div>
-                        <p class="mt-3 mb-0">Bạn chưa có CV nào được tải lên.</p>
-                        <small>Hãy tải lên CV đầu tiên của bạn!</small>
-                    </div>
+                <div class="text-center py-5 text-muted">
+                    <div style="font-size: 3.5rem;">📂</div>
+                    <p class="mt-3 mb-0">Bạn chưa có CV nào được tải lên.</p>
+                    <small>Hãy tải lên CV đầu tiên của bạn!</small>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -270,111 +280,111 @@
 
 {% block extra_js %}
 <script>
-const dropZone   = document.getElementById("drop-zone");
-const fileInput  = document.getElementById("cv_file");
-const preview    = document.getElementById("file-preview");
-const previewName = document.getElementById("preview-name");
-const previewSize = document.getElementById("preview-size");
-const previewIcon = document.getElementById("preview-icon");
-const removeBtn  = document.getElementById("remove-file");
-const submitBtn  = document.getElementById("submit-btn");
-const uploadForm = document.getElementById("upload-form");
-const spinner    = document.getElementById("spinner");
+    const dropZone = document.getElementById("drop-zone");
+    const fileInput = document.getElementById("cv_file");
+    const preview = document.getElementById("file-preview");
+    const previewName = document.getElementById("preview-name");
+    const previewSize = document.getElementById("preview-size");
+    const previewIcon = document.getElementById("preview-icon");
+    const removeBtn = document.getElementById("remove-file");
+    const submitBtn = document.getElementById("submit-btn");
+    const uploadForm = document.getElementById("upload-form");
+    const spinner = document.getElementById("spinner");
 
-const ICONS = { pdf: "📕", doc: "📘", docx: "📘" };
-const MAX_SIZE = 5 * 1024 * 1024;
+    const ICONS = { pdf: "📕", doc: "📘", docx: "📘" };
+    const MAX_SIZE = 5 * 1024 * 1024;
 
-function formatSize(bytes) {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-}
-
-function getExt(filename) {
-    return filename.split(".").pop().toLowerCase();
-}
-
-function showPreview(file) {
-    const ext = getExt(file.name);
-    previewName.textContent = file.name;
-    previewSize.textContent = formatSize(file.size);
-    previewIcon.textContent = ICONS[ext] || "📎";
-    preview.style.display = "flex";
-    submitBtn.disabled = false;
-}
-
-function clearFile() {
-    fileInput.value = "";
-    preview.style.display = "none";
-    submitBtn.disabled = true;
-}
-
-// Click chọn file
-fileInput.addEventListener("change", () => {
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        if (file.size > MAX_SIZE) {
-            alert("File vượt quá 5MB. Vui lòng chọn file nhỏ hơn.");
-            clearFile(); return;
-        }
-        showPreview(file);
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
     }
-});
 
-// Nút xoá file đã chọn
-removeBtn.addEventListener("click", clearFile);
-
-// Drag & Drop
-dropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZone.classList.add("dragover");
-});
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-dropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropZone.classList.remove("dragover");
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    const ext = getExt(file.name);
-    if (!["pdf","doc","docx"].includes(ext)) {
-        alert("Định dạng không hợp lệ. Chỉ chấp nhận .pdf, .doc, .docx"); return;
+    function getExt(filename) {
+        return filename.split(".").pop().toLowerCase();
     }
-    if (file.size > MAX_SIZE) {
-        alert("File vượt quá 5MB."); return;
-    }
-    // Gán file vào input
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    fileInput.files = dt.files;
-    showPreview(file);
-});
 
-// Spinner khi submit
-if (uploadForm) {
-    uploadForm.addEventListener("submit", () => {
-        spinner.classList.remove("d-none");
+    function showPreview(file) {
+        const ext = getExt(file.name);
+        previewName.textContent = file.name;
+        previewSize.textContent = formatSize(file.size);
+        previewIcon.textContent = ICONS[ext] || "📎";
+        preview.style.display = "flex";
+        submitBtn.disabled = false;
+    }
+
+    function clearFile() {
+        fileInput.value = "";
+        preview.style.display = "none";
         submitBtn.disabled = true;
-        submitBtn.textContent = " Đang tải lên...";
-        submitBtn.prepend(spinner);
+    }
+
+    // Click chọn file
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (file.size > MAX_SIZE) {
+                alert("File vượt quá 5MB. Vui lòng chọn file nhỏ hơn.");
+                clearFile(); return;
+            }
+            showPreview(file);
+        }
     });
-}
 
-// Modal xóa
-const deleteModal = document.getElementById("deleteModal");
-deleteModal.addEventListener("show.bs.modal", (e) => {
-    const btn = e.relatedTarget;
-    const cvId = btn.getAttribute("data-cv-id");
-    const cvTitle = btn.getAttribute("data-cv-title");
-    document.getElementById("modal-cv-title").textContent = cvTitle;
-    document.getElementById("delete-form").action = `/candidate/cv-upload/delete/${cvId}`;
-});
+    // Nút xoá file đã chọn
+    removeBtn.addEventListener("click", clearFile);
 
-// Tự dismiss alert sau 4 giây
-document.querySelectorAll(".alert-float").forEach(alert => {
-    setTimeout(() => {
-        const bsAlert = new bootstrap.Alert(alert);
-        bsAlert.close();
-    }, 4000);
-});
+    // Drag & Drop
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        const ext = getExt(file.name);
+        if (!["pdf", "doc", "docx"].includes(ext)) {
+            alert("Định dạng không hợp lệ. Chỉ chấp nhận .pdf, .doc, .docx"); return;
+        }
+        if (file.size > MAX_SIZE) {
+            alert("File vượt quá 5MB."); return;
+        }
+        // Gán file vào input
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        showPreview(file);
+    });
+
+    // Spinner khi submit
+    if (uploadForm) {
+        uploadForm.addEventListener("submit", () => {
+            spinner.classList.remove("d-none");
+            submitBtn.disabled = true;
+            submitBtn.textContent = " Đang tải lên...";
+            submitBtn.prepend(spinner);
+        });
+    }
+
+    // Modal xóa
+    const deleteModal = document.getElementById("deleteModal");
+    deleteModal.addEventListener("show.bs.modal", (e) => {
+        const btn = e.relatedTarget;
+        const cvId = btn.getAttribute("data-cv-id");
+        const cvTitle = btn.getAttribute("data-cv-title");
+        document.getElementById("modal-cv-title").textContent = cvTitle;
+        document.getElementById("delete-form").action = `/candidate/cv-upload/delete/${cvId}`;
+    });
+
+    // Tự dismiss alert sau 4 giây
+    document.querySelectorAll(".alert-float").forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 4000);
+    });
 </script>
 {% endblock %}

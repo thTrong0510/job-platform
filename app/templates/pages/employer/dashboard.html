@@ -5,80 +5,162 @@
 <style>
     /* ── Stat cards ── */
     .stat-card {
-        border: none; border-radius: 16px; padding: 24px;
-        display: flex; align-items: center; gap: 18px;
-        transition: transform .2s, box-shadow .2s; height: 100%;
+        border: none;
+        border-radius: 16px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        transition: transform .2s, box-shadow .2s;
+        height: 100%;
     }
-    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1) !important; }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .1) !important;
+    }
 
     .stat-icon {
-        width: 56px; height: 56px; border-radius: 14px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.6rem; flex-shrink: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
     }
-    .stat-num   { font-size: 1.8rem; font-weight: 800; line-height: 1; }
-    .stat-label { font-size: .82rem; color: #6b7280; margin-top: 4px; }
+
+    .stat-num {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: .82rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
 
     /* ── Profile card ── */
-    .profile-card { border: none; border-radius: 16px; overflow: hidden; }
+    .profile-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
     .profile-card-head {
         background: linear-gradient(135deg, #2d4a3e, #3a7734);
         padding: 28px;
     }
+
     .profile-avatar {
-        width: 72px; height: 72px; border-radius: 16px;
-        background: rgba(255,255,255,.2);
-        border: 3px solid rgba(255,255,255,.4);
-        color: #fff; font-weight: 800; font-size: 2rem;
-        display: flex; align-items: center; justify-content: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .2);
+        border: 3px solid rgba(255, 255, 255, .4);
+        color: #fff;
+        font-weight: 800;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
     }
 
     /* ── Action buttons ── */
     .action-btn {
-        border-radius: 12px; padding: 18px 16px;
+        border-radius: 12px;
+        padding: 18px 16px;
         border: 1.5px solid #e5e7eb;
-        display: flex; flex-direction: column; align-items: center; gap: 10px;
-        text-decoration: none; color: #374151;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #374151;
         transition: border-color .2s, background .2s, transform .2s;
-        font-size: .88rem; font-weight: 600;
-        background: #fff; text-align: center;
+        font-size: .88rem;
+        font-weight: 600;
+        background: #fff;
+        text-align: center;
     }
-    .action-btn i { font-size: 1.8rem; }
+
+    .action-btn i {
+        font-size: 1.8rem;
+    }
+
     .action-btn:hover {
         border-color: #3a7734;
         background: #e8f3ee;
         color: #3a7734;
         transform: translateY(-3px);
     }
-    .action-btn.disabled-btn { opacity: .55; pointer-events: none; }
+
+    .action-btn.disabled-btn {
+        opacity: .55;
+        pointer-events: none;
+    }
 
     /* ── Section heading ── */
     .section-head {
-        display: flex; align-items: center; gap: 10px;
-        font-size: 1rem; font-weight: 700; color: #111827; margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 18px;
     }
-    .section-head::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+
+    .section-head::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e5e7eb;
+    }
 
     /* ── Coming soon card ── */
     .coming-card {
         background: linear-gradient(135deg, #f0faf2, #e8f3ee);
         border: none;
     }
+
     .coming-icon {
-        width: 44px; height: 44px; background: #3a7734; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        background: #3a7734;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
+
     .feat-row {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 12px; background: #fff; border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: #fff;
+        border-radius: 10px;
         font-size: .84rem;
     }
-    .feat-row i { color: #3a7734; }
+
+    .feat-row i {
+        color: #3a7734;
+    }
+
     .soon-tag {
-        margin-left: auto; font-size: .6rem; font-weight: 600;
-        background: #e8f3ee; color: #3a7734;
-        border-radius: 4px; padding: 2px 7px;
+        margin-left: auto;
+        font-size: .6rem;
+        font-weight: 600;
+        background: #e8f3ee;
+        color: #3a7734;
+        border-radius: 4px;
+        padding: 2px 7px;
     }
 </style>
 {% endblock %}
@@ -97,7 +179,7 @@
         <p class="text-muted mb-0">Quản lý hoạt động tuyển dụng của bạn tại đây.</p>
     </div>
     <a href="#" class="btn rounded-pill px-4 fw-semibold disabled"
-       style="background:#b0d4b8; color:#2d4a3e; opacity:.7; pointer-events:none;">
+        style="background:#b0d4b8; color:#2d4a3e; opacity:.7; pointer-events:none;">
         <i class="bi bi-plus-circle-fill me-2"></i>Đăng tin mới
         <span class="ms-1 badge bg-white" style="color:#3a7734; font-size:.6rem;">Sắp ra mắt</span>
     </a>
@@ -200,10 +282,10 @@
             </div>
             <div class="row g-2">
                 {% for icon, title, desc in [
-                    ('bi-plus-circle',  'Đăng tin tuyển dụng',     'Tạo và quản lý tin tuyển dụng'),
-                    ('bi-people',       'Quản lý hồ sơ',           'Xem xét và phân loại ứng viên'),
-                    ('bi-graph-up',     'Thống kê chi tiết',        'Báo cáo hiệu quả tuyển dụng'),
-                    ('bi-chat-dots',    'Nhắn tin ứng viên',        'Trao đổi trực tiếp với ứng viên'),
+                ('bi-plus-circle', 'Đăng tin tuyển dụng', 'Tạo và quản lý tin tuyển dụng'),
+                ('bi-people', 'Quản lý hồ sơ', 'Xem xét và phân loại ứng viên'),
+                ('bi-graph-up', 'Thống kê chi tiết', 'Báo cáo hiệu quả tuyển dụng'),
+                ('bi-chat-dots', 'Nhắn tin ứng viên', 'Trao đổi trực tiếp với ứng viên'),
                 ] %}
                 <div class="col-sm-6">
                     <div class="feat-row">
@@ -234,8 +316,7 @@
                     <div class="profile-avatar">{{ employer.company_name[0] | upper }}</div>
                     <div class="text-white">
                         <h6 class="fw-bold mb-1" style="font-size:.95rem;">{{ employer.company_name }}</h6>
-                        <span class="badge px-2 py-1"
-                              style="background:#d1f0e0; color:#0b6e37; font-size:.7rem;">
+                        <span class="badge px-2 py-1" style="background:#d1f0e0; color:#0b6e37; font-size:.7rem;">
                             <i class="bi bi-patch-check-fill me-1"></i>Đã xác thực
                         </span>
                     </div>
@@ -257,9 +338,10 @@
                     <li>
                         <i class="bi bi-globe2 text-muted me-2"></i>
                         <strong>Website:</strong>
-                        <a href="{{ employer.company_website }}" target="_blank"
-                           class="text-decoration-none" style="color:#3a7734;">
-                            {{ employer.company_website | replace('https://','') | replace('http://','') | truncate(26, True) }}
+                        <a href="{{ employer.company_website }}" target="_blank" class="text-decoration-none"
+                            style="color:#3a7734;">
+                            {{ employer.company_website | replace('https://','') | replace('http://','') | truncate(26,
+                            True) }}
                         </a>
                     </li>
                     {% endif %}
@@ -278,12 +360,11 @@
                 </p>
                 {% endif %}
 
-                <a href="#"
-                   class="btn btn-sm rounded-pill mt-3 w-100 disabled"
-                   style="border:1.5px solid #b0d4b8; color:#3a7734; opacity:.7;">
+                <a href="#" class="btn btn-sm rounded-pill mt-3 w-100 disabled"
+                    style="border:1.5px solid #b0d4b8; color:#3a7734; opacity:.7;">
                     <i class="bi bi-pencil me-1"></i>Chỉnh sửa hồ sơ
-                    <span class="ms-1 badge"
-                          style="background:#e8f3ee; color:#3a7734; font-size:.55rem;">Sắp ra mắt</span>
+                    <span class="ms-1 badge" style="background:#e8f3ee; color:#3a7734; font-size:.55rem;">Sắp ra
+                        mắt</span>
                 </a>
             </div>
         </div>

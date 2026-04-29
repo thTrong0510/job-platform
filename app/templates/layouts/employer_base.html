@@ -171,23 +171,19 @@
     </a>
 
     <p class="sb-section">Tuyển dụng</p>
-    <a href="#" class="sb-link">
+    <a href="{{ url_for('employer_jobs.create') }}" class="sb-link">
         <i class="bi bi-plus-circle-fill"></i> Đăng tin tuyển dụng
-        <span class="soon">Sắp ra mắt</span>
     </a>
-    <a href="#" class="sb-link">
+    <a href="{{ url_for('employer_jobs.index') }}" class="sb-link">
         <i class="bi bi-briefcase-fill"></i> Tin tuyển dụng của tôi
-        <span class="soon">Sắp ra mắt</span>
     </a>
     <a href="#" class="sb-link">
         <i class="bi bi-people-fill"></i> Quản lý hồ sơ ứng tuyển
-        <span class="soon">Sắp ra mắt</span>
     </a>
 
     <p class="sb-section">Tài khoản</p>
     <a href="#" class="sb-link">
         <i class="bi bi-building-fill"></i> Hồ sơ công ty
-        <span class="soon">Sắp ra mắt</span>
     </a>
     <a href="{{ url_for('employer.logout') }}" class="sb-link danger">
         <i class="bi bi-box-arrow-right"></i> Đăng xuất

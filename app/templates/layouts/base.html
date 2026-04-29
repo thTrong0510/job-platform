@@ -7,11 +7,44 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- select -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="../../static/css/style.css" rel="stylesheet">
+
     {% block extra_css %}{% endblock %}
 </head>
-<body>
 
+<body>
     {% include "components/navbar.html" %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="container mt-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm rounded-3" role="alert">
+              <div class="d-flex align-items-center">
+                <div class="me-2">
+                  {% if category == 'danger' %}
+                    ❌
+                  {% elif category == 'success' %}
+                    ✅
+                  {% elif category == 'warning' %}
+                    ⚠️
+                  {% else %}
+                    ℹ️
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                  {{ message }}
+                </div>
+                <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <main class="container mt-4">
         {% block content %}{% endblock %}
@@ -21,7 +54,35 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {% block extra_js %}{% endblock %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const alerts = document.querySelectorAll('.alert');
+
+            alerts.forEach(function (alert) {
+
+                let delay = 3000; // thời gian hiển thị
+
+                if (alert.classList.contains('alert-danger')) {
+                    delay = 5000;
+                } else if (alert.classList.contains('alert-warning')) {
+                    delay = 4000;
+                }
+
+                setTimeout(function () {
+
+                    // Bỏ class show để kích hoạt fade out
+                    alert.classList.remove('show');
+
+                    // Sau khi fade xong (0.5s) thì remove khỏi DOM
+                    setTimeout(function () {
+                        alert.remove();
+                    }, 500);
+
+                }, delay);
+            });
+        });
+    </script>
 </body>
 </html>

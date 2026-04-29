@@ -8,3 +8,5 @@ from .cv import CV, CVTemplate
 from .job import Job
 from .application import Application
 from .recommendation import JobRecommendation
+from .candidateEducation import CandidateEducation
+from .candidateExperience import CandidateExperience
