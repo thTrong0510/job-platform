@@ -1,6 +1,11 @@
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, flash, url_for
+from werkzeug.utils import redirect
 
 from app.services.candidate.job_service import JobService
+from common.decorators import login_required
+from common.info import get_current_candidate, get_current_user
+from services.candidate.application_service import ApplicationService
+from services.candidate.cv_service import CVService
 
 job_bp = Blueprint('jobs', __name__, url_prefix='/jobs')
 
@@ -25,5 +30,28 @@ def job_list():
 
 @job_bp.route('/<int:job_id>', methods=['GET'])
 def job_detail(job_id):
+    candidate_id = get_current_candidate().id
     job = JobService.get_job_detail(job_id)
-    return render_template('pages/jobs/job_detail.html', job=job)
+    online_cvs, upload_cvs = CVService.get_candidate_cvs(candidate_id)
+    return render_template('pages/jobs/job_detail.html', job=job,
+                           online_cvs=online_cvs,
+                           upload_cvs=upload_cvs)
+
+@job_bp.route("/apply/<int:job_id>", methods=["POST"])
+@login_required
+def apply_job(job_id):
+    cv_id = request.form.get("cv_id")
+    email = get_current_user().email
+    try:
+        ApplicationService.apply(
+            email=email,
+            job_id=job_id,
+            cv_id=cv_id
+        )
+
+        flash("Ứng tuyển thành công!", "success")
+
+    except ValueError as e:
+        flash(str(e), "warning")
+
+    return redirect(url_for("jobs.job_detail", job_id=job_id))

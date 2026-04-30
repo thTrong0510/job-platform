@@ -85,11 +85,14 @@ def view_cv(cv_id):
     data = cv.content_json
     skills = CVSkillService.get_skill_names_by_cv(cv.id)
 
+    target = request.args.get('next')
+    back_url = target if target else url_for("candidate.manage_cvs")
+
     return render_template_string(
         html_template,
         data=data,
         skills=skills,
-        back_url=url_for("candidate.manage_cvs")
+        back_url=back_url
     )
 
 @candidate_bp.route("/cvs/<int:cv_id>/edit", methods=["GET", "POST"])

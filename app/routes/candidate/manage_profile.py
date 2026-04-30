@@ -4,6 +4,9 @@ from app.common.decorators import login_required
 from app.common.info import get_current_candidate
 from app.services.candidate.skill_service import SkillService
 from app.services.candidate.user_service import UserService
+from datetime import datetime
+
+from common.ProfileFromBuilder import parse_nested_form
 
 candidate_profile_bp = Blueprint("candidate_profile", __name__, url_prefix="/candidate")
 
@@ -23,8 +26,42 @@ def view_profile():
 @login_required
 def edit_profile():
     candidate_id = get_current_candidate().id
+    form_data = request.form
+    section = form_data.get('section')
 
     if request.method == "POST":
+
+        if section in ['experiences', 'all']:
+            experiences = parse_nested_form(form_data, 'experiences')
+            for exp in experiences:
+                start_str = exp.get('start_date')
+                end_str = exp.get('end_date')
+
+                if start_str and end_str:
+                    start_date = datetime.strptime(start_str, '%Y-%m-%d')
+                    end_date = datetime.strptime(end_str, '%Y-%m-%d')
+
+                    if start_date > end_date:
+                        flash(
+                            f"Lỗi tại Kinh nghiệm ({exp.get('company', 'N/A')}): Ngày kết thúc phải sau ngày bắt đầu.",
+                            "danger")
+                        return redirect(request.referrer)
+
+        if section in ['educations', 'all']:
+            educations = parse_nested_form(form_data, 'educations')
+            for edu in educations:
+                start_str = edu.get('start_date')
+                end_str = edu.get('end_date')
+
+                if start_str and end_str:
+                    start_date = datetime.strptime(start_str, '%Y-%m-%d')
+                    end_date = datetime.strptime(end_str, '%Y-%m-%d')
+
+                    if start_date > end_date:
+                        flash(f"Lỗi tại Học vấn ({edu.get('school', 'N/A')}): Ngày kết thúc phải sau ngày bắt đầu.",
+                              "danger")
+                        return redirect(request.referrer)
+
         CandidateService.update_profile(candidate_id, request.form)
         return redirect(url_for("candidate_profile.view_profile"))
 
