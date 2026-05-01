@@ -5,13 +5,32 @@
         </a>
 
         <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center">
 
                 {% if session.get("user_id") %}
                     <li class="nav-item">
-                        <span class="nav-link">
+                        <span class="nav-link text-white-50" style="font-size:.9rem;">
                             Xin chào, {{ session.get("user_email") }}
                         </span>
+                    </li>
+
+                    {# ── Notification Bell ── #}
+                    <li class="nav-item me-1">
+                        <a class="nav-link position-relative px-2"
+                           href="{{ url_for('notifications.index') }}"
+                           title="Thông báo">
+                            <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
+
+                            {# Badge số thông báo chưa đọc — inject từ context_processor #}
+                            {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle
+                                             badge rounded-pill bg-danger"
+                                      style="font-size:.58rem; min-width:17px;
+                                             padding: 2px 4px; line-height:1.4;">
+                                    {{ unread_notifications_count if unread_notifications_count < 100 else '99+' }}
+                                </span>
+                            {% endif %}
+                        </a>
                     </li>
 
                     <li class="nav-item">
@@ -19,6 +38,7 @@
                             Logout
                         </a>
                     </li>
+
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">

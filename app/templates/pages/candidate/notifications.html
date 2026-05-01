@@ -1,0 +1,231 @@
+{% extends "layouts/base.html" %}
+{% block title %}Thông báo – JobPlatform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notif-card {
+        border: none; border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        overflow: hidden;
+    }
+
+    .notif-item {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex; gap: 16px; align-items: flex-start;
+        transition: background .15s;
+        position: relative;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: #f9fafb; }
+
+    .notif-item.unread { background: #f0faf2; }
+    .notif-item.unread:hover { background: #e8f3ee; }
+    .notif-item.unread::before {
+        content: '';
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px; background: #3a7734; border-radius: 0 4px 4px 0;
+    }
+
+    .notif-icon {
+        width: 44px; height: 44px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+    }
+    .icon-accepted { background: #d1fae5; }
+    .icon-rejected { background: #fee2e2; }
+    .icon-reviewed { background: #dbeafe; }
+    .icon-default  { background: #f3f4f6; }
+
+    .notif-title {
+        font-weight: 700; font-size: .9rem; margin-bottom: 4px; color: #111827;
+    }
+    .notif-message {
+        font-size: .83rem; color: #6b7280; line-height: 1.6; margin-bottom: 6px;
+    }
+    .notif-time {
+        font-size: .75rem; color: #9ca3af;
+        display: flex; align-items: center; gap: 4px;
+    }
+
+    .unread-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #3a7734; flex-shrink: 0; margin-top: 6px;
+    }
+
+    .mark-read-btn {
+        background: none; border: none; padding: 0;
+        color: #9ca3af; font-size: .75rem; cursor: pointer;
+        text-decoration: underline; transition: color .15s;
+    }
+    .mark-read-btn:hover { color: #3a7734; }
+
+    .notif-header {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        padding: 20px 24px; margin-bottom: 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 12px;
+    }
+
+    .page-link { border-radius: 8px; margin: 0 2px; border: none; color: #374151; }
+    .page-item.active .page-link { background: #3a7734; border: none; box-shadow: none; }
+
+    .empty-notif { text-align: center; padding: 72px 24px; color: #9ca3af; }
+    .empty-notif i { font-size: 3.5rem; display: block; margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+<div class="col-lg-8">
+
+    {# ── Back to home ── #}
+    <div class="mb-3">
+        <a href="{{ url_for('main.home') }}"
+           class="text-decoration-none text-muted fw-medium d-inline-flex align-items-center gap-2"
+           style="font-size:.9rem;">
+            <i class="bi bi-arrow-left"></i> Quay lại trang chủ
+        </a>
+    </div>
+
+    {# ── Header ── #}
+    <div class="notif-header">
+        <div>
+            <h1 class="h5 fw-bold mb-1">
+                <i class="bi bi-bell-fill me-2" style="color:#3a7734;"></i>Thông báo của bạn
+            </h1>
+            <p class="text-muted mb-0 small">
+                Tổng <strong>{{ pagination.total }}</strong> thông báo
+            </p>
+        </div>
+
+        {% if pagination.items %}
+        <form method="POST" action="{{ url_for('notifications.mark_all_read') }}">
+            <button type="submit"
+                    class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                    style="font-size:.82rem;">
+                <i class="bi bi-check2-all me-1"></i>Đánh dấu tất cả đã đọc
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {# ── Notification list ── #}
+    {% if pagination.items %}
+    <div class="notif-card card">
+        {% for notif in pagination.items %}
+
+        {# Xác định icon theo nội dung title #}
+        {% set title_lower = notif.title | lower %}
+        {% if 'chấp nhận' in title_lower or '🎉' in notif.title %}
+            {% set icon = '🎉' %}
+            {% set icon_cls = 'icon-accepted' %}
+        {% elif 'từ chối' in title_lower or 'không chọn' in title_lower %}
+            {% set icon = '❌' %}
+            {% set icon_cls = 'icon-rejected' %}
+        {% elif 'xem xét' in title_lower %}
+            {% set icon = '👁' %}
+            {% set icon_cls = 'icon-reviewed' %}
+        {% else %}
+            {% set icon = '🔔' %}
+            {% set icon_cls = 'icon-default' %}
+        {% endif %}
+
+        <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+
+            {# Dot chưa đọc #}
+            {% if not notif.is_read %}
+                <div class="unread-dot"></div>
+            {% else %}
+                <div style="width:8px; flex-shrink:0;"></div>
+            {% endif %}
+
+            {# Icon #}
+            <div class="notif-icon {{ icon_cls }}">{{ icon }}</div>
+
+            {# Nội dung #}
+            <div class="flex-grow-1 overflow-hidden">
+                <div class="notif-title">{{ notif.title }}</div>
+
+                {% if notif.message %}
+                    <div class="notif-message">{{ notif.message | safe }}</div>
+                {% endif %}
+
+                {# ── FIX: Bỏ biến 'now', chỉ dùng strftime trực tiếp ── #}
+                <div class="notif-time">
+                    <i class="bi bi-clock"></i>
+                    {{ notif.created_at.strftime('%d/%m/%Y %H:%M') if notif.created_at else '—' }}
+                </div>
+
+                {% if not notif.is_read %}
+                <form method="POST"
+                      action="{{ url_for('notifications.mark_read', notification_id=notif.id) }}"
+                      class="d-inline mt-1">
+                    <button type="submit" class="mark-read-btn mt-1">
+                        Đánh dấu đã đọc
+                    </button>
+                </form>
+                {% else %}
+                    <span style="font-size:.72rem; color:#9ca3af;">
+                        <i class="bi bi-check2 me-1"></i>Đã đọc
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ── Pagination ── #}
+    {% if pagination.pages > 1 %}
+    {% macro purl(p) %}{{ url_for('notifications.index') }}?page={{ p }}{% endmacro %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ purl(pagination.page - 1) }}">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+            </li>
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ purl(p) }}">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ purl(pagination.page + 1) }}">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    {# ── Empty state ── #}
+    <div class="notif-card card">
+        <div class="empty-notif">
+            <i class="bi bi-bell-slash"></i>
+            <h5 class="fw-bold text-dark mb-2">Chưa có thông báo nào</h5>
+            <p class="text-muted mb-4">
+                Khi nhà tuyển dụng cập nhật trạng thái hồ sơ của bạn,<br>
+                thông báo sẽ xuất hiện tại đây.
+            </p>
+            <a href="{{ url_for('jobs.job_list') }}"
+               class="btn rounded-pill px-4 fw-semibold"
+               style="background:#3a7734; color:#fff;">
+                <i class="bi bi-search me-2"></i>Tìm việc làm
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</div>
+
+{% endblock %}

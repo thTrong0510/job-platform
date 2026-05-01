@@ -1,0 +1,494 @@
+{% extends "layouts/employer_base.html" %}
+{% block title %}Quản lý hồ sơ ứng tuyển – {{ employer.company_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Score badge ── */
+    .score-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-weight: 700; font-size: .78rem;
+        padding: 4px 10px; border-radius: 50px;
+    }
+    .score-high   { background: #d1fae5; color: #065f46; }
+    .score-medium { background: #fef3c7; color: #92400e; }
+    .score-low    { background: #fee2e2; color: #991b1b; }
+    .score-none   { background: #f3f4f6; color: #9ca3af; font-weight: 500; }
+
+    /* ── Status badge ── */
+    .st-PENDING  { background: #f3f4f6; color: #374151; }
+    .st-REVIEWED { background: #dbeafe; color: #1e40af; }
+    .st-ACCEPTED { background: #d1fae5; color: #065f46; }
+    .st-REJECTED { background: #fee2e2; color: #991b1b; }
+    .status-pill { font-size: .75rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; }
+
+    /* ── Candidate avatar ── */
+    .cand-avatar {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: #e8f3ee; color: #3a7734;
+        font-weight: 800; font-size: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Table ── */
+    .app-table tbody tr { transition: background .15s; }
+    .app-table tbody tr:hover { background: #f9fafb; }
+
+    /* ── View button ── */
+    .btn-view {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: 8px;
+        background: #3a7734; color: #fff;
+        font-size: .8rem; font-weight: 600;
+        text-decoration: none;
+        transition: opacity .2s, transform .15s;
+        white-space: nowrap;
+    }
+    .btn-view:hover { opacity: .88; color: #fff; transform: translateY(-1px); }
+
+    /* ── Auto-review hint ── */
+    .auto-hint {
+        font-size: .7rem; color: #9ca3af;
+        display: flex; align-items: center; gap: 3px; margin-top: 3px;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        padding: 18px 20px; margin-bottom: 20px;
+    }
+    .filter-bar .form-control,
+    .filter-bar .form-select {
+        border-radius: 9px; border: 1.5px solid #e5e7eb;
+        font-size: .875rem; padding: 9px 12px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .filter-bar .form-control:focus,
+    .filter-bar .form-select:focus {
+        border-color: #3a7734;
+        box-shadow: 0 0 0 3px rgba(58,119,52,.1);
+    }
+    .btn-filter {
+        background: #3a7734; color: #fff; border: none;
+        border-radius: 9px; padding: 9px 20px;
+        font-weight: 600; font-size: .875rem; transition: opacity .2s;
+    }
+    .btn-filter:hover { opacity: .88; color: #fff; }
+    .btn-reset {
+        background: #f3f4f6; color: #6b7280; border: none;
+        border-radius: 9px; padding: 9px 14px; font-size: .875rem;
+        transition: background .2s;
+    }
+    .btn-reset:hover { background: #e5e7eb; color: #374151; }
+
+    /* ── Score buttons ── */
+    .btn-score-new {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 16px; border-radius: 9px;
+        background: #3a7734; color: #fff;
+        border: none; font-size: .82rem; font-weight: 600;
+        cursor: pointer; transition: opacity .2s;
+    }
+    .btn-score-new:hover { opacity: .88; }
+    .btn-recalc {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 16px; border-radius: 9px;
+        background: #fff; color: #3a7734;
+        border: 1.5px solid #3a7734;
+        font-size: .82rem; font-weight: 600;
+        cursor: pointer; transition: background .2s, color .2s;
+    }
+    .btn-recalc:hover { background: #e8f3ee; }
+    .btn-score-new:disabled,
+    .btn-recalc:disabled { opacity: .5; cursor: wait; }
+
+    /* ── Unscored notice ── */
+    .unscored-notice {
+        background: #fffbeb; border: 1px solid #fde68a;
+        border-radius: 12px; padding: 12px 16px;
+        font-size: .85rem; color: #92400e;
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* ── AI badge ── */
+    .ai-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: linear-gradient(135deg, #e8f3ee, #d1fae5);
+        color: #3a7734; border: 1px solid #b0d4b8;
+        border-radius: 6px; font-size: .68rem; font-weight: 700;
+        padding: 2px 8px; letter-spacing: .04em;
+    }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+    .empty-state i { font-size: 3.5rem; margin-bottom: 16px; display: block; }
+
+    /* ── Pagination ── */
+    .page-link { border-radius: 8px; margin: 0 2px; border: none; color: #374151; }
+    .page-item.active .page-link { background: #3a7734; box-shadow: none; border: none; }
+
+    /* ── Loading overlay ── */
+    #scoreLoading {
+        display: none;
+        position: fixed; inset: 0; z-index: 9999;
+        background: rgba(0,0,0,.45);
+        align-items: center; justify-content: center;
+    }
+    #scoreLoading .box {
+        background: #fff; border-radius: 16px;
+        padding: 36px 48px; text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,.15);
+        max-width: 340px;
+    }
+    #scoreLoading .spinner {
+        width: 48px; height: 48px; border: 5px solid #e8f3ee;
+        border-top-color: #3a7734; border-radius: 50%;
+        animation: spin .8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Header ── #}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="h4 fw-bold mb-1">
+            <i class="bi bi-people-fill me-2" style="color:#3a7734;"></i>
+            Quản lý hồ sơ ứng tuyển
+        </h1>
+        <p class="text-muted mb-0 small">
+            Tổng cộng <strong>{{ pagination.total }}</strong> hồ sơ
+            &nbsp;·&nbsp;
+            <span class="ai-badge">
+                <i class="bi bi-stars"></i> AI Gemini Matching
+            </span>
+        </p>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        {# Tính điểm cho hồ sơ mới (chưa có điểm) — ít tốn quota #}
+        <form method="POST"
+              action="{{ url_for('employer_applications.score_new') }}"
+              class="score-form">
+            <button type="submit" class="btn-score-new"
+                    title="Chỉ tính điểm cho hồ sơ chưa có điểm — tiết kiệm quota">
+                <i class="bi bi-stars"></i>
+                Tính điểm mới
+                {% if unscored_count > 0 %}
+                <span class="badge bg-white text-success ms-1"
+                      style="font-size:.72rem;">{{ unscored_count }}</span>
+                {% endif %}
+            </button>
+        </form>
+
+        {# Tính lại toàn bộ — cần xác nhận vì tốn quota #}
+        <form method="POST"
+              action="{{ url_for('employer_applications.recalculate') }}"
+              class="score-form"
+              onsubmit="return confirm('Tính lại điểm toàn bộ sẽ gọi Gemini cho tất cả hồ sơ và có thể mất vài phút. Tiếp tục?')">
+            <button type="submit" class="btn-recalc"
+                    title="Tính lại điểm tất cả hồ sơ (dùng khi mô tả công việc thay đổi)">
+                <i class="bi bi-arrow-clockwise"></i> Tính lại tất cả
+            </button>
+        </form>
+
+        <a href="{{ url_for('employer.dashboard') }}"
+           class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+{# ── Unscored notice ── #}
+{% if unscored_count > 0 %}
+<div class="unscored-notice">
+    <i class="bi bi-exclamation-triangle-fill" style="font-size:1.2rem; flex-shrink:0;"></i>
+    <span>
+        Có <strong>{{ unscored_count }} hồ sơ</strong> chưa được tính điểm phù hợp.
+        Nhấn <strong>"Tính điểm mới"</strong> để phân tích bằng Gemini AI.
+        <small class="d-block mt-1" style="color:#b45309;">
+            ⚠ Quá trình mất khoảng {{ unscored_count * 4 }}–{{ unscored_count * 6 }} giây do giới hạn API miễn phí.
+        </small>
+    </span>
+</div>
+{% endif %}
+
+{# ── Filter bar ── #}
+<form method="GET" action="{{ url_for('employer_applications.index') }}" id="filterForm">
+<div class="filter-bar">
+    <div class="row g-2 align-items-end">
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold mb-1" style="font-size:.8rem;">
+                <i class="bi bi-search me-1"></i>Tìm kiếm
+            </label>
+            <input type="text" name="keyword" class="form-control"
+                   placeholder="Tên ứng viên, email, tên việc làm..."
+                   value="{{ filters.keyword }}">
+        </div>
+
+        <div class="col-md-3 col-6">
+            <label class="form-label fw-semibold mb-1" style="font-size:.8rem;">
+                <i class="bi bi-flag me-1"></i>Trạng thái
+            </label>
+            <select name="status" class="form-select">
+                <option value="">Tất cả trạng thái</option>
+                {% for val, lbl in [
+                    ('PENDING',  'Chờ duyệt'),
+                    ('REVIEWED', 'Đang xem xét'),
+                    ('ACCEPTED', 'Chấp nhận'),
+                    ('REJECTED', 'Từ chối'),
+                ] %}
+                <option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>
+                    {{ lbl }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3 col-6">
+            <label class="form-label fw-semibold mb-1" style="font-size:.8rem;">
+                <i class="bi bi-stars me-1"></i>Mức phù hợp (AI)
+            </label>
+            <select name="score_level" class="form-select">
+                <option value="">Tất cả mức phù hợp</option>
+                {% for val, lbl in [
+                    ('high',   '🟢 Cao ≥ 70%'),
+                    ('medium', '🟡 Trung bình 40–69%'),
+                    ('low',    '🔴 Thấp < 40%'),
+                ] %}
+                <option value="{{ val }}"
+                        {% if filters.score_level == val %}selected{% endif %}>
+                    {{ lbl }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn-filter btn flex-grow-1">
+                <i class="bi bi-funnel-fill me-1"></i>Lọc
+            </button>
+            <a href="{{ url_for('employer_applications.index') }}" class="btn-reset btn">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+
+    </div>
+</div>
+</form>
+
+{# ── Table ── #}
+{% if pagination.items %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table app-table align-middle mb-0">
+            <thead style="background:#f9fafb; font-size:.78rem;
+                          text-transform:uppercase; letter-spacing:.06em; color:#6b7280;">
+                <tr>
+                    <th class="ps-4 py-3">Ứng viên</th>
+                    <th class="py-3">Vị trí ứng tuyển</th>
+                    <th class="py-3">CV</th>
+                    <th class="py-3 text-center">
+                        Mức phù hợp
+                        <span class="ai-badge ms-1">AI</span>
+                    </th>
+                    <th class="py-3 text-center">Trạng thái</th>
+                    <th class="py-3">Ngày nộp</th>
+                    <th class="py-3 text-center pe-4">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for app in pagination.items %}
+            <tr>
+
+                {# Candidate #}
+                <td class="ps-4 py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="cand-avatar">
+                            {{ app.cv.candidate.full_name[0] | upper }}
+                        </div>
+                        <div>
+                            <div class="fw-semibold" style="font-size:.9rem; line-height:1.2;">
+                                {{ app.cv.candidate.full_name }}
+                            </div>
+                            <div class="text-muted" style="font-size:.78rem;">
+                                {{ app.email }}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+
+                {# Job #}
+                <td class="py-3">
+                    <span class="fw-medium" style="font-size:.88rem;">
+                        {{ app.job.title }}
+                    </span>
+                </td>
+
+                {# CV #}
+                <td class="py-3">
+                    <div style="font-size:.82rem;">
+                        <div class="fw-medium text-truncate" style="max-width:140px;">
+                            {{ app.cv.title }}
+                        </div>
+                        <span class="badge mt-1"
+                              style="background:#e8f3ee; color:#3a7734; font-size:.65rem;">
+                            {{ app.cv.type }}
+                        </span>
+                    </div>
+                </td>
+
+                {# Score #}
+                <td class="py-3 text-center">
+                    {% if app.match_score is not none %}
+                        {% set s = app.match_score %}
+                        {% if s >= 70 %}
+                            <span class="score-badge score-high">
+                                <i class="bi bi-arrow-up-circle-fill"></i>
+                                {{ "%.0f"|format(s) }}%
+                            </span>
+                        {% elif s >= 40 %}
+                            <span class="score-badge score-medium">
+                                <i class="bi bi-dash-circle-fill"></i>
+                                {{ "%.0f"|format(s) }}%
+                            </span>
+                        {% else %}
+                            <span class="score-badge score-low">
+                                <i class="bi bi-arrow-down-circle-fill"></i>
+                                {{ "%.0f"|format(s) }}%
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="score-badge score-none"
+                              title="Nhấn 'Tính điểm mới' để phân tích hồ sơ này">
+                            <i class="bi bi-hourglass-split"></i> Chưa tính
+                        </span>
+                    {% endif %}
+                </td>
+
+                {# Status #}
+                <td class="py-3 text-center">
+                    <span class="status-pill st-{{ app.status }}">
+                        {% if   app.status == 'PENDING'  %}⏳ Chờ duyệt
+                        {% elif app.status == 'REVIEWED' %}👁 Đang xem xét
+                        {% elif app.status == 'ACCEPTED' %}✅ Chấp nhận
+                        {% else                          %}❌ Từ chối{% endif %}
+                    </span>
+                </td>
+
+                {# Date #}
+                <td class="py-3" style="font-size:.82rem; color:#6b7280; white-space:nowrap;">
+                    {{ app.applied_at.strftime('%d/%m/%Y') if app.applied_at else '—' }}<br>
+                    <span style="font-size:.72rem;">
+                        {{ app.applied_at.strftime('%H:%M') if app.applied_at else '' }}
+                    </span>
+                </td>
+
+                {# Actions #}
+                <td class="py-3 text-center pe-4">
+                    <div class="d-flex flex-column align-items-center gap-1">
+                        <a href="{{ url_for('employer_applications.detail', application_id=app.id) }}"
+                           class="btn-view">
+                            <i class="bi bi-eye"></i> Xem CV
+                        </a>
+                        {% if app.status == 'PENDING' %}
+                        <div class="auto-hint justify-content-center"
+                             title="Mở CV sẽ tự động chuyển trạng thái sang Đang xem xét">
+                            <i class="bi bi-info-circle-fill" style="color:#f59e0b;"></i>
+                            Sẽ tự chuyển → Đang xem xét
+                        </div>
+                        {% endif %}
+                    </div>
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# ── Pagination ── #}
+{% if pagination.pages > 1 %}
+{% macro page_url(p) %}
+    {{ url_for('employer_applications.index') }}?keyword={{ filters.keyword | urlencode }}&status={{ filters.status }}&score_level={{ filters.score_level }}&page={{ p }}
+{% endmacro %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ page_url(pagination.page - 1) }}">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </li>
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ page_url(p) }}">{{ p }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ page_url(pagination.page + 1) }}">
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h5 class="fw-bold text-dark mb-1">Không có hồ sơ nào</h5>
+        <p class="text-muted mb-0">
+            {% if filters.keyword or filters.status or filters.score_level %}
+                Thử thay đổi bộ lọc để xem thêm kết quả.
+                <a href="{{ url_for('employer_applications.index') }}"
+                   class="fw-semibold" style="color:#3a7734;">Xóa bộ lọc</a>
+            {% else %}
+                Chưa có ứng viên nào nộp hồ sơ vào các tin tuyển dụng của bạn.
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+{# ── Loading overlay ── #}
+<div id="scoreLoading">
+    <div class="box">
+        <div class="spinner"></div>
+        <h6 class="fw-bold mb-1" style="color:#2d4a3e;">Đang tính điểm phù hợp...</h6>
+        <p class="text-muted mb-0 small">
+            Gemini AI đang phân tích CV và mô tả công việc.<br>
+            Quá trình có thể mất vài phút do giới hạn API, vui lòng chờ.
+        </p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Hiện loading overlay khi submit bất kỳ form scoring nào
+    document.querySelectorAll('.score-form').forEach(function(form) {
+        form.addEventListener('submit', function (e) {
+            // Nếu có confirm() và user huỷ thì không hiện overlay
+            const overlay = document.getElementById('scoreLoading');
+            setTimeout(function() {
+                // Kiểm tra form vẫn đang submit (không bị cancel)
+                overlay.style.display = 'flex';
+                document.querySelectorAll('.btn-score-new, .btn-recalc')
+                    .forEach(btn => btn.disabled = true);
+            }, 50);
+        });
+    });
+</script>
+{% endblock %}

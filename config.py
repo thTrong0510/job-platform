@@ -18,6 +18,9 @@ class Config:
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+     
+    # ── Gemini API ── 
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def init_cloudinary(app):
 

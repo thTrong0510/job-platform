@@ -23,6 +23,9 @@ def create_app():
     from .routes.candidate.job_routes import job_bp
     from .routes.employer.employer_auth_routes import employer_bp
     from .routes.employer.job_routes import employer_job_bp
+    from .routes.employer.application_routes import employer_applications_bp
+    from .routes.candidate.notification_routes import notifications_bp
+    from .routes.employer.cv_preview_routes import employer_cv_preview_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -32,5 +35,21 @@ def create_app():
     app.register_blueprint(employer_job_bp)
     app.register_blueprint(candidate_bp)
     app.register_blueprint(candidate_profile_bp)
+    app.register_blueprint(employer_applications_bp)
+    app.register_blueprint(notifications_bp)
+    app.register_blueprint(employer_cv_preview_bp)
+ 
+    # ── Context processor: inject unread count vào mọi template ──
+    @app.context_processor
+    def inject_globals():
+        from flask import session
+        unread = 0
+        if session.get("user_id") and session.get("user_role") != "EMPLOYER":
+            try:
+                from app.repositories.candidate.notification_repository import NotificationRepository
+                unread = NotificationRepository.count_unread(session["user_id"])
+            except Exception:
+                unread = 0
+        return {"unread_notifications_count": unread}
 
     return app
