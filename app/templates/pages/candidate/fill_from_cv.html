@@ -1,0 +1,158 @@
+{% extends "layouts/base.html" %}
+{% block title %}Trích xuất thông tin từ CV{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+
+                    <div class="text-white p-5 text-center" style="background: linear-gradient(135deg, #b0d4b8 0%, #5b7d6f 100%)
+;">
+                        <div class="mb-3">
+                            <i class="bi bi-cpu-fill" style="font-size: 3rem;"></i>
+                        </div>
+                        <h2 class="fw-bold">Trích xuất CV bằng AI</h2>
+                        <p class="opacity-75 mb-0">Công nghệ thông minh giúp tự động hóa hồ sơ của bạn</p>
+                    </div>
+                    <p class="text-center text-muted mb-4">
+                        Chọn một trong hai cách dưới đây để hệ thống tự động điền thông tin vào Profile.
+                    </p>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Lưu ý:</strong> Thao tác này sẽ <strong>ghi đè toàn bộ</strong> thông tin hiện tại trong profile của bạn.
+                    </div>
+                    <form id="cvForm" method="POST" enctype="multipart/form-data">
+
+                        <!-- LỰA CHỌN 1: Chọn CV đã upload -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">1. Chọn từ CV đã upload</label>
+                            {% if uploaded_cvs %}
+                            <select name="cv_id" id="cvSelect" class="form-select form-select-lg">
+                                <option value="">-- Chọn CV đã upload --</option>
+                                {% for cv in uploaded_cvs %}
+                                <option value="{{ cv.id }}">
+                                    {{ cv.title }} ({{ cv.file_name }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle"></i>
+                                Bạn chưa có CV nào được upload. Vui lòng sử dụng lựa chọn 2 bên dưới.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex align-items-center my-4">
+                            <hr class="flex-grow-1">
+                            <span class="mx-3 text-muted fw-bold small">HOẶC</span>
+                            <hr class="flex-grow-1">
+                        </div>
+
+                        <!-- LỰA CHỌN 2: Upload file mới -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">2. Upload file CV mới</label>
+                            <input type="file" name="cv_file" id="cvFileInput" class="form-control form-control-lg"
+                                   accept=".pdf,.doc,.docx">
+                            <small class="text-muted">Hỗ trợ: PDF, DOC, DOCX (tối đa 5MB)</small>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-magic"></i> Trích xuất và cập nhật Profile
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="modal fade" id="confirmModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                                        Xác nhận
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <p class="mb-2">
+                                        Thao tác này sẽ <strong>ghi đè toàn bộ thông tin profile hiện tại</strong>.
+                                    </p>
+                                    <p class="mb-0 text-danger fw-semibold">
+                                        Bạn có chắc chắn muốn tiếp tục?
+                                    </p>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Hủy
+                                    </button>
+                                    <button type="button" id="confirmBtn" class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i> Xác nhận
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-primary {
+    background: linear-gradient(135deg, rgb(160, 197, 189), rgb(50, 92, 30));
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(133, 182, 65, 0.3), #a0c5bd);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("cvForm");
+    const modal = new bootstrap.Modal(document.getElementById("confirmModal"));
+    const confirmBtn = document.getElementById("confirmBtn");
+    const submitBtn = document.getElementById("btnSubmit");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const cvSelectEl = document.getElementById('cvSelect');
+        const cvSelect = cvSelectEl ? cvSelectEl.value : "";
+        const cvFile = document.getElementById('cvFileInput').files.length;
+
+        if (!cvSelect && cvFile === 0) {
+            alert("Vui lòng chọn một CV hoặc upload file!");
+            return;
+        }
+
+        if (cvSelect && cvFile > 0) {
+            alert("Chỉ chọn 1 trong 2 cách")
+            return;
+        }
+
+        modal.show();
+    });
+
+    confirmBtn.addEventListener("click", function () {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+        confirmBtn.disabled = true;
+        form.submit();
+    });
+
+});
+</script>
+{%endblock %}

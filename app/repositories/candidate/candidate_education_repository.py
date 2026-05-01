@@ -1,3 +1,4 @@
+from app.common.date_time_customize import _normalize_date
 from app.extensions import db
 from app.models.candidateEducation import CandidateEducation
 import re
@@ -34,9 +35,22 @@ class CandidateEducationRepository:
                     candidate_id=candidate_id,
                     school=edu.get("school", ""),
                     degree=edu.get("degree", ""),
-                    start_date=edu.get("start_date", ""),
-                    end_date=edu.get("end_date", "")
+                    start_date=_normalize_date(edu.get("start_date")),
+                    end_date=_normalize_date(edu.get("end_date"))
                 )
                 db.session.add(new_edu)
 
         db.session.commit()
+
+    @staticmethod
+    def replace_all_from_list(candidate_id: int, educations: list[dict]):
+        CandidateEducation.query.filter_by(candidate_id=candidate_id).delete()
+
+        for edu in educations:
+            db.session.add(CandidateEducation(
+                candidate_id=candidate_id,
+                school=edu.get('school'),
+                degree=edu.get('degree'),
+                start_date=_normalize_date(edu.get('start_date')),
+                end_date=_normalize_date(edu.get('end_date'))
+            ))

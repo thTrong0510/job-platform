@@ -61,6 +61,18 @@
 .skill-badge:hover {
     background: #e8e8e8;
 }
+
+.btn-fill-cv {
+    background: linear-gradient(135deg, rgb(160, 197, 189), rgb(50, 92, 30));
+    color: white;
+    border: none;
+}
+
+.btn-fill-cv:hover {
+    background: linear-gradient(135deg, rgba(133, 182, 65, 0.3), #a0c5bd);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
 </style>
 {% endblock %}
 
@@ -116,10 +128,16 @@
                         {{ candidate.location if candidate.location else "Chưa cập nhật địa điểm" }}
                     </p>
 
-                    <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
-                        class="btn btn-outline-primary btn-sm mt-3">
-                        Edit Profile
-                    </a>
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('cv_extraction.fill_from_cv') }}" class="btn btn-fill-cv btn-lg">
+                            <i class="bi bi-magic"></i> Fill Profile from CV
+                        </a>
+
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
+                            class="btn btn-outline-primary btn-sm mt-3">
+                            Edit Profile
+                        </a>
+                    </div>
                 </div>
             </div>
 

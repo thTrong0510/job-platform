@@ -25,3 +25,13 @@ class CandidateSkillRepository:
             db.session.add(new_skill)
 
         db.session.commit()
+
+    @staticmethod
+    def replace_all_from_ids(candidate_id, skill_ids: list[int]):
+        candidate = Candidate.query.get(candidate_id)
+        candidate.skills.clear()
+        for skill_id in skill_ids:
+            db.session.add(CandidateSkill(
+                candidate_id=candidate_id,
+                skill_id=int(skill_id)
+            ))

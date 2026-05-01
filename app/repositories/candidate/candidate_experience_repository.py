@@ -1,3 +1,4 @@
+from app.common.date_time_customize import _normalize_date
 from app.extensions import db
 from app.models.candidateExperience import CandidateExperience
 import re
@@ -38,10 +39,24 @@ class CandidateExperienceRepository:
                     candidate_id=candidate_id,
                     company=exp.get("company", ""),
                     position=exp.get("position", ""),
-                    start_date=exp.get("start_date", ""),
-                    end_date=exp.get("end_date", ""),
+                    start_date=_normalize_date(exp.get("start_date")),
+                    end_date=_normalize_date(exp.get("end_date")),
                     description=exp.get("description", "")
                 )
                 db.session.add(new_exp)
 
         db.session.commit()
+
+    @staticmethod
+    def replace_all_from_list(candidate_id: int, experiences: list[dict]):
+        CandidateExperience.query.filter_by(candidate_id=candidate_id).delete()
+
+        for exp in experiences:
+            db.session.add(CandidateExperience(
+                candidate_id=candidate_id,
+                company=exp.get('company'),
+                position=exp.get('position'),
+                start_date=_normalize_date(exp.get('start_date')),
+                end_date=_normalize_date(exp.get('end_date')),
+                description=exp.get('description')
+            ))
