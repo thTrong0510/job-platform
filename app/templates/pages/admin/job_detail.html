@@ -1,0 +1,301 @@
+<!-- {% extends "layouts/admin_base.html" %} -->
+{% block title %}{{ job.title }} – Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root { --green: #3a7734; --green-light: #e8f3ee; --green-pale: #b0d4b8; }
+
+    .info-card { border: none; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .info-card .card-head {
+        background: linear-gradient(135deg, #2d4a3e, #3a7734);
+        border-radius: 16px 16px 0 0; padding: 24px 28px; color: #fff;
+    }
+    .info-card .card-body { padding: 24px 28px; }
+
+    .detail-list { list-style: none; padding: 0; margin: 0; }
+    .detail-list li {
+        display: flex; gap: 12px; padding: 10px 0;
+        border-bottom: 1px solid #f3f4f6; font-size: .875rem;
+    }
+    .detail-list li:last-child { border-bottom: none; }
+    .detail-list .lbl { color: #6b7280; min-width: 150px; flex-shrink: 0; }
+    .detail-list .val { color: #111827; font-weight: 500; }
+
+    .sec-title {
+        font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+        text-transform: uppercase; color: #9ca3af;
+        display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+    .sec-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+
+    /* Skill tags */
+    .skill-tag {
+        display: inline-flex; align-items: center;
+        background: var(--green-light); color: var(--green);
+        border-radius: 6px; font-size: .78rem; font-weight: 600;
+        padding: 4px 10px; margin: 3px;
+    }
+
+    /* Status chips */
+    .chip {
+        font-size: .8rem; font-weight: 700;
+        padding: 5px 14px; border-radius: 50px;
+        display: inline-block;
+    }
+    .chip-open     { background: #d1fae5; color: #065f46; }
+    .chip-closed   { background: #f3f4f6; color: #6b7280; }
+    .chip-hidden   { background: #fee2e2; color: #991b1b; }
+    .chip-visible  { background: #e8f3ee; color: #3a7734; }
+
+    /* Action card */
+    .action-card {
+        border: none; border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        position: sticky; top: 24px;
+    }
+    .action-card .card-body { padding: 24px; }
+
+    .btn-hide {
+        background: #fef3c7; color: #92400e; border: none;
+        border-radius: 10px; padding: 11px; font-weight: 700;
+        width: 100%; font-size: .88rem; transition: opacity .2s;
+    }
+    .btn-hide:hover { opacity: .85; }
+    .btn-show {
+        background: #d1fae5; color: #065f46; border: none;
+        border-radius: 10px; padding: 11px; font-weight: 700;
+        width: 100%; font-size: .88rem; transition: opacity .2s;
+    }
+    .btn-show:hover { opacity: .85; }
+    .btn-delete {
+        background: #fee2e2; color: #991b1b; border: none;
+        border-radius: 10px; padding: 11px; font-weight: 700;
+        width: 100%; font-size: .88rem; margin-top: 10px; transition: opacity .2s;
+    }
+    .btn-delete:hover { opacity: .85; }
+
+    .desc-box {
+        background: #f9fafb; border-radius: 10px;
+        padding: 18px 20px; font-size: .875rem;
+        color: #374151; line-height: 1.8;
+        white-space: pre-wrap; word-break: break-word;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Breadcrumb ── #}
+<div class="d-flex align-items-center gap-2 mb-4">
+    <a href="{{ url_for('admin_jobs.index') }}"
+       class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i>Danh sách
+    </a>
+    <span class="text-muted" style="font-size:.85rem;">
+        / <strong>{{ job.title }}</strong>
+    </span>
+</div>
+
+<div class="row g-4 align-items-start">
+
+    {# ══ LEFT ══ #}
+    <div class="col-lg-8">
+
+        {# ── Job header card ── #}
+        <div class="info-card card mb-4">
+            <div class="card-head">
+                <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+                    <div>
+                        <h2 class="fw-bold mb-2" style="font-size:1.3rem;">
+                            {{ job.title }}
+                            {% if job.is_hidden %}
+                            <span class="chip chip-hidden ms-2" style="font-size:.7rem;">
+                                🚫 Đang ẩn
+                            </span>
+                            {% endif %}
+                        </h2>
+                        <p class="mb-1 opacity-80" style="font-size:.9rem;">
+                            <i class="bi bi-building me-1"></i>
+                            <strong>{{ employer.company_name }}</strong>
+                        </p>
+                        {% if job.location %}
+                        <p class="mb-0 opacity-80" style="font-size:.9rem;">
+                            <i class="bi bi-geo-alt me-1"></i>{{ job.location }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="chip {% if job.status == 'OPEN' %}chip-open{% else %}chip-closed{% endif %}">
+                            {% if job.status == 'OPEN' %}🟢 Đang tuyển{% else %}⚫ Đã đóng{% endif %}
+                        </span>
+                        <span class="chip {% if job.is_hidden %}chip-hidden{% else %}chip-visible{% endif %}">
+                            {% if job.is_hidden %}🚫 Đang ẩn{% else %}👁 Hiển thị{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <p class="sec-title">Thông tin chung</p>
+                <ul class="detail-list">
+                    <li>
+                        <span class="lbl"><i class="bi bi-building me-2 text-muted"></i>Công ty</span>
+                        <span class="val">{{ employer.company_name }}</span>
+                    </li>
+                    {% if job.location %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-geo-alt me-2 text-muted"></i>Địa điểm</span>
+                        <span class="val">{{ job.location }}</span>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-cash me-2 text-muted"></i>Mức lương</span>
+                        <span class="val">
+                            {% if job.salary_min and job.salary_max %}
+                                {{ "{:,.0f}".format(job.salary_min) }} – {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                            {% elif job.salary_min %}
+                                Từ {{ "{:,.0f}".format(job.salary_min) }} VNĐ
+                            {% elif job.salary_max %}
+                                Đến {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                            {% else %}
+                                Thỏa thuận
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="lbl"><i class="bi bi-briefcase me-2 text-muted"></i>Kinh nghiệm</span>
+                        <span class="val">
+                            {% if job.experience_required %}
+                                {{ job.experience_required }}+ năm
+                            {% else %}
+                                Không yêu cầu
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="lbl"><i class="bi bi-calendar3 me-2 text-muted"></i>Ngày đăng</span>
+                        <span class="val">
+                            {{ job.created_at.strftime('%d/%m/%Y %H:%M') if job.created_at else '—' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="lbl"><i class="bi bi-calendar-x me-2 text-muted"></i>Hạn nộp</span>
+                        <span class="val">
+                            {{ job.end_date.strftime('%d/%m/%Y') if job.end_date else '—' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="lbl"><i class="bi bi-people me-2 text-muted"></i>Hồ sơ ứng tuyển</span>
+                        <span class="val fw-bold" style="color:#3a7734;">
+                            {{ job.applications | length }} hồ sơ
+                        </span>
+                    </li>
+                </ul>
+
+                {# ── Skills ── #}
+                {% if job.skills %}
+                <p class="sec-title mt-4">Kỹ năng yêu cầu</p>
+                <div>
+                    {% for js in job.skills %}
+                    <span class="skill-tag">
+                        <i class="bi bi-check2 me-1"></i>{{ js.skill.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {# ── Description ── #}
+                <p class="sec-title mt-4">Mô tả công việc</p>
+                <div class="desc-box">{{ job.description }}</div>
+
+            </div>
+        </div>
+
+    </div>
+
+    {# ══ RIGHT ══ #}
+    <div class="col-lg-4">
+        <div class="action-card card">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-shield-fill-check me-2" style="color:var(--green);"></i>
+                    Hành động kiểm duyệt
+                </h6>
+
+                {# ── Toggle hidden ── #}
+                <form method="POST"
+                      action="{{ url_for('admin_jobs.toggle_hidden', job_id=job.id) }}">
+                    <input type="hidden" name="back_to" value="detail">
+                    {% if job.is_hidden %}
+                    <button type="submit" class="btn-show btn">
+                        <i class="bi bi-eye-fill me-2"></i>Hiện lại tin này
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn-hide btn">
+                        <i class="bi bi-eye-slash-fill me-2"></i>Ẩn tin vi phạm
+                    </button>
+                    {% endif %}
+                </form>
+
+                <div class="p-3 rounded-3 my-3"
+                     style="background:#f9fafb; border:1px solid #e5e7eb;
+                            font-size:.8rem; color:#6b7280; line-height:1.6;">
+                    <i class="bi bi-info-circle me-1"></i>
+                    {% if job.is_hidden %}
+                        Tin đang bị ẩn — ứng viên <strong>không thể</strong> tìm thấy.
+                        Nhấn "Hiện lại" nếu nội dung đã được xử lý.
+                    {% else %}
+                        Ẩn tin sẽ khiến ứng viên <strong>không thể</strong> tìm thấy tin này,
+                        nhưng dữ liệu vẫn được giữ nguyên. Admin có thể mở lại bất kỳ lúc nào.
+                    {% endif %}
+                </div>
+
+                <hr style="border-color:#f0f0f0;">
+
+                {# ── Delete ── #}
+                <form method="POST"
+                      action="{{ url_for('admin_jobs.delete', job_id=job.id) }}"
+                      onsubmit="return confirm('Xóa vĩnh viễn tin \'{{ job.title }}\' ?\n\nHành động này không thể hoàn tác và sẽ xóa tất cả hồ sơ ứng tuyển liên quan.')">
+                    <button type="submit" class="btn-delete btn">
+                        <i class="bi bi-trash3-fill me-2"></i>Xóa vĩnh viễn
+                    </button>
+                </form>
+
+                <p class="text-muted mt-2 mb-0" style="font-size:.75rem; text-align:center;">
+                    ⚠️ Xóa sẽ mất toàn bộ dữ liệu và không thể khôi phục.
+                </p>
+
+                <hr style="border-color:#f0f0f0;">
+
+                {# ── Employer info ── #}
+                <p class="sec-title" style="font-size:.68rem;">Nhà tuyển dụng</p>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div style="width:36px;height:36px;border-radius:8px;
+                                background:#e8f3ee;color:#3a7734;font-weight:800;
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:.9rem;flex-shrink:0;">
+                        {{ employer.company_name[0] | upper }}
+                    </div>
+                    <div>
+                        <div class="fw-semibold" style="font-size:.85rem;">
+                            {{ employer.company_name }}
+                        </div>
+                        {% if employer.location %}
+                        <div class="text-muted" style="font-size:.75rem;">
+                            <i class="bi bi-geo-alt me-1"></i>{{ employer.location }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- <a href="{{ url_for('admin.employer_detail', user_id=employer.user_id) }}"
+                   class="btn w-100 rounded-pill fw-semibold mt-1"
+                   style="background:#e8f3ee;color:#3a7734;font-size:.82rem;border:none;">
+                    <i class="bi bi-building me-1"></i>Xem hồ sơ công ty
+                </a> -->
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

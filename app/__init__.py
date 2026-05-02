@@ -23,6 +23,7 @@ def create_app():
     from .routes.candidate.job_routes import job_bp
     from .routes.employer.employer_auth_routes import employer_bp
     from .routes.employer.job_routes import employer_job_bp
+    from .routes.admin.admin_job_routes import admin_jobs_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -32,5 +33,6 @@ def create_app():
     app.register_blueprint(employer_job_bp)
     app.register_blueprint(candidate_bp)
     app.register_blueprint(candidate_profile_bp)
+    app.register_blueprint(admin_jobs_bp)
 
     return app
