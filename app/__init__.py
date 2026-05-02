@@ -31,6 +31,7 @@ def create_app():
     from app.routes.candidate.cv_extraction_routes import cv_extraction_bp
     from app.routes.admin.user_routes import admin_user_bp
     from app.routes.auth.admin_auth_routes import admin_auth_bp
+    from .routes.admin.admin_job_routes import admin_jobs_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -60,5 +61,6 @@ def create_app():
             except Exception:
                 unread = 0
         return {"unread_notifications_count": unread}
+    app.register_blueprint(admin_jobs_bp)
 
     return app

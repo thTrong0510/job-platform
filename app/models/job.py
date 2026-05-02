@@ -26,6 +26,8 @@ class Job(db.Model):
         default='OPEN'
     )
 
+    is_hidden = db.Column(db.Boolean, default=False, nullable=False)
+
     created_at = db.Column(db.DateTime, server_default=func.now())
     end_date = db.Column(db.DateTime, server_default=func.now())
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, session
 from app.services.auth.auth_service import AuthService
-from flask import request, redirect, url_for, render_template
+from flask import request, redirect, url_for, render_template, flash
 from app.models.user import User
 from app.models.candidate import Candidate
 from app.services.candidate.user_service import UserService
@@ -38,21 +38,33 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form["email"]
+        email    = request.form["email"]
         password = request.form["password"]
-
+ 
         user = AuthService.login(email)
-
-        if user and user.check_password(password):
-            session["user_id"]    = user.id
-            session["user_email"] = user.email
-            session["user_role"]  = user.role
-            session["candidate_id"] = user.candidate.id
-
+ 
+        if not user or not user.check_password(password):
+            flash("Email hoặc mật khẩu không đúng.", "danger")
+            return render_template("/pages/auth/login.html")
+ 
+        # ── Lưu session chung ──
+        session["user_id"]    = user.id
+        session["user_email"] = user.email
+        session["user_role"]  = user.role
+ 
+        # ── Redirect theo role ──
+        if user.role == "ADMIN":
+            return redirect(url_for("admin.dashboard"))
+ 
+        if user.role == "CANDIDATE":
+            # Gán candidate_id vào session nếu có
+            if hasattr(user, "candidate") and user.candidate:
+                session["candidate_id"] = user.candidate.id
             return redirect("/")
-
-        return "Login failed"
-
+ 
+        # Fallback
+        return redirect("/")
+ 
     return render_template("/pages/auth/login.html")
 
 
