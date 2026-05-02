@@ -5,163 +5,98 @@
 <style>
     /* ── Stat cards ── */
     .stat-card {
-        border: none;
-        border-radius: 16px;
-        padding: 24px;
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        transition: transform .2s, box-shadow .2s;
-        height: 100%;
+        border: none; border-radius: 16px; padding: 24px;
+        display: flex; align-items: center; gap: 18px;
+        transition: transform .2s, box-shadow .2s; height: 100%;
+        text-decoration: none; color: inherit;
     }
-
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, .1) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
+        color: inherit;
     }
-
     .stat-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.6rem;
-        flex-shrink: 0;
+        width: 56px; height: 56px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem; flex-shrink: 0;
     }
-
-    .stat-num {
-        font-size: 1.8rem;
-        font-weight: 800;
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: .82rem;
-        color: #6b7280;
-        margin-top: 4px;
-    }
+    .stat-num   { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: .82rem; color: #6b7280; margin-top: 4px; }
 
     /* ── Profile card ── */
-    .profile-card {
-        border: none;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-
+    .profile-card { border: none; border-radius: 16px; overflow: hidden; }
     .profile-card-head {
         background: linear-gradient(135deg, #2d4a3e, #3a7734);
         padding: 28px;
     }
-
     .profile-avatar {
-        width: 72px;
-        height: 72px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, .2);
-        border: 3px solid rgba(255, 255, 255, .4);
-        color: #fff;
-        font-weight: 800;
-        font-size: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 72px; height: 72px; border-radius: 16px;
+        background: rgba(255,255,255,.2);
+        border: 3px solid rgba(255,255,255,.4);
+        color: #fff; font-weight: 800; font-size: 2rem;
+        display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
 
     /* ── Action buttons ── */
     .action-btn {
-        border-radius: 12px;
-        padding: 18px 16px;
+        border-radius: 12px; padding: 20px 16px;
         border: 1.5px solid #e5e7eb;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        color: #374151;
-        transition: border-color .2s, background .2s, transform .2s;
-        font-size: .88rem;
-        font-weight: 600;
-        background: #fff;
-        text-align: center;
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+        text-decoration: none; color: #374151;
+        transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+        font-size: .88rem; font-weight: 600;
+        background: #fff; text-align: center; height: 100%;
     }
-
-    .action-btn i {
-        font-size: 1.8rem;
-    }
-
+    .action-btn i { font-size: 1.8rem; }
     .action-btn:hover {
         border-color: #3a7734;
         background: #e8f3ee;
         color: #3a7734;
-        transform: translateY(-3px);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(58,119,52,.12);
     }
-
-    .action-btn.disabled-btn {
-        opacity: .55;
-        pointer-events: none;
-    }
+    .action-btn:hover i { color: #3a7734; }
 
     /* ── Section heading ── */
     .section-head {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 18px;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 1rem; font-weight: 700; color: #111827; margin-bottom: 18px;
     }
+    .section-head::after { content:''; flex:1; height:1px; background:#e5e7eb; }
 
-    .section-head::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: #e5e7eb;
-    }
-
-    /* ── Coming soon card ── */
-    .coming-card {
+    /* ── Feature list card ── */
+    .feat-card {
         background: linear-gradient(135deg, #f0faf2, #e8f3ee);
-        border: none;
+        border: none; border-radius: 16px; padding: 24px;
     }
-
-    .coming-icon {
-        width: 44px;
-        height: 44px;
-        background: #3a7734;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
     .feat-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        background: #fff;
-        border-radius: 10px;
-        font-size: .84rem;
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px; background: #fff; border-radius: 10px;
+        font-size: .84rem; text-decoration: none; color: #374151;
+        transition: background .15s, color .15s, transform .15s;
+        border: 1px solid transparent;
     }
+    .feat-row:hover {
+        background: #f0faf2; color: #3a7734;
+        border-color: #b0d4b8; transform: translateX(4px);
+    }
+    .feat-row i { color: #3a7734; font-size: 1rem; flex-shrink: 0; }
+    .feat-row .feat-label { font-weight: 600; line-height: 1.2; }
+    .feat-row .feat-desc  { font-size: .75rem; color: #6b7280; margin-top: 1px; }
+    .feat-row:hover .feat-desc { color: #5b7d6f; }
+    .feat-arrow { margin-left: auto; color: #9ca3af; font-size: .9rem; }
+    .feat-row:hover .feat-arrow { color: #3a7734; }
 
-    .feat-row i {
-        color: #3a7734;
+    /* ── Detail list ── */
+    .detail-list { list-style: none; padding: 0; margin: 0; }
+    .detail-list li {
+        display: flex; gap: 10px; padding: 9px 0;
+        border-bottom: 1px solid #f3f4f6; font-size: .88rem;
     }
-
-    .soon-tag {
-        margin-left: auto;
-        font-size: .6rem;
-        font-weight: 600;
-        background: #e8f3ee;
-        color: #3a7734;
-        border-radius: 4px;
-        padding: 2px 7px;
-    }
+    .detail-list li:last-child { border-bottom: none; }
+    .detail-list .lbl { color: #6b7280; min-width: 90px; flex-shrink: 0; }
+    .detail-list .val { color: #111827; font-weight: 500; }
 </style>
 {% endblock %}
 
@@ -178,64 +113,76 @@
         </h1>
         <p class="text-muted mb-0">Quản lý hoạt động tuyển dụng của bạn tại đây.</p>
     </div>
-    <a href="#" class="btn rounded-pill px-4 fw-semibold disabled"
-        style="background:#b0d4b8; color:#2d4a3e; opacity:.7; pointer-events:none;">
+    <a href="{{ url_for('employer_jobs.create') }}"
+       class="btn rounded-pill px-4 fw-semibold"
+       style="background:#3a7734; color:#fff;">
         <i class="bi bi-plus-circle-fill me-2"></i>Đăng tin mới
-        <span class="ms-1 badge bg-white" style="color:#3a7734; font-size:.6rem;">Sắp ra mắt</span>
     </a>
 </div>
 
 {# ── Stats ── #}
 <div class="row g-4 mb-5">
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card card shadow-sm">
+        <a href="{{ url_for('employer_jobs.index') }}"
+           class="stat-card card shadow-sm">
             <div class="stat-icon" style="background:#e8f3ee;">
                 <i class="bi bi-briefcase-fill" style="color:#3a7734;"></i>
             </div>
             <div>
-                <div class="stat-num" style="color:#3a7734;">0</div>
+                <div class="stat-num" style="color:#3a7734;">
+                    {{ stats.total_jobs if stats is defined and stats else 0 }}
+                </div>
                 <div class="stat-label">Tin tuyển dụng</div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card card shadow-sm">
+        <a href="{{ url_for('employer_applications.index') }}"
+           class="stat-card card shadow-sm">
             <div class="stat-icon" style="background:#d1fae5;">
                 <i class="bi bi-people-fill" style="color:#059669;"></i>
             </div>
             <div>
-                <div class="stat-num" style="color:#059669;">0</div>
+                <div class="stat-num" style="color:#059669;">
+                    {{ stats.total_applications if stats is defined and stats else 0 }}
+                </div>
                 <div class="stat-label">Hồ sơ nhận được</div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card card shadow-sm">
+        <a href="{{ url_for('employer_applications.index') }}?status=PENDING"
+           class="stat-card card shadow-sm">
             <div class="stat-icon" style="background:#fef3c7;">
-                <i class="bi bi-eye-fill" style="color:#d97706;"></i>
+                <i class="bi bi-hourglass-split" style="color:#d97706;"></i>
             </div>
             <div>
-                <div class="stat-num" style="color:#d97706;">0</div>
-                <div class="stat-label">Lượt xem hôm nay</div>
+                <div class="stat-num" style="color:#d97706;">
+                    {{ stats.pending if stats is defined and stats else 0 }}
+                </div>
+                <div class="stat-label">Chờ duyệt</div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card card shadow-sm">
-            <div class="stat-icon" style="background:#fce7f3;">
-                <i class="bi bi-star-fill" style="color:#be185d;"></i>
+        <a href="{{ url_for('employer_applications.index') }}?status=ACCEPTED"
+           class="stat-card card shadow-sm">
+            <div class="stat-icon" style="background:#dbeafe;">
+                <i class="bi bi-check-circle-fill" style="color:#2563eb;"></i>
             </div>
             <div>
-                <div class="stat-num" style="color:#be185d;">0</div>
-                <div class="stat-label">Ứng viên phù hợp</div>
+                <div class="stat-num" style="color:#2563eb;">
+                    {{ stats.accepted if stats is defined and stats else 0 }}
+                </div>
+                <div class="stat-label">Đã chấp nhận</div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
 <div class="row g-4">
 
-    {# ── LEFT ── #}
+    {# ── LEFT: Quick actions + Feature links ── #}
     <div class="col-lg-8">
 
         <h2 class="section-head">
@@ -244,60 +191,84 @@
 
         <div class="row g-3 mb-5">
             <div class="col-6 col-md-3">
-                <a href="#" class="action-btn disabled-btn h-100">
+                <a href="{{ url_for('employer_jobs.create') }}" class="action-btn">
                     <i class="bi bi-plus-circle-fill" style="color:#3a7734;"></i>
                     Đăng tin
                 </a>
             </div>
             <div class="col-6 col-md-3">
-                <a href="#" class="action-btn disabled-btn h-100">
+                <a href="{{ url_for('employer_applications.index') }}" class="action-btn">
                     <i class="bi bi-card-list" style="color:#059669;"></i>
                     Xem hồ sơ
                 </a>
             </div>
             <div class="col-6 col-md-3">
-                <a href="#" class="action-btn disabled-btn h-100">
-                    <i class="bi bi-building" style="color:#5b7d6f;"></i>
-                    Hồ sơ công ty
+                <a href="{{ url_for('employer_jobs.index') }}" class="action-btn">
+                    <i class="bi bi-briefcase-fill" style="color:#5b7d6f;"></i>
+                    Tin của tôi
                 </a>
             </div>
             <div class="col-6 col-md-3">
-                <a href="{{ url_for('jobs.job_list') }}" class="action-btn h-100">
+                <a href="{{ url_for('jobs.job_list') }}" class="action-btn">
                     <i class="bi bi-search" style="color:#d97706;"></i>
                     Xem thị trường
                 </a>
             </div>
         </div>
 
-        {# Coming soon #}
-        <div class="coming-card card rounded-4 p-4">
+        {# Feature links card #}
+        <div class="feat-card">
             <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="coming-icon">
-                    <i class="bi bi-rocket-takeoff-fill text-white fs-5"></i>
+                <div style="width:40px;height:40px;background:#3a7734;border-radius:10px;
+                            display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi bi-grid-fill text-white"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0">Tính năng đang được phát triển</h6>
-                    <small class="text-muted">Chúng tôi đang hoàn thiện các công cụ tuyển dụng</small>
+                    <h6 class="fw-bold mb-0">Tất cả tính năng</h6>
+                    <small class="text-muted">Truy cập nhanh các chức năng của hệ thống</small>
                 </div>
             </div>
             <div class="row g-2">
-                {% for icon, title, desc in [
-                ('bi-plus-circle', 'Đăng tin tuyển dụng', 'Tạo và quản lý tin tuyển dụng'),
-                ('bi-people', 'Quản lý hồ sơ', 'Xem xét và phân loại ứng viên'),
-                ('bi-graph-up', 'Thống kê chi tiết', 'Báo cáo hiệu quả tuyển dụng'),
-                ('bi-chat-dots', 'Nhắn tin ứng viên', 'Trao đổi trực tiếp với ứng viên'),
-                ] %}
                 <div class="col-sm-6">
-                    <div class="feat-row">
-                        <i class="bi {{ icon }}"></i>
+                    <a href="{{ url_for('employer_jobs.create') }}" class="feat-row">
+                        <i class="bi bi-plus-circle-fill"></i>
                         <div>
-                            <div class="fw-semibold" style="line-height:1.2;">{{ title }}</div>
-                            <div class="text-muted" style="font-size:.75rem;">{{ desc }}</div>
+                            <div class="feat-label">Đăng tin tuyển dụng</div>
+                            <div class="feat-desc">Tạo tin tuyển dụng mới</div>
                         </div>
-                        <span class="soon-tag">Sắp ra mắt</span>
-                    </div>
+                        <i class="bi bi-chevron-right feat-arrow"></i>
+                    </a>
                 </div>
-                {% endfor %}
+                <div class="col-sm-6">
+                    <a href="{{ url_for('employer_jobs.index') }}" class="feat-row">
+                        <i class="bi bi-briefcase-fill"></i>
+                        <div>
+                            <div class="feat-label">Tin tuyển dụng của tôi</div>
+                            <div class="feat-desc">Quản lý các tin đã đăng</div>
+                        </div>
+                        <i class="bi bi-chevron-right feat-arrow"></i>
+                    </a>
+                </div>
+                <div class="col-sm-6">
+                    <a href="{{ url_for('employer_applications.index') }}" class="feat-row">
+                        <i class="bi bi-people-fill"></i>
+                        <div>
+                            <div class="feat-label">Quản lý hồ sơ ứng tuyển</div>
+                            <div class="feat-desc">Xem xét và phân loại ứng viên</div>
+                        </div>
+                        <i class="bi bi-chevron-right feat-arrow"></i>
+                    </a>
+                </div>
+                <div class="col-sm-6">
+                    <a href="{{ url_for('employer_applications.index') }}?status=PENDING" class="feat-row">
+                        <i class="bi bi-hourglass-split"></i>
+                        <div>
+                            <div class="feat-label">Hồ sơ chờ duyệt</div>
+                            <div class="feat-desc">Xem hồ sơ chưa xử lý</div>
+                        </div>
+                        <i class="bi bi-chevron-right feat-arrow"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -315,57 +286,56 @@
                 <div class="d-flex align-items-center gap-3">
                     <div class="profile-avatar">{{ employer.company_name[0] | upper }}</div>
                     <div class="text-white">
-                        <h6 class="fw-bold mb-1" style="font-size:.95rem;">{{ employer.company_name }}</h6>
-                        <span class="badge px-2 py-1" style="background:#d1f0e0; color:#0b6e37; font-size:.7rem;">
+                        <h6 class="fw-bold mb-1" style="font-size:.95rem;">
+                            {{ employer.company_name }}
+                        </h6>
+                        <span class="badge px-2 py-1"
+                              style="background:#d1f0e0; color:#0b6e37; font-size:.7rem;">
                             <i class="bi bi-patch-check-fill me-1"></i>Đã xác thực
                         </span>
                     </div>
                 </div>
             </div>
             <div class="card-body p-4">
-                <ul class="list-unstyled mb-0" style="font-size:.875rem; line-height:2.1;">
+                <ul class="detail-list">
                     <li>
-                        <i class="bi bi-envelope text-muted me-2"></i>
-                        <strong>Email:</strong> {{ session.get('user_email') }}
+                        <span class="lbl"><i class="bi bi-envelope me-1 text-muted"></i>Email</span>
+                        <span class="val" style="font-size:.82rem; word-break:break-all;">
+                            {{ session.get('user_email') }}
+                        </span>
                     </li>
                     {% if employer.location %}
                     <li>
-                        <i class="bi bi-geo-alt text-muted me-2"></i>
-                        <strong>Địa chỉ:</strong> {{ employer.location }}
+                        <span class="lbl"><i class="bi bi-geo-alt me-1 text-muted"></i>Địa chỉ</span>
+                        <span class="val">{{ employer.location }}</span>
                     </li>
                     {% endif %}
                     {% if employer.company_website %}
                     <li>
-                        <i class="bi bi-globe2 text-muted me-2"></i>
-                        <strong>Website:</strong>
-                        <a href="{{ employer.company_website }}" target="_blank" class="text-decoration-none"
-                            style="color:#3a7734;">
-                            {{ employer.company_website | replace('https://','') | replace('http://','') | truncate(26,
-                            True) }}
+                        <span class="lbl"><i class="bi bi-globe2 me-1 text-muted"></i>Website</span>
+                        <a href="{{ employer.company_website }}" target="_blank"
+                           class="val text-decoration-none" style="color:#3a7734; font-size:.82rem;">
+                            {{ employer.company_website
+                               | replace('https://','') | replace('http://','')
+                               | truncate(26, True) }}
                         </a>
                     </li>
                     {% endif %}
                     <li>
-                        <i class="bi bi-calendar3 text-muted me-2"></i>
-                        <strong>Tham gia:</strong>
-                        {{ employer.created_at.strftime('%d/%m/%Y') if employer.created_at else '—' }}
+                        <span class="lbl"><i class="bi bi-calendar3 me-1 text-muted"></i>Tham gia</span>
+                        <span class="val">
+                            {{ employer.created_at.strftime('%d/%m/%Y') if employer.created_at else '—' }}
+                        </span>
                     </li>
                 </ul>
 
                 {% if employer.company_description %}
                 <hr class="my-3">
-                <p class="text-muted mb-0" style="font-size:.84rem; line-height:1.7;">
-                    {{ employer.company_description[:200] }}
-                    {% if employer.company_description | length > 200 %}…{% endif %}
+                <p class="text-muted mb-0" style="font-size:.83rem; line-height:1.7;">
+                    {{ employer.company_description[:180] }}
+                    {% if employer.company_description | length > 180 %}…{% endif %}
                 </p>
                 {% endif %}
-
-                <a href="#" class="btn btn-sm rounded-pill mt-3 w-100 disabled"
-                    style="border:1.5px solid #b0d4b8; color:#3a7734; opacity:.7;">
-                    <i class="bi bi-pencil me-1"></i>Chỉnh sửa hồ sơ
-                    <span class="ms-1 badge" style="background:#e8f3ee; color:#3a7734; font-size:.55rem;">Sắp ra
-                        mắt</span>
-                </a>
             </div>
         </div>
 

@@ -1,0 +1,458 @@
+{% extends "layouts/employer_base.html" %}
+{% block title %}Chi tiết hồ sơ – {{ application.cv.candidate.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root { --green: #3a7734; --green-light: #e8f3ee; --green-pale: #b0d4b8; }
+
+    .info-card { border: none; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .info-card .card-header-custom {
+        background: linear-gradient(135deg, #2d4a3e, #3a7734);
+        border-radius: 16px 16px 0 0;
+        padding: 20px 24px; color: #fff;
+    }
+    .info-card .card-body { padding: 24px; }
+
+    /* ── Score ring ── */
+    .score-ring {
+        width: 90px; height: 90px; border-radius: 50%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-weight: 800; border: 5px solid; flex-shrink: 0;
+    }
+    .score-ring .pct   { font-size: 1.4rem; line-height: 1; }
+    .score-ring .label { font-size: .62rem; text-transform: uppercase; letter-spacing:.05em; margin-top: 2px; }
+    .ring-high   { border-color: #6ee7b7; color: #065f46; background: #d1fae5; }
+    .ring-medium { border-color: #fcd34d; color: #92400e; background: #fef3c7; }
+    .ring-low    { border-color: #fca5a5; color: #991b1b; background: #fee2e2; }
+
+    /* ── Status badge ── */
+    .st-PENDING  { background:#f3f4f6; color:#374151; }
+    .st-REVIEWED { background:#dbeafe; color:#1e40af; }
+    .st-ACCEPTED { background:#d1fae5; color:#065f46; }
+    .st-REJECTED { background:#fee2e2; color:#991b1b; }
+    .status-pill { font-size:.82rem; font-weight:700; padding:5px 14px; border-radius:50px; }
+
+    /* ── CV Preview ── */
+    .cv-preview-frame {
+        width: 100%; height: 680px; border: none; border-radius: 12px;
+        background: #fff;
+    }
+    .cv-placeholder {
+        background: #f9fafb; border: 2px dashed #e5e7eb;
+        border-radius: 12px; padding: 48px;
+        text-align: center; color: #9ca3af;
+    }
+    .cv-placeholder i { font-size: 3rem; margin-bottom: 12px; display: block; }
+
+    /* ── Status update form ── */
+    .update-card {
+        border: none; border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        position: sticky; top: 24px;
+    }
+    .update-card .card-body { padding: 24px; }
+
+    .status-radio { display: none; }
+    .status-label {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 16px; border-radius: 10px;
+        border: 2px solid #e5e7eb; cursor: pointer;
+        font-weight: 500; font-size: .88rem; margin-bottom: 8px;
+        transition: border-color .15s, background .15s;
+    }
+    .status-radio:checked + .status-label {
+        border-color: var(--green);
+        background: var(--green-light);
+        color: var(--green);
+    }
+    .status-icon { font-size: 1.1rem; }
+
+    .btn-update {
+        background: linear-gradient(135deg, #2d4a3e, #3a7734);
+        color: #fff; border: none; border-radius: 10px;
+        padding: 12px; font-weight: 700; width: 100%;
+        transition: opacity .2s;
+    }
+    .btn-update:hover { opacity: .9; color: #fff; }
+
+    /* ── Detail list ── */
+    .detail-list { list-style: none; padding: 0; margin: 0; }
+    .detail-list li {
+        display: flex; gap: 10px; padding: 9px 0;
+        border-bottom: 1px solid #f3f4f6; font-size: .88rem;
+        align-items: flex-start;
+    }
+    .detail-list li:last-child { border-bottom: none; }
+    .detail-list .lbl { color: #6b7280; min-width: 130px; flex-shrink: 0; }
+    .detail-list .val { color: #111827; font-weight: 500; }
+
+    .sec-title {
+        font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+        text-transform: uppercase; color: #9ca3af;
+        display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+    .sec-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+
+    /* ── Mock score notice ── */
+    .mock-notice {
+        background: #fffbeb; border: 1px solid #fde68a;
+        border-radius: 8px; padding: 8px 12px;
+        font-size: .75rem; color: #92400e;
+        display: flex; align-items: center; gap: 6px;
+        margin-top: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# Back + breadcrumb #}
+<div class="d-flex align-items-center gap-2 mb-4 flex-wrap">
+    <a href="{{ url_for('employer_applications.index') }}"
+       class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i>Danh sách hồ sơ
+    </a>
+    <span class="text-muted" style="font-size:.85rem;">
+        / {{ application.job.title }} /
+        <strong>{{ application.cv.candidate.full_name }}</strong>
+    </span>
+</div>
+
+<div class="row g-4 align-items-start">
+
+    {# ══════════════ LEFT COLUMN ══════════════ #}
+    <div class="col-lg-8">
+
+        {# ── Candidate + Job info ── #}
+        <div class="info-card card mb-4">
+            <div class="card-header-custom">
+                <div class="d-flex align-items-center gap-4 flex-wrap">
+
+                    {# Score ring — luôn có giá trị (mock hoặc real) #}
+                    {% set s = application.match_score %}
+                    {% if s is not none %}
+                        {% if s >= 70 %}
+                            <div class="score-ring ring-high">
+                                <span class="pct">{{ "%.0f"|format(s) }}%</span>
+                                <span class="label">Cao</span>
+                            </div>
+                        {% elif s >= 40 %}
+                            <div class="score-ring ring-medium">
+                                <span class="pct">{{ "%.0f"|format(s) }}%</span>
+                                <span class="label">Trung bình</span>
+                            </div>
+                        {% else %}
+                            <div class="score-ring ring-low">
+                                <span class="pct">{{ "%.0f"|format(s) }}%</span>
+                                <span class="label">Thấp</span>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="text-white">
+                        <h4 class="fw-bold mb-1">{{ application.cv.candidate.full_name }}</h4>
+                        <p class="mb-1 opacity-80" style="font-size:.9rem;">
+                            <i class="bi bi-envelope me-1"></i>{{ application.email }}
+                        </p>
+                        <p class="mb-0 opacity-80" style="font-size:.9rem;">
+                            <i class="bi bi-briefcase me-1"></i>{{ application.job.title }}
+                        </p>
+                    </div>
+
+                    <div class="ms-auto">
+                        <span class="status-pill st-{{ application.status }}">
+                            {% if application.status == 'PENDING'  %}⏳ Chờ duyệt
+                            {% elif application.status == 'REVIEWED' %}👁 Đang xem xét
+                            {% elif application.status == 'ACCEPTED' %}✅ Chấp nhận
+                            {% else %}❌ Từ chối{% endif %}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card-body">
+                <p class="sec-title">Thông tin chi tiết</p>
+                <ul class="detail-list">
+                    <li>
+                        <span class="lbl"><i class="bi bi-person me-2 text-muted"></i>Họ tên</span>
+                        <span class="val">{{ application.cv.candidate.full_name }}</span>
+                    </li>
+                    <li>
+                        <span class="lbl"><i class="bi bi-envelope me-2 text-muted"></i>Email</span>
+                        <span class="val">{{ application.email }}</span>
+                    </li>
+                    {% if application.cv.candidate.phone %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-phone me-2 text-muted"></i>Điện thoại</span>
+                        <span class="val">{{ application.cv.candidate.phone }}</span>
+                    </li>
+                    {% endif %}
+                    {% if application.cv.candidate.current_title %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-award me-2 text-muted"></i>Vị trí hiện tại</span>
+                        <span class="val">{{ application.cv.candidate.current_title }}</span>
+                    </li>
+                    {% endif %}
+                    {% if application.cv.candidate.total_experience_years %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-clock-history me-2 text-muted"></i>Kinh nghiệm</span>
+                        <span class="val">{{ application.cv.candidate.total_experience_years }} năm</span>
+                    </li>
+                    {% endif %}
+                    {% if application.cv.candidate.location %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-geo-alt me-2 text-muted"></i>Địa điểm</span>
+                        <span class="val">{{ application.cv.candidate.location }}</span>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <span class="lbl"><i class="bi bi-calendar3 me-2 text-muted"></i>Ngày nộp</span>
+                        <span class="val">
+                            {{ application.applied_at.strftime('%d/%m/%Y %H:%M') if application.applied_at else '—' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="lbl"><i class="bi bi-file-earmark me-2 text-muted"></i>CV</span>
+                        <span class="val">
+                            {{ application.cv.title }}
+                            <span class="badge ms-1"
+                                  style="background:var(--green-light);color:var(--green);font-size:.65rem;">
+                                {{ application.cv.type }}
+                            </span>
+                        </span>
+                    </li>
+                </ul>
+
+                {% if application.cv.candidate.bio %}
+                <p class="sec-title mt-4">Giới thiệu bản thân</p>
+                <p class="text-muted" style="font-size:.88rem; line-height:1.8;">
+                    {{ application.cv.candidate.bio }}
+                </p>
+                {% endif %}
+
+            </div>
+        </div>
+
+        {# ── CV Preview ── #}
+        <div class="info-card card">
+            <div class="card-body">
+                <p class="sec-title">Xem CV</p>
+
+                {% if application.cv.type == 'UPLOAD' and application.cv.file_url %}
+                    {# ── UPLOAD CV: download + preview PDF ── #}
+                    {% set ext = application.cv.file_name.rsplit('.', 1)[-1].lower()
+                                 if application.cv.file_name else '' %}
+
+                    <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-3"
+                         style="background:#f9fafb; border:1px solid #e5e7eb;">
+                        <div style="width:44px;height:44px;border-radius:10px;
+                                    background:var(--green-light);
+                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="bi bi-file-earmark-text"
+                               style="color:var(--green);font-size:1.3rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:.9rem;">
+                                {{ application.cv.file_name }}
+                            </div>
+                            <small class="text-muted">
+                                {{ (application.cv.file_size / 1024)|round(1) }} KB · {{ ext | upper }}
+                            </small>
+                        </div>
+                        <a href="{{ application.cv.file_url }}" target="_blank"
+                           class="btn btn-sm rounded-pill px-3 fw-semibold"
+                           style="background:var(--green);color:#fff;">
+                            <i class="bi bi-download me-1"></i>Tải xuống
+                        </a>
+                        <a href="{{ application.cv.file_url }}" target="_blank"
+                           class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Mở mới
+                        </a>
+                    </div>
+
+                    {% if ext == 'pdf' %}
+                        <iframe src="{{ application.cv.file_url }}"
+                                class="cv-preview-frame"
+                                title="CV Preview"></iframe>
+                    {% else %}
+                        <div class="cv-placeholder">
+                            <i class="bi bi-file-earmark-word" style="color:#3b82f6;"></i>
+                            <p class="fw-semibold mb-1">
+                                Không thể xem trực tiếp file .{{ ext }}
+                            </p>
+                            <small class="text-muted">
+                                Vui lòng tải xuống để mở bằng Microsoft Word.
+                            </small>
+                        </div>
+                    {% endif %}
+
+                {% elif application.cv.type == 'ONLINE' %}
+                    {# ── ONLINE CV: nhúng iframe qua route preview ── #}
+                    <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-3"
+                         style="background:#f9fafb; border:1px solid #e5e7eb;">
+                        <div style="width:44px;height:44px;border-radius:10px;
+                                    background:var(--green-light);
+                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="bi bi-file-earmark-richtext"
+                               style="color:var(--green);font-size:1.3rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:.9rem;">
+                                {{ application.cv.title }}
+                            </div>
+                            <small class="text-muted">CV tạo online trên hệ thống</small>
+                        </div>
+                        <a href="{{ url_for('employer_cv_preview.preview', cv_id=application.cv.id) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Mở tab mới
+                        </a>
+                    </div>
+
+                    {# Iframe nhúng CV online #}
+                    <iframe
+                        src="{{ url_for('employer_cv_preview.preview', cv_id=application.cv.id) }}"
+                        class="cv-preview-frame"
+                        title="CV Online Preview"
+                        style="background:#fff; box-shadow: 0 2px 12px rgba(0,0,0,.08);">
+                    </iframe>
+
+                {% else %}
+                    <div class="cv-placeholder">
+                        <i class="bi bi-file-earmark-x"></i>
+                        <p class="fw-semibold mb-0">Không tìm thấy nội dung CV</p>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+    {# ══════════════ RIGHT COLUMN ══════════════ #}
+    <div class="col-lg-4">
+
+        {# ── Status update ── #}
+        <div class="update-card card mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-1">
+                    <i class="bi bi-pencil-square me-2" style="color:var(--green);"></i>
+                    Cập nhật trạng thái
+                </h6>
+
+                {# Mock score notice #}
+                <div class="mock-notice mb-3">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Điểm phù hợp đang dùng dữ liệu tạm (mock).
+                    Thuật toán matching sẽ được cập nhật ở phiên bản sau.
+                </div>
+
+                <form method="POST"
+                      action="{{ url_for('employer_applications.update_status',
+                                        application_id=application.id) }}">
+                    <input type="hidden" name="back_to" value="detail">
+
+                    {% for val, icon, label, desc in [
+                        ('PENDING',  '⏳', 'Chờ duyệt',    'Hồ sơ đang chờ được xem xét'),
+                        ('REVIEWED', '👁', 'Đang xem xét', 'Đã tiếp nhận, đang xem xét'),
+                        ('ACCEPTED', '✅', 'Chấp nhận',    'Ứng viên phù hợp với vị trí'),
+                        ('REJECTED', '❌', 'Từ chối',      'Hồ sơ không phù hợp'),
+                    ] %}
+                    <input type="radio" name="status" id="st_{{ val }}"
+                           value="{{ val }}" class="status-radio"
+                           {% if application.status == val %}checked{% endif %}>
+                    <label for="st_{{ val }}" class="status-label">
+                        <span class="status-icon">{{ icon }}</span>
+                        <div>
+                            <div class="fw-semibold" style="line-height:1.2;">{{ label }}</div>
+                            <div class="text-muted" style="font-size:.75rem;">{{ desc }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+
+                    <div class="mt-3 p-3 rounded-3"
+                         style="background:#f0faf2; border:1px solid var(--green-pale);
+                                font-size:.8rem; color:#374151;">
+                        <i class="bi bi-bell-fill me-2" style="color:var(--green);"></i>
+                        Ứng viên sẽ nhận <strong>thông báo hệ thống</strong>
+                        ngay sau khi bạn cập nhật.
+                    </div>
+
+                    <button type="submit" class="btn-update btn mt-3">
+                        <i class="bi bi-check2-circle me-2"></i>Xác nhận cập nhật
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {# ── Job info ── #}
+        <div class="info-card card">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-briefcase-fill me-2" style="color:var(--green);"></i>
+                    Vị trí ứng tuyển
+                </h6>
+                <ul class="detail-list">
+                    <li>
+                        <span class="lbl">Tên vị trí</span>
+                        <span class="val">{{ application.job.title }}</span>
+                    </li>
+                    {% if application.job.location %}
+                    <li>
+                        <span class="lbl">Địa điểm</span>
+                        <span class="val">{{ application.job.location }}</span>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <span class="lbl">Mức lương</span>
+                        <span class="val">
+                            {% if application.job.salary_min and application.job.salary_max %}
+                                {{ "{:,.0f}".format(application.job.salary_min) }} –
+                                {{ "{:,.0f}".format(application.job.salary_max) }} VNĐ
+                            {% else %}
+                                Thỏa thuận
+                            {% endif %}
+                        </span>
+                    </li>
+                    {% if application.job.experience_required %}
+                    <li>
+                        <span class="lbl">Kinh nghiệm</span>
+                        <span class="val">{{ application.job.experience_required }}+ năm</span>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <span class="lbl">Trạng thái tin</span>
+                        <span class="val">
+                            {% if application.job.status == 'OPEN' %}
+                                <span class="badge"
+                                      style="background:#d1fae5;color:#065f46;">Đang tuyển</span>
+                            {% else %}
+                                <span class="badge"
+                                      style="background:#fee2e2;color:#991b1b;">Đã đóng</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                </ul>
+
+                {% if application.job.skills %}
+                <p class="sec-title mt-3">Kỹ năng yêu cầu</p>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for js in application.job.skills %}
+                        <span class="badge"
+                              style="background:var(--green-light);color:var(--green);
+                                     font-size:.72rem;font-weight:600;">
+                            {{ js.skill.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
