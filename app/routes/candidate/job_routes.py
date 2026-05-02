@@ -1,6 +1,8 @@
 from flask import Blueprint, request, render_template, flash, url_for
 from werkzeug.utils import redirect
 
+from app.common.check_empty_dict import is_filters_empty
+from app.common.info import get_current_candidate
 from app.services.candidate.job_service import JobService
 from common.decorators import login_required
 from common.info import get_current_candidate, get_current_user
@@ -22,11 +24,18 @@ def job_list():
     pagination = JobService.search_job(filters, page)
     options = JobService.get_filter_options()
 
+    candidate = get_current_candidate()
+
+    recommended_jobs = []
+    if candidate and is_filters_empty(filters):
+        recommended_jobs = JobService.get_recommended_jobs(candidate.id)
+
     return render_template('pages/candidate/job_list.html',
                            jobs=pagination.items,
                            pagination=pagination,
                            filters=filters,
-                           locations=options['locations'])
+                           locations=options['locations'],
+                           recommended_jobs=recommended_jobs)
 
 @job_bp.route('/<int:job_id>', methods=['GET'])
 def job_detail(job_id):

@@ -105,6 +105,82 @@
                 </div>
             </div>
 
+            {% if recommended_jobs %}
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-3">
+                    <h4 class="fw-bold mb-0 text-success">
+                        <i class="bi bi-stars me-2"></i>Jobs For You
+                    </h4>
+                    <span class="ms-2 badge bg-success-subtle text-success">jobs may match your experience and skills.</span>
+                </div>
+
+                <div class="row g-3">
+                    {% for job in recommended_jobs %}
+                        <div class="col-12">
+                            <div class="card job-card shadow-sm border-start border-4 border-success">
+                                <div class="card-body p-4">
+                            <div class="row align-items-start">
+                                <div class="col-auto">
+                                    <div class="company-logo-box">
+                                        {{ job.employer.company_name[0] | upper }}
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="fw-bold mb-1">
+                                            <a href="{{ url_for('jobs.job_detail', job_id=job.id) }}"
+                                                class="text-dark text-decoration-none">
+                                                {{ job.title }}
+                                            </a>
+                                        </h5>
+                                        <span class="salary-badge small">
+                                            <i class="bi bi-currency-dollar me-1"></i>
+                                            {% if job.salary_min and job.salary_max %}
+                                            {{ job.salary_min }} - {{ job.salary_max }}
+                                            {% else %}
+                                            Negotiable
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <p class="text-primary fw-medium mb-3">{{ job.employer.company_name }}</p>
+
+                                    <div class="d-flex flex-wrap gap-3 mb-3">
+                                        <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ job.location
+                                            or 'Remote' }}</span>
+                                        <span class="text-muted small"><i class="bi bi-briefcase me-1"></i>{{
+                                            job.experience_required or '0' }}+ Years</span>
+                                        <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{
+                                            job.created_at.strftime('%b %d, %Y') }}</span>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <p class="text-muted small mb-0 d-none d-md-block">{{ (job.description or
+                                            '')[:140] }}...</p>
+                                        <div class="ms-auto">
+                                            <a href="{{ url_for('jobs.job_detail', job_id=job.id) }}"
+                                                class="btn btn-outline-primary rounded-pill px-4 btn-sm">Details</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        {% for js in job.skills %}
+                                        <span class="badge bg-secondary-subtle text-secondary fw-normal rounded-pill"
+                                            style="font-size: 0.9rem; background-color: #b0d4b8">
+                                            {{ js.skill.name }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <hr class="my-5">
+            </div>
+            {% endif %}
+
             {% if jobs %}
             <div class="row g-3">
                 {% for job in jobs %}
