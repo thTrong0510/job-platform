@@ -1,5 +1,5 @@
 from flask import Flask
-from .extensions import db
+from .extensions import db, mail
 from config import Config, init_cloudinary
 
 def create_app():
@@ -14,6 +14,8 @@ def create_app():
 
     init_cloudinary(app)
 
+    mail.init_app(app)
+
     # register blueprints
     from .routes.auth.auth_routes import auth_bp
     from .routes.main_routes import main_bp
@@ -24,6 +26,8 @@ def create_app():
     from .routes.employer.employer_auth_routes import employer_bp
     from .routes.employer.job_routes import employer_job_bp
     from app.routes.candidate.cv_extraction_routes import cv_extraction_bp
+    from app.routes.admin.user_routes import admin_user_bp
+    from app.routes.auth.admin_auth_routes import admin_auth_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -34,5 +38,7 @@ def create_app():
     app.register_blueprint(candidate_bp)
     app.register_blueprint(candidate_profile_bp)
     app.register_blueprint(cv_extraction_bp)
+    app.register_blueprint(admin_auth_bp)
+    app.register_blueprint(admin_user_bp)
 
     return app
