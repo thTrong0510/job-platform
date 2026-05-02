@@ -32,7 +32,7 @@ def candidate_required(f):
 def admin_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if not "user_id" not in session or session.get('user_role').__eq__('ADMIN'):
-            return redirect(url_for('auth.login'))
+        if "user_id" not in session or not session.get('user_role').__eq__('ADMIN'):
+            return redirect(url_for('admin.login'))
         return f(*args, **kwargs)
     return wrapper

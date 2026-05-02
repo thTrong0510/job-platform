@@ -6,6 +6,7 @@ admin_user_bp = Blueprint('admin_users', __name__, url_prefix='/admin/users')
 
 
 @admin_user_bp.route('/')
+@admin_required
 def index():
     role   = request.args.get('role', '')
     status = request.args.get('status', '')
@@ -33,6 +34,7 @@ def index():
 
 
 @admin_user_bp.route('/<int:user_id>')
+@admin_required
 def detail(user_id):
     try:
         user = AdminUserService.get_user_detail(user_id)
@@ -44,6 +46,7 @@ def detail(user_id):
 
 
 @admin_user_bp.route('/<int:user_id>/change-status', methods=['POST'])
+@admin_required
 def change_status(user_id):
     new_status = request.form.get('status', '').strip()
     reason     = request.form.get('reason', '').strip()

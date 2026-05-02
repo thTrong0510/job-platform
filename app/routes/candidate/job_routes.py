@@ -39,9 +39,12 @@ def job_list():
 
 @job_bp.route('/<int:job_id>', methods=['GET'])
 def job_detail(job_id):
-    candidate_id = get_current_candidate().id
+    online_cvs = []
+    upload_cvs = []
+    if get_current_candidate():
+        candidate_id = get_current_candidate().id
+        online_cvs, upload_cvs = CVService.get_candidate_cvs(candidate_id)
     job = JobService.get_job_detail(job_id)
-    online_cvs, upload_cvs = CVService.get_candidate_cvs(candidate_id)
     return render_template('pages/jobs/job_detail.html', job=job,
                            online_cvs=online_cvs,
                            upload_cvs=upload_cvs)

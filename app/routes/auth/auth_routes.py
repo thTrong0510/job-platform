@@ -51,11 +51,7 @@ def login():
         session["user_id"]    = user.id
         session["user_email"] = user.email
         session["user_role"]  = user.role
- 
-        # ── Redirect theo role ──
-        if user.role == "ADMIN":
-            return redirect(url_for("admin.dashboard"))
- 
+
         if user.role == "CANDIDATE":
             # Gán candidate_id vào session nếu có
             if hasattr(user, "candidate") and user.candidate:

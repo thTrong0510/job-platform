@@ -10,7 +10,7 @@
                 {% if session.get("user_id") %}
                     <li class="nav-item">
                         <span class="nav-link text-white-50" style="font-size:.9rem;">
-                            Xin chào, {{ session.get("user_email") }}
+                            Xin chào, {{ session.get("user_email") if session.get("candidate_id") }}
                         </span>
                     </li>
 
