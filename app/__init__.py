@@ -26,6 +26,7 @@ def create_app():
     from .routes.employer.application_routes import employer_applications_bp
     from .routes.candidate.notification_routes import notifications_bp
     from .routes.employer.cv_preview_routes import employer_cv_preview_bp
+    from app.routes.candidate.cv_extraction_routes import cv_extraction_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -38,7 +39,8 @@ def create_app():
     app.register_blueprint(employer_applications_bp)
     app.register_blueprint(notifications_bp)
     app.register_blueprint(employer_cv_preview_bp)
- 
+    app.register_blueprint(cv_extraction_bp)
+
     # ── Context processor: inject unread count vào mọi template ──
     @app.context_processor
     def inject_globals():

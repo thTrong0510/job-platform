@@ -1,0 +1,213 @@
+{% extends "layouts/base.html" %}
+{% block title %}Cập nhật Profile từ CV{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="mb-4">Cập nhật Profile từ CV</h4>
+
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                Hệ thống đã tự động điền thông tin từ CV. Bạn có thể chỉnh sửa lại trước khi lưu vào Profile.
+            </div>
+
+            <form method="POST" action="{{ url_for('cv_extraction.save_profile') }}">
+                <input type="hidden" name="from_extraction" value="1">
+
+                <h5 class="mb-3">Basic Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input class="form-control" name="full_name"
+                               value="{{ extracted_data.full_name or '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Current Title</label>
+                        <input class="form-control" name="current_title"
+                               value="{{ extracted_data.current_title or '' }}"
+                               placeholder="Software Engineer, Backend Developer...">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone</label>
+                        <input class="form-control" name="phone"
+                               value="{{ extracted_data.phone or '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Location</label>
+                        <input class="form-control" name="location"
+                               value="{{ extracted_data.location or '' }}"
+                               placeholder="City, Country">
+                    </div>
+                </div>
+
+                <h5 class="mb-3 mt-4">Professional Summary</h5>
+                <div class="mb-4">
+                    <textarea class="form-control" name="bio" rows="4"
+                              placeholder="Mô tả ngắn gọn về bản thân...">{{ extracted_data.bio or '' }}</textarea>
+                </div>
+
+                <h5 class="mb-3 mt-4 d-flex justify-content-between align-items-center">
+                    Work Experience
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addExperience()">+ Add</button>
+                </h5>
+
+                <div id="experience-container">
+                    {% if extracted_data.experiences %}
+                        {% for exp in extracted_data.experiences %}
+                        <div class="card p-3 mb-3 experience-item">
+                            <input class="form-control mb-2" name="experiences[{{ loop.index0 }}][company]"
+                                value="{{ exp.company or '' }}" placeholder="Company Name">
+
+                            <input class="form-control mb-2" name="experiences[{{ loop.index0 }}][position]"
+                                value="{{ exp.position or '' }}" placeholder="Position">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Start Date</label>
+                                    <input type="month" class="form-control start-date"
+                                           name="experiences[{{ loop.index0 }}][start_date]"
+                                           value="{{ exp.start_date[:7] if exp.start_date else '' }}">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">End Date</label>
+                                    <input type="month" class="form-control end-date"
+                                           name="experiences[{{ loop.index0 }}][end_date]"
+                                           value="{{ exp.end_date[:7] if exp.end_date else '' }}">
+                                </div>
+                            </div>
+
+                            <textarea class="form-control mb-2" name="experiences[{{ loop.index0 }}][description]"
+                                placeholder="Describe responsibilities...">{{ exp.description or '' }}</textarea>
+
+                            <div class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="this.closest('.experience-item').remove()">Remove</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <h5 class="mb-3 mt-4 d-flex justify-content-between align-items-center">
+                    Education
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addEducation()">+ Add</button>
+                </h5>
+
+                <div id="education-container">
+                    {% if extracted_data.educations %}
+                        {% for edu in extracted_data.educations %}
+                        <div class="card p-3 mb-3 education-item">
+                            <input class="form-control mb-2" name="educations[{{ loop.index0 }}][school]"
+                                value="{{ edu.school or '' }}" placeholder="School Name">
+
+                            <input class="form-control mb-2" name="educations[{{ loop.index0 }}][degree]"
+                                value="{{ edu.degree or '' }}" placeholder="Degree / Major">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Start Date</label>
+                                    <input type="month" class="form-control start-date"
+                                           name="educations[{{ loop.index0 }}][start_date]"
+                                           value="{{ edu.start_date[:7] if edu.start_date else '' }}">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">End Date</label>
+                                    <input type="month" class="form-control end-date"
+                                           name="educations[{{ loop.index0 }}][end_date]"
+                                           value="{{ edu.end_date[:7] if edu.end_date else '' }}">
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="this.closest('.education-item').remove()">Remove</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <h5 class="mb-3 mt-4">Skills</h5>
+                <div class="card p-3 mb-4">
+                    <label class="form-label text-muted small">AI đã trích xuất các kỹ năng bên dưới. Bạn có thể xóa hoặc thêm kỹ năng khác.</label>
+                    <select name="skills" id="skillsSelect" class="form-select" multiple>
+                        {% for master_skill in all_skills %}
+                        <option value="{{ master_skill.name }}"
+                            {% if master_skill.name in extracted_data.skills %} selected {% endif %}>
+                            {{ master_skill.name }}
+                        </option>
+                        {% endfor %}
+
+                        {% for ex_skill in extracted_data.skills %}
+                            {% if ex_skill not in all_skills|map(attribute='name')|list %}
+                            <option value="{{ ex_skill }}" selected>{{ ex_skill }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Save Profile</button>
+                    <a href="{{ url_for('cv_extraction.fill_from_cv') }}" class="btn btn-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    // Đồng bộ biến index để không bị trùng lặp khi nhấn "Add" thêm
+    let expIndex = Number("{{ (extracted_data.experiences|length) if extracted_data.experiences else 0 }}");
+    let eduIndex = Number("{{ (extracted_data.educations|length) if extracted_data.educations else 0 }}");
+    
+    function addExperience() {
+        const container = document.getElementById("experience-container");
+        container.insertAdjacentHTML("beforeend", `
+            <div class="card p-3 mb-3 experience-item">
+                <input class="form-control mb-2" name="experiences[${expIndex}][company]" placeholder="Company Name">
+                <input class="form-control mb-2" name="experiences[${expIndex}][position]" placeholder="Position">
+                <div class="row">
+                    <div class="col-md-6 mb-2"><input type="month" class="form-control" name="experiences[${expIndex}][start_date]"></div>
+                    <div class="col-md-6 mb-2"><input type="month" class="form-control" name="experiences[${expIndex}][end_date]"></div>
+                </div>
+                <textarea class="form-control mb-2" name="experiences[${expIndex}][description]" placeholder="Describe responsibilities..."></textarea>
+                <div class="text-end"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.experience-item').remove()">Remove</button></div>
+            </div>
+        `);
+        expIndex++;
+    }
+
+    function addEducation() {
+        const container = document.getElementById("education-container");
+        container.insertAdjacentHTML("beforeend", `
+            <div class="card p-3 mb-3 education-item">
+                <input class="form-control mb-2" name="educations[${eduIndex}][school]" placeholder="School Name">
+                <input class="form-control mb-2" name="educations[${eduIndex}][degree]" placeholder="Degree / Major">
+                <div class="row">
+                    <div class="col-md-6 mb-2"><input type="month" class="form-control" name="educations[${eduIndex}][start_date]"></div>
+                    <div class="col-md-6 mb-2"><input type="month" class="form-control" name="educations[${eduIndex}][end_date]"></div>
+                </div>
+                <div class="text-end"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.education-item').remove()">Remove</button></div>
+            </div>
+        `);
+        eduIndex++;
+    }
+
+    $(document).ready(function () {
+        $('#skillsSelect').select2({
+            placeholder: "Gõ để tìm kiếm hoặc thêm kỹ năng mới...",
+            width: '100%',
+            allowClear: true,
+            tags: true,
+            tokenSeparators: [',']
+        });
+    });
+</script>
+{% endblock %}

@@ -8,7 +8,9 @@
         --profile-bg: #f8f9fa;
     }
 
-    body { background-color: var(--profile-bg); }
+    body {
+        background-color: var(--profile-bg);
+    }
 
     /* Banner & Avatar */
     .profile-banner {
@@ -21,12 +23,13 @@
         position: relative;
         width: 150px;
         height: 150px;
-        margin-top: -75px; /* Đẩy avatar lên đè banner */
+        margin-top: -75px;
+        /* Đẩy avatar lên đè banner */
         border: 5px solid white;
         border-radius: 50%;
         overflow: hidden;
         background: white;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         cursor: pointer;
     }
 
@@ -39,7 +42,10 @@
 
     .avatar-overlay {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background: rgba(0, 0, 0, 0.5);
         color: white;
         display: flex;
@@ -50,10 +56,15 @@
         transition: 0.3s ease;
     }
 
-    .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
+    .avatar-wrapper:hover .avatar-overlay {
+        opacity: 1;
+    }
 
     /* Cards & Sections */
-    .card { border: none; border-radius: 15px; }
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
 
     .section-title {
         font-weight: 700;
@@ -61,9 +72,15 @@
         position: relative;
         padding-bottom: 8px;
     }
+
     .section-title::after {
-        content: ""; position: absolute; left: 0; bottom: 0;
-        width: 35px; height: 3px; background: var(--profile-primary);
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 35px;
+        height: 3px;
+        background: var(--profile-primary);
         border-radius: 2px;
     }
 
@@ -78,6 +95,7 @@
         border: 1px solid transparent;
         transition: all 0.2s ease;
     }
+
     .skill-badge:hover {
         background: var(--profile-primary);
         color: white;
@@ -90,6 +108,7 @@
         padding-left: 25px;
         border-left: 2px solid #e9ecef;
     }
+
     .timeline-item::before {
         content: "";
         position: absolute;
@@ -103,7 +122,37 @@
     }
 
     /* Buttons */
-    .btn-rounded { border-radius: 50px; font-weight: 600; }
+    .btn-rounded {
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    .skill-badge {
+        background: #f1f1f1;
+        color: #333;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid #e2e2e2;
+        transition: all 0.2s ease;
+    }
+
+    .skill-badge:hover {
+        background: #e8e8e8;
+    }
+
+    .btn-fill-cv {
+        background: linear-gradient(135deg, rgb(160, 197, 189), rgb(50, 92, 30));
+        color: white;
+        border: none;
+    }
+
+    .btn-fill-cv:hover {
+        background: linear-gradient(135deg, rgba(133, 182, 65, 0.3), #a0c5bd);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+    }
 </style>
 {% endblock %}
 
@@ -125,12 +174,15 @@
                         </div>
                     </div>
 
-                    <form id="avatarForm" action="{{ url_for('candidate_profile.upload_avatar') }}" method="POST" enctype="multipart/form-data">
-                        <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden onchange="this.form.submit()">
+                    <form id="avatarForm" action="{{ url_for('candidate_profile.upload_avatar') }}" method="POST"
+                        enctype="multipart/form-data">
+                        <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden
+                            onchange="this.form.submit()">
                     </form>
 
                     <h4 class="fw-bold mt-3 mb-1">{{ candidate.full_name or "Chưa cập nhật tên" }}</h4>
-                    <p class="text-primary fw-semibold mb-3 small">{{ candidate.current_title or "Vị trí công việc" }}</p>
+                    <p class="text-primary fw-semibold mb-3 small">{{ candidate.current_title or "Vị trí công việc" }}
+                    </p>
 
                     <div class="text-start bg-light p-3 rounded-4 mt-3">
                         <div class="mb-2 d-flex align-items-center">
@@ -148,8 +200,35 @@
                     </div>
 
                     <div class="d-grid mt-4">
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}" class="btn btn-primary btn-rounded shadow-sm">
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
+                            class="btn btn-primary btn-rounded shadow-sm">
                             <i class="bi bi-pencil-square me-2"></i>Sửa hồ sơ
+                        </a>
+                    </div>
+
+                    <p class="mb-1">
+                        <i class="bi bi-envelope"></i>
+                        {{ candidate.user.email if candidate.user and candidate.user.email else "Chưa cập nhật email" }}
+                    </p>
+
+                    <p class="mb-1">
+                        <i class="bi bi-telephone"></i>
+                        {{ candidate.phone if candidate.phone else "Chưa cập nhật số điện thoại" }}
+                    </p>
+
+                    <p>
+                        <i class="bi bi-geo-alt"></i>
+                        {{ candidate.location if candidate.location else "Chưa cập nhật địa điểm" }}
+                    </p>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('cv_extraction.fill_from_cv') }}" class="btn btn-fill-cv btn-lg">
+                            <i class="bi bi-magic"></i> Fill Profile from CV
+                        </a>
+
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
+                            class="btn btn-outline-primary btn-sm mt-3">
+                            Edit Profile
                         </a>
                     </div>
                 </div>
@@ -159,17 +238,18 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="section-title mb-0 text-uppercase small">Kỹ năng</h6>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='skills') }}" class="btn btn-sm btn-light rounded-circle">
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='skills') }}"
+                            class="btn btn-sm btn-light rounded-circle">
                             <i class="bi bi-plus"></i>
                         </a>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         {% if candidate.skills %}
-                            {% for cs in candidate.skills %}
-                                <span class="skill-badge">{{ cs.skill.name }}</span>
-                            {% endfor %}
+                        {% for cs in candidate.skills %}
+                        <span class="skill-badge">{{ cs.skill.name }}</span>
+                        {% endfor %}
                         {% else %}
-                            <p class="text-muted small mb-0">Chưa cập nhật kỹ năng.</p>
+                        <p class="text-muted small mb-0">Chưa cập nhật kỹ năng.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -182,7 +262,8 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="section-title mb-0">Giới thiệu</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='bio') }}" class="btn btn-sm btn-outline-primary btn-rounded">Sửa</a>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='bio') }}"
+                            class="btn btn-sm btn-outline-primary btn-rounded">Sửa</a>
                     </div>
                     <p class="text-secondary small mb-0" style="line-height: 1.6;">
                         {{ candidate.bio or "Hãy viết gì đó về bản thân bạn..." }}
@@ -194,20 +275,21 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="section-title mb-0">Kinh nghiệm</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='experiences') }}" class="btn btn-sm btn-outline-primary btn-rounded">+ Thêm</a>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='experiences') }}"
+                            class="btn btn-sm btn-outline-primary btn-rounded">+ Thêm</a>
                     </div>
 
                     {% if candidate.experiences %}
-                        {% for exp in candidate.experiences %}
-                        <div class="timeline-item mb-4">
-                            <h6 class="fw-bold mb-0">{{ exp.position }}</h6>
-                            <div class="text-primary small fw-bold">{{ exp.company }}</div>
-                            <div class="text-muted small mb-2">{{ exp.start_date }} - {{ exp.end_date or "Hiện tại" }}</div>
-                            <p class="text-muted small mb-0">{{ exp.description }}</p>
-                        </div>
-                        {% endfor %}
+                    {% for exp in candidate.experiences %}
+                    <div class="timeline-item mb-4">
+                        <h6 class="fw-bold mb-0">{{ exp.position }}</h6>
+                        <div class="text-primary small fw-bold">{{ exp.company }}</div>
+                        <div class="text-muted small mb-2">{{ exp.start_date }} - {{ exp.end_date or "Hiện tại" }}</div>
+                        <p class="text-muted small mb-0">{{ exp.description }}</p>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <p class="text-center text-muted small py-3">Chưa có dữ liệu kinh nghiệm.</p>
+                    <p class="text-center text-muted small py-3">Chưa có dữ liệu kinh nghiệm.</p>
                     {% endif %}
                 </div>
             </div>
@@ -216,18 +298,19 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="section-title mb-0">Học vấn</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='educations') }}" class="btn btn-sm btn-outline-primary btn-rounded">+ Thêm</a>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='educations') }}"
+                            class="btn btn-sm btn-outline-primary btn-rounded">+ Thêm</a>
                     </div>
 
                     {% if candidate.educations %}
-                        {% for edu in candidate.educations %}
-                        <div class="timeline-item mb-3">
-                            <h6 class="fw-bold mb-0">{{ edu.degree }}</h6>
-                            <div class="text-muted small">{{ edu.school }} | {{ edu.start_date }} - {{ edu.end_date }}</div>
-                        </div>
-                        {% endfor %}
+                    {% for edu in candidate.educations %}
+                    <div class="timeline-item mb-3">
+                        <h6 class="fw-bold mb-0">{{ edu.degree }}</h6>
+                        <div class="text-muted small">{{ edu.school }} | {{ edu.start_date }} - {{ edu.end_date }}</div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <p class="text-center text-muted small py-3">Chưa có dữ liệu học vấn.</p>
+                    <p class="text-center text-muted small py-3">Chưa có dữ liệu học vấn.</p>
                     {% endif %}
                 </div>
             </div>

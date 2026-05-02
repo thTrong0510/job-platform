@@ -21,3 +21,13 @@ class SkillRepository:
         db.session.add(skill)
         db.session.commit()
         return skill
+
+    @staticmethod
+    def get_or_create(name):
+        skill = Skill.query.filter(db.func.lower(Skill.name) == db.func.lower(name)).first()
+        if not skill:
+            skill = Skill(name=name)
+            db.session.add(skill)
+            db.session.flush()
+        return skill
+
