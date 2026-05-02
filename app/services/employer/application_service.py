@@ -1,9 +1,12 @@
+# Thêm count_unscored() để hiện số hồ sơ chưa có điểm trên UI
+# Thêm delay giữa các Gemini call để tránh 429 rate limit
+
+import time
+
 from app.repositories.employer.application_repository import ApplicationRepository
 from app.repositories.candidate.notification_repository import NotificationRepository
 from app.models.notification import Notification
 
-
-# ── Nội dung thông báo theo từng trạng thái ──────────────────────
 STATUS_MESSAGES = {
     "REVIEWED": {
         "title": "Hồ sơ của bạn đã được xem xét",
@@ -42,25 +45,20 @@ STATUS_MESSAGES = {
 
 VALID_STATUSES = {"PENDING", "REVIEWED", "ACCEPTED", "REJECTED"}
 
+# Delay (giây) giữa mỗi lần gọi Gemini để tránh vượt rate limit
+# Free tier: 15 req/min → cần ít nhất 4s/req để an toàn
+_GEMINI_CALL_DELAY = 4.0
+
 
 class ApplicationPagination:
-    """
-    Wrap Flask-SQLAlchemy pagination.
-    Repository gán _mock_items = list of (application, score).
-    """
+    """Wrap Flask-SQLAlchemy pagination, gắn match_score vào mỗi application."""
 
     def __init__(self, raw_pagination):
         self._p = raw_pagination
-
-        # Dùng _mock_items nếu repository đã xử lý score + filter
-        source = getattr(raw_pagination, '_mock_items', None)
-        if source is None:
-            # fallback: items là list tuple (application, score) thô
-            source = [(a, s) for a, s in raw_pagination.items]
-
         self.items = []
-        for application, score in source:
-            application.match_score = score
+
+        for application, score in raw_pagination.items:
+            application.match_score = float(score) if score is not None else None
             self.items.append(application)
 
         self.total    = raw_pagination.total
@@ -76,12 +74,64 @@ class ApplicationPagination:
 class ApplicationService:
 
     # ─────────────────────────────────────────────────────────
-    # Danh sách hồ sơ ứng tuyển
+    # Đếm số hồ sơ chưa có điểm (dùng hiển thị gợi ý trên UI)
+    # ─────────────────────────────────────────────────────────
+    @staticmethod
+    def count_unscored(employer_id) -> int:
+        return len(ApplicationRepository.get_unscored_applications(employer_id))
+
+    # ─────────────────────────────────────────────────────────
+    # Tính điểm cho application chưa có score
+    # Có delay giữa các call để tránh 429
+    # ─────────────────────────────────────────────────────────
+    @staticmethod
+    def auto_score_unscored(employer_id):
+        """
+        Tìm tất cả application chưa có score → gọi Gemini → lưu DB.
+        Có delay giữa các call để không vượt free-tier rate limit.
+        Trả về số lượng application vừa được tính thành công.
+        """
+        from app.services.employer.matching_service import MatchingService
+
+        unscored = ApplicationRepository.get_unscored_applications(employer_id)
+        count = 0
+        for i, app in enumerate(unscored):
+            # Delay trước mỗi call (trừ call đầu tiên)
+            if i > 0:
+                time.sleep(_GEMINI_CALL_DELAY)
+            score = MatchingService.get_or_calculate(app)
+            if score is not None:
+                count += 1
+        return count
+
+    # ─────────────────────────────────────────────────────────
+    # Force tính lại toàn bộ score — có delay giữa các call
+    # ─────────────────────────────────────────────────────────
+    @staticmethod
+    def recalculate_all(employer_id):
+        """
+        Tính lại điểm cho TẤT CẢ application của employer.
+        Có delay giữa các call để không vượt free-tier rate limit.
+        """
+        from app.services.employer.matching_service import MatchingService
+
+        all_apps = ApplicationRepository.get_all_applications(employer_id)
+        count = 0
+        for i, app in enumerate(all_apps):
+            if i > 0:
+                time.sleep(_GEMINI_CALL_DELAY)
+            score = MatchingService.recalculate(app)
+            if score is not None:
+                count += 1
+        return count
+
+    # ─────────────────────────────────────────────────────────
+    # Danh sách hồ sơ (score đọc từ DB, không gọi Gemini)
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def get_applications(employer_id, filters: dict, page: int = 1):
         keyword     = filters.get("keyword", "").strip() or None
-        status      = filters.get("status", "").strip() or None
+        status      = filters.get("status",  "").strip() or None
         score_level = filters.get("score_level", "").strip() or None
 
         raw = ApplicationRepository.get_applications_for_employer(
@@ -104,14 +154,20 @@ class ApplicationService:
         if not application:
             return None
 
+        # Lấy score từ DB (đã tính sẵn)
         score = ApplicationRepository.get_score(
             application.cv.candidate_id, application.job_id
         )
+        # Nếu chưa có (vào thẳng từ URL) → tính ngay cho 1 hồ sơ này thôi
+        if score is None:
+            from app.services.employer.matching_service import MatchingService
+            score = MatchingService.get_or_calculate(application)
+
         application.match_score = score
         return application
 
     # ─────────────────────────────────────────────────────────
-    # Cập nhật trạng thái + gửi thông báo hệ thống
+    # Cập nhật trạng thái + thông báo
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def update_status(application_id, employer_id, new_status):
@@ -124,19 +180,17 @@ class ApplicationService:
         if not application:
             return False, "Không tìm thấy hồ sơ hoặc bạn không có quyền."
 
-        old_status = application.status
-        if old_status == new_status:
+        if application.status == new_status:
             return False, "Trạng thái không thay đổi."
 
         application.status = new_status
         ApplicationRepository.save(application)
-
         ApplicationService._create_notification(application, new_status)
 
-        return True, f"Đã cập nhật trạng thái thành công."
+        return True, "Đã cập nhật trạng thái thành công."
 
     # ─────────────────────────────────────────────────────────
-    # Tạo Notification record
+    # Tạo notification cho ứng viên
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def _create_notification(application, new_status):
@@ -144,17 +198,13 @@ class ApplicationService:
         if not template:
             return
 
-        company   = application.job.employer.company_name
-        job_title = application.job.title
-        cv_title  = application.cv.title
-
         notification = Notification(
             user_id=application.cv.candidate.user_id,
             title=template["title"],
             message=template["message"].format(
-                company=company,
-                job_title=job_title,
-                cv_title=cv_title,
+                company=application.job.employer.company_name,
+                job_title=application.job.title,
+                cv_title=application.cv.title,
             ),
         )
         NotificationRepository.save(notification)

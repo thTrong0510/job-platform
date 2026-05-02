@@ -7,18 +7,6 @@ from app.models.recommendation import JobRecommendation
 from sqlalchemy import or_, and_
 
 
-def _mock_score(candidate_id, job_id):
-    """
-    Tạo mock score tạm thời cho đến khi có thuật toán matching thực.
-    Dùng hash từ candidate_id + job_id để cho kết quả nhất quán
-    (cùng cặp candidate-job luôn ra cùng 1 điểm).
-    Trả về float trong khoảng 20.0 – 95.0.
-    """
-    seed = (candidate_id * 2654435761 ^ job_id * 2246822519) & 0xFFFFFFFF
-    # Đưa về khoảng [20, 95]
-    return round(20.0 + (seed % 1000) / 1000 * 75, 1)
-
-
 class ApplicationRepository:
 
     # ─────────────────────────────────────────────────────────
@@ -63,38 +51,63 @@ class ApplicationRepository:
         if status:
             q = q.filter(Application.status == status)
 
-        q = q.order_by(Application.applied_at.desc())
-
-        raw_pagination = q.paginate(page=page, per_page=per_page, error_out=False)
-
-        # ── Gán mock score vào từng application ──
-        # (score_level filter được thực hiện sau khi có mock score)
-        items_with_score = []
-        for application, real_score in raw_pagination.items:
-            if real_score is not None:
-                score = float(real_score)
-            else:
-                score = _mock_score(
-                    application.cv.candidate_id,
-                    application.job_id
+        # ── Lọc theo mức phù hợp (dùng score thật từ DB) ──
+        if score_level == "high":
+            q = q.filter(JobRecommendation.score >= 70)
+        elif score_level == "medium":
+            q = q.filter(
+                JobRecommendation.score >= 40,
+                JobRecommendation.score < 70,
+            )
+        elif score_level == "low":
+            q = q.filter(
+                or_(
+                    JobRecommendation.score < 40,
+                    JobRecommendation.score.is_(None),
                 )
-            items_with_score.append((application, score))
+            )
 
-        # ── Lọc theo mức phù hợp (sau khi đã có score) ──
-        if score_level:
-            if score_level == "high":
-                items_with_score = [(a, s) for a, s in items_with_score if s >= 70]
-            elif score_level == "medium":
-                items_with_score = [(a, s) for a, s in items_with_score if 40 <= s < 70]
-            elif score_level == "low":
-                items_with_score = [(a, s) for a, s in items_with_score if s < 40]
-
-        # Wrap lại để service dùng được (giữ interface cũ)
-        raw_pagination._mock_items = items_with_score
-        return raw_pagination
+        q = q.order_by(Application.applied_at.desc())
+        return q.paginate(page=page, per_page=per_page, error_out=False)
 
     # ─────────────────────────────────────────────────────────
-    # Find single application (verify employer ownership)
+    # Lấy tất cả applications chưa có score (để batch calculate)
+    # ─────────────────────────────────────────────────────────
+    @staticmethod
+    def get_unscored_applications(employer_id):
+        return (
+            db.session.query(Application)
+            .join(Job,       Job.id       == Application.job_id)
+            .join(CV,        CV.id        == Application.cv_id)
+            .outerjoin(
+                JobRecommendation,
+                and_(
+                    JobRecommendation.candidate_id == CV.candidate_id,
+                    JobRecommendation.job_id       == Application.job_id,
+                ),
+            )
+            .filter(
+                Job.employer_id == employer_id,
+                JobRecommendation.score.is_(None),
+            )
+            .all()
+        )
+
+    # ─────────────────────────────────────────────────────────
+    # Lấy tất cả applications (để recalculate all)
+    # ─────────────────────────────────────────────────────────
+    @staticmethod
+    def get_all_applications(employer_id):
+        return (
+            db.session.query(Application)
+            .join(Job, Job.id == Application.job_id)
+            .join(CV,  CV.id  == Application.cv_id)
+            .filter(Job.employer_id == employer_id)
+            .all()
+        )
+
+    # ─────────────────────────────────────────────────────────
+    # Find single application (verify employer)
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def find_by_id_for_employer(application_id, employer_id):
@@ -109,21 +122,20 @@ class ApplicationRepository:
         )
 
     # ─────────────────────────────────────────────────────────
-    # Get match score — real nếu có, mock nếu không
+    # Get score từ DB
     # ─────────────────────────────────────────────────────────
     @staticmethod
-    def get_score(candidate_id, job_id):
+    def get_score(candidate_id, job_id) -> float | None:
         rec = JobRecommendation.query.filter_by(
             candidate_id=candidate_id,
             job_id=job_id,
         ).first()
         if rec and rec.score is not None:
             return float(rec.score)
-        # Dùng mock score cho đến khi có thuật toán thực
-        return _mock_score(candidate_id, job_id)
+        return None
 
     # ─────────────────────────────────────────────────────────
-    # Save (update status)
+    # Save application
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def save(application):

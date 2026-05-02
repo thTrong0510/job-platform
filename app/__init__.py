@@ -41,6 +41,7 @@ def create_app():
     app.register_blueprint(employer_cv_preview_bp)
     app.register_blueprint(cv_extraction_bp)
 
+
     # ── Context processor: inject unread count vào mọi template ──
     @app.context_processor
     def inject_globals():
