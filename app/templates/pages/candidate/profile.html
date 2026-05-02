@@ -1,234 +1,245 @@
 {% extends "layouts/base.html" %}
-{% block title %}Candidate Profile{% endblock %}
+{% block title %}Hồ sơ cá nhân{% endblock %}
 
 {% block extra_css %}
 <style>
+    :root {
+        --profile-primary: #0d6efd;
+        --profile-bg: #f8f9fa;
+    }
+
+    body { background-color: var(--profile-bg); }
+
+    /* Banner & Avatar */
+    .profile-banner {
+        height: 120px;
+        background: linear-gradient(135deg, #0d6efd 0%, #00d4ff 100%);
+        border-radius: 15px 15px 0 0;
+    }
+
     .avatar-wrapper {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    cursor: pointer;
-}
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin-top: -75px; /* Đẩy avatar lên đè banner */
+        border: 5px solid white;
+        border-radius: 50%;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
 
-.avatar-img {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 50%;
-    transition: 0.3s ease;
-}
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.3s ease;
+    }
 
-.avatar-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
+    .avatar-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: 0.3s ease;
+    }
 
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
+    .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    /* Cards & Sections */
+    .card { border: none; border-radius: 15px; }
 
-    opacity: 0;
-    transition: 0.3s ease;
-    text-align: center;
-}
+    .section-title {
+        font-weight: 700;
+        color: #333;
+        position: relative;
+        padding-bottom: 8px;
+    }
+    .section-title::after {
+        content: ""; position: absolute; left: 0; bottom: 0;
+        width: 35px; height: 3px; background: var(--profile-primary);
+        border-radius: 2px;
+    }
 
-.avatar-wrapper:hover .avatar-overlay {
-    opacity: 1;
-}
+    /* Skills */
+    .skill-badge {
+        background: #e7f0ff;
+        color: #0d6efd;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .skill-badge:hover {
+        background: var(--profile-primary);
+        color: white;
+        transform: translateY(-2px);
+    }
 
-.avatar-wrapper:hover .avatar-img {
-    transform: scale(1.01);
-}
+    /* Timeline */
+    .timeline-item {
+        position: relative;
+        padding-left: 25px;
+        border-left: 2px solid #e9ecef;
+    }
+    .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -7px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--profile-primary);
+        border: 2px solid white;
+    }
 
-.skill-badge {
-    background: #f1f1f1;
-    color: #333;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    border: 1px solid #e2e2e2;
-    transition: all 0.2s ease;
-}
-
-.skill-badge:hover {
-    background: #e8e8e8;
-}
+    /* Buttons */
+    .btn-rounded { border-radius: 50px; font-weight: 600; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-5">
     <div class="row">
+        <!-- CỘT TRÁI -->
         <div class="col-lg-4">
             <div class="card shadow-sm mb-4">
-                <div class="card-body text-center">
-
-                    <!-- Avatar Image -->
-                    <div class="avatar-wrapper mx-auto">
-
+                <div class="profile-banner"></div>
+                <div class="card-body text-center pt-0">
+                    <div class="avatar-wrapper mx-auto" onclick="triggerAvatarUpload()">
                         <img id="avatarPreview"
-                            src="{{ candidate.user.avatar_url if candidate.user and candidate.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
+                            src="{{ candidate.user.avatar_url if candidate.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
                             class="avatar-img">
-
-                        <div class="avatar-overlay" onclick="triggerAvatarUpload()">
+                        <div class="avatar-overlay">
                             <i class="bi bi-camera-fill fs-4"></i>
-                            <div class="mt-1 small">
-                                {{ "Update Avatar" if candidate.user.avatar_url else "Add Avatar" }}
-                            </div>
+                            <span class="small">Đổi ảnh</span>
                         </div>
                     </div>
 
-                    <!-- Hidden Upload Form -->
-                    <form id="avatarForm" action="{{ url_for('candidate_profile.upload_avatar') }}" method="POST"
-                        enctype="multipart/form-data">
-
-                        <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
+                    <form id="avatarForm" action="{{ url_for('candidate_profile.upload_avatar') }}" method="POST" enctype="multipart/form-data">
+                        <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden onchange="this.form.submit()">
                     </form>
 
-                    <h4 class="fw-bold mt-3">
-                        {{ candidate.full_name if candidate.full_name else "Chưa cập nhật họ tên" }}
-                    </h4>
+                    <h4 class="fw-bold mt-3 mb-1">{{ candidate.full_name or "Chưa cập nhật tên" }}</h4>
+                    <p class="text-primary fw-semibold mb-3 small">{{ candidate.current_title or "Vị trí công việc" }}</p>
 
-                    <p class="text-muted mb-1">
-                        {{ candidate.current_title if candidate.current_title else "Chưa cập nhật vị trí hiện tại" }}
-                    </p>
+                    <div class="text-start bg-light p-3 rounded-4 mt-3">
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="bi bi-envelope text-primary me-2"></i>
+                            <span class="small text-truncate">{{ candidate.user.email }}</span>
+                        </div>
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="bi bi-telephone text-primary me-2"></i>
+                            <span class="small">{{ candidate.phone or "Chưa cập nhật" }}</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt text-primary me-2"></i>
+                            <span class="small">{{ candidate.location or "Chưa cập nhật" }}</span>
+                        </div>
+                    </div>
 
-                    <p class="mb-1">
-                        <i class="bi bi-envelope"></i>
-                        {{ candidate.user.email if candidate.user and candidate.user.email else "Chưa cập nhật email" }}
-                    </p>
-
-                    <p class="mb-1">
-                        <i class="bi bi-telephone"></i>
-                        {{ candidate.phone if candidate.phone else "Chưa cập nhật số điện thoại" }}
-                    </p>
-
-                    <p>
-                        <i class="bi bi-geo-alt"></i>
-                        {{ candidate.location if candidate.location else "Chưa cập nhật địa điểm" }}
-                    </p>
-
-                    <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
-                        class="btn btn-outline-primary btn-sm mt-3">
-                        Edit Profile
-                    </a>
+                    <div class="d-grid mt-4">
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}" class="btn btn-primary btn-rounded shadow-sm">
+                            <i class="bi bi-pencil-square me-2"></i>Sửa hồ sơ
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Skills -->
-            <div class="card shadow-sm">
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Skills</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='skills') }}"
-                            class="btn btn-sm btn-outline-secondary">
-                            Edit
+                        <h6 class="section-title mb-0 text-uppercase small">Kỹ năng</h6>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='skills') }}" class="btn btn-sm btn-light rounded-circle">
+                            <i class="bi bi-plus"></i>
                         </a>
                     </div>
-
-                {% if candidate.skills %}
-                <div class="d-flex flex-wrap gap-2">
-                    {% for cs in candidate.skills %}
-                        <span class="skill-badge">
-                            {{ cs.skill.name }}
-                        </span>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted">Chưa cập nhật kỹ năng</p>
-                {% endif %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if candidate.skills %}
+                            {% for cs in candidate.skills %}
+                                <span class="skill-badge">{{ cs.skill.name }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small mb-0">Chưa cập nhật kỹ năng.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- CỘT PHẢI -->
         <div class="col-lg-8">
-            <!-- Bio -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
+            <div class="card shadow-sm mb-4 border-start border-primary border-5">
+                <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Professional Summary</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='bio') }}"
-                            class="btn btn-sm btn-outline-secondary">
-                            Edit
-                        </a>
+                        <h5 class="section-title mb-0">Giới thiệu</h5>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='bio') }}" class="btn btn-sm btn-outline-primary btn-rounded">Sửa</a>
                     </div>
-                    <p>
-                        {{ candidate.bio if candidate.bio else "Chưa cập nhật mô tả bản thân" }}
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                        {{ candidate.bio or "Hãy viết gì đó về bản thân bạn..." }}
                     </p>
                 </div>
             </div>
 
-            <!-- Experience -->
             <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Work Experience</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='experiences') }}"
-                            class="btn btn-sm btn-outline-secondary">
-                            Edit
-                        </a>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="section-title mb-0">Kinh nghiệm</h5>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='experiences') }}" class="btn btn-sm btn-outline-primary btn-rounded">+ Thêm</a>
                     </div>
 
                     {% if candidate.experiences %}
-                    {% for exp in candidate.experiences %}
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-1">{{ exp.position }}</h6>
-                        <div class="text-muted small mb-1">
-                            {{ exp.company }}
+                        {% for exp in candidate.experiences %}
+                        <div class="timeline-item mb-4">
+                            <h6 class="fw-bold mb-0">{{ exp.position }}</h6>
+                            <div class="text-primary small fw-bold">{{ exp.company }}</div>
+                            <div class="text-muted small mb-2">{{ exp.start_date }} - {{ exp.end_date or "Hiện tại" }}</div>
+                            <p class="text-muted small mb-0">{{ exp.description }}</p>
                         </div>
-                        <div class="text-muted small mb-2">
-                            {{ exp.start_date }} - {{ exp.end_date if exp.end_date else "Present" }}
-                        </div>
-                        <p class="mb-0">{{ exp.description }}</p>
-                        <hr>
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
                     {% else %}
-                    <p class="text-muted">Chưa cập nhật kinh nghiệm làm việc</p>
+                        <p class="text-center text-muted small py-3">Chưa có dữ liệu kinh nghiệm.</p>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Education -->
             <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Education</h5>
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='educations') }}"
-                            class="btn btn-sm btn-outline-secondary">
-                            Edit
-                        </a>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="section-title mb-0">Học vấn</h5>
+                        <a href="{{ url_for('candidate_profile.edit_profile', section='educations') }}" class="btn btn-sm btn-outline-primary btn-rounded">+ Thêm</a>
                     </div>
 
                     {% if candidate.educations %}
-                    {% for edu in candidate.educations %}
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-1">{{ edu.degree }}</h6>
-                        <div class="text-muted small mb-1">
-                            {{ edu.school }}
+                        {% for edu in candidate.educations %}
+                        <div class="timeline-item mb-3">
+                            <h6 class="fw-bold mb-0">{{ edu.degree }}</h6>
+                            <div class="text-muted small">{{ edu.school }} | {{ edu.start_date }} - {{ edu.end_date }}</div>
                         </div>
-                        <div class="text-muted small">
-                            From {{ edu.start_date }} to {{ edu.end_date }}
-                        </div>
-                        <hr>
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
                     {% else %}
-                    <p class="text-muted">Chưa cập nhật thông tin học vấn</p>
+                        <p class="text-center text-muted small py-3">Chưa có dữ liệu học vấn.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function triggerAvatarUpload() {
+        document.getElementById('avatarInput').click();
+    }
+</script>
 {% endblock %}
 
 {% block extra_js %}

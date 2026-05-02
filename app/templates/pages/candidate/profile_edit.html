@@ -1,173 +1,231 @@
 {% extends "layouts/base.html" %}
-{% block title %}Edit Profile{% endblock %}
+{% block title %}Chỉnh sửa hồ sơ{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --edit-bg: #f8f9fa;
+        --primary-blue: #0d6efd;
+    }
+    body { background-color: var(--edit-bg); }
+
+    .card { border: none; border-radius: 15px; }
+
+    .form-section-title {
+        font-weight: 700;
+        color: #333;
+        border-left: 4px solid var(--primary-blue);
+        padding-left: 15px;
+        margin-bottom: 20px;
+        margin-top: 10px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .nested-card {
+        background-color: #ffffff;
+        border: 1px solid #eef0f2;
+        border-radius: 12px;
+        transition: transform 0.2s;
+    }
+
+    .nested-card:hover {
+        border-color: #d1d9e0;
+    }
+
+    .btn-rounded { border-radius: 50px; padding: 0.5rem 1.5rem; font-weight: 600; }
+
+    /* Select2 / Multi-select custom style */
+    .select2-container--bootstrap-5 .select2-selection {
+        border-radius: 10px;
+    }
+
+    .remove-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-body p-4 p-md-5">
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-
-            <h4 class="mb-4">
-                Edit {{ section|capitalize }}
-            </h4>
-
-            <form method="POST">
-                <input type="hidden" name="section" value="{{ section }}">
-
-                {% set show_basic = section in ['basic', 'all'] %}
-                {% set show_bio = section in ['bio', 'all'] %}
-                {% set show_skills = section in ['skills', 'all'] %}
-                {% set show_experiences = section in ['experiences', 'all'] %}
-                {% set show_educations = section in ['educations', 'all'] %}
-
-                <!-- ================= BASIC ================= -->
-                {% if show_basic %}
-                <h5 class="mb-3">Basic Information</h5>
-
-                <div class="mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input class="form-control" name="full_name" value="{{ candidate.full_name or '' }}"
-                        placeholder="Enter your full name">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Current Title</label>
-                    <input class="form-control" name="current_title" value="{{ candidate.current_title or '' }}"
-                        placeholder="Software Engineer, Backend Developer...">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Phone</label>
-                    <input class="form-control" name="phone" value="{{ candidate.phone or '' }}"
-                        placeholder="Enter phone number">
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label">Location</label>
-                    <input class="form-control" name="location" value="{{ candidate.location or '' }}"
-                        placeholder="City, Country">
-                </div>
-                {% endif %}
-
-                <!-- ================= BIO ================= -->
-                {% if show_bio %}
-                <h5 class="mb-3">Professional Summary</h5>
-                <div class="mb-4">
-                    <textarea class="form-control" name="bio" rows="4"
-                        placeholder="Write a short professional summary...">{{ candidate.bio or '' }}</textarea>
-                </div>
-                {% endif %}
-
-                <!-- ================= EXPERIENCES ================= -->
-                {% if show_experiences %}
-                <h5 class="mb-3 d-flex justify-content-between">
-                    Work Experience
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addExperience()">+
-                        Add</button>
-                </h5>
-
-                <div id="experience-container">
-
-                    {% set experiences = candidate.experiences if candidate.experiences else [{}] %}
-
-                    {% for exp in experiences %}
-                    <div class="card p-3 mb-3 experience-item">
-                        <input class="form-control mb-2" name="experiences[{{ loop.index0 }}][company]"
-                            value="{{ exp.company if exp.company else '' }}" placeholder="Company Name">
-
-                        <input class="form-control mb-2" name="experiences[{{ loop.index0 }}][position]"
-                            value="{{ exp.position if exp.position else '' }}" placeholder="Position">
-
-                        <label class="form-label">Start Date</label>
-                        <input type="date" class="form-control mb-2 start-date"
-                            name="experiences[{{ loop.index0 }}][start_date]"
-                            value="{{ exp.start_date.strftime('%Y-%m-%d') if exp.start_date else '' }}">
-
-                        <label class="form-label">End Date</label>
-                        <input type="date" class="form-control mb-2 end-date"
-                            name="experiences[{{ loop.index0 }}][end_date]"
-                            value="{{ exp.end_date.strftime('%Y-%m-%d') if exp.end_date else '' }}">
-
-                        <textarea class="form-control mb-2" name="experiences[{{ loop.index0 }}][description]"
-                            placeholder="Describe your responsibilities...">{{ exp.description if exp.description else '' }}</textarea>
-
-                        <button type="button" class="btn btn-sm btn-outline-danger"
-                            onclick="this.closest('.experience-item').remove()">
-                            Remove
-                        </button>
+                    <div class="d-flex align-items-center mb-4">
+                        <a href="{{ url_for('candidate_profile.view_profile') }}" class="btn btn-light rounded-circle me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <h3 class="mb-0 fw-bold">Chỉnh sửa {{ section|capitalize }}</h3>
                     </div>
-                    {% endfor %}
+
+                    <form method="POST">
+                        <input type="hidden" name="section" value="{{ section }}">
+
+                        {% set show_basic = section in ['basic', 'all'] %}
+                        {% set show_bio = section in ['bio', 'all'] %}
+                        {% set show_skills = section in ['skills', 'all'] %}
+                        {% set show_experiences = section in ['experiences', 'all'] %}
+                        {% set show_educations = section in ['educations', 'all'] %}
+
+                        <!-- ================= BASIC ================= -->
+                        {% if show_basic %}
+                        <h5 class="form-section-title">Thông tin cơ bản</h5>
+                        <div class="row g-3 mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ và Tên</label>
+                                <input class="form-control" name="full_name" value="{{ candidate.full_name or '' }}" placeholder="VD: Nguyễn Văn A">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Vị trí hiện tại</label>
+                                <input class="form-control" name="current_title" value="{{ candidate.current_title or '' }}" placeholder="VD: Senior Backend Developer">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input class="form-control" name="phone" value="{{ candidate.phone or '' }}" placeholder="090...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Địa chỉ</label>
+                                <input class="form-control" name="location" value="{{ candidate.location or '' }}" placeholder="Hà Nội, Việt Nam">
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- ================= BIO ================= -->
+                        {% if show_bio %}
+                        <h5 class="form-section-title">Giới thiệu bản thân</h5>
+                        <div class="mb-5">
+                            <textarea class="form-control" name="bio" rows="5" placeholder="Chia sẻ ngắn gọn về mục tiêu và thế mạnh của bạn...">{{ candidate.bio or '' }}</textarea>
+                        </div>
+                        {% endif %}
+
+                        <!-- ================= EXPERIENCES ================= -->
+                        {% if show_experiences %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+                            <h5 class="form-section-title mb-0">Kinh nghiệm làm việc</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="addExperience()">
+                                <i class="bi bi-plus-lg me-1"></i> Thêm mới
+                            </button>
+                        </div>
+
+                        <div id="experience-container" class="mb-5">
+                            {% set experiences = candidate.experiences if candidate.experiences else [{}] %}
+                            {% for exp in experiences %}
+                            <div class="nested-card p-4 mb-3 position-relative shadow-sm">
+                                <button type="button" class="btn btn-sm btn-outline-danger border-0 remove-btn" onclick="this.closest('.nested-card').remove()">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Công ty</label>
+                                        <input class="form-control" name="experiences[{{ loop.index0 }}][company]" value="{{ exp.company or '' }}" placeholder="Tên công ty">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Chức danh</label>
+                                        <input class="form-control" name="experiences[{{ loop.index0 }}][position]" value="{{ exp.position or '' }}" placeholder="Vị trí đảm nhiệm">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ngày bắt đầu</label>
+                                        <input type="date" class="form-control" name="experiences[{{ loop.index0 }}][start_date]" value="{{ exp.start_date.strftime('%Y-%m-%d') if exp.start_date else '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ngày kết thúc</label>
+                                        <input type="date" class="form-control" name="experiences[{{ loop.index0 }}][end_date]" value="{{ exp.end_date.strftime('%Y-%m-%d') if exp.end_date else '' }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Mô tả công việc</label>
+                                        <textarea class="form-control" name="experiences[{{ loop.index0 }}][description]" rows="3" placeholder="Các dự án hoặc nhiệm vụ chính...">{{ exp.description or '' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- ================= EDUCATIONS ================= -->
+                        {% if show_educations %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+                            <h5 class="form-section-title mb-0">Học vấn</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="addEducation()">
+                                <i class="bi bi-plus-lg me-1"></i> Thêm trường học
+                            </button>
+                        </div>
+
+                        <div id="education-container" class="mb-5">
+                            {% set educations = candidate.educations if candidate.educations else [{}] %}
+                            {% for edu in educations %}
+                            <div class="nested-card p-4 mb-3 position-relative shadow-sm">
+                                <button type="button" class="btn btn-sm btn-outline-danger border-0 remove-btn" onclick="this.closest('.nested-card').remove()">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Trường học</label>
+                                        <input class="form-control" name="educations[{{ loop.index0 }}][school]" value="{{ edu.school or '' }}" placeholder="Tên trường">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Bằng cấp / Ngành học</label>
+                                        <input class="form-control" name="educations[{{ loop.index0 }}][degree]" value="{{ edu.degree or '' }}" placeholder="Kỹ sư phần mềm, Cử nhân kinh tế...">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Từ năm</label>
+                                        <input type="date" class="form-control" name="educations[{{ loop.index0 }}][start_date]" value="{{ edu.start_date.strftime('%Y-%m-%d') if edu.start_date else '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Đến năm</label>
+                                        <input type="date" class="form-control" name="educations[{{ loop.index0 }}][end_date]" value="{{ edu.end_date.strftime('%Y-%m-%d') if edu.end_date else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- ================= SKILLS ================= -->
+                        {% if show_skills %}
+                        <h5 class="form-section-title">Kỹ năng chuyên môn</h5>
+                        <div class="nested-card p-4 mb-5 shadow-sm">
+                            <p class="text-muted small mb-3">Chọn các kỹ năng phù hợp với bạn (Có thể chọn nhiều)</p>
+                            {% set selected_ids = candidate.skills | map(attribute='skill_id') | list %}
+                            <select name="skills" id="skillsSelect" class="form-select" multiple>
+                                {% for skill in all_skills %}
+                                <option value="{{ skill.id }}" {% if skill.id in selected_ids %}selected{% endif %}>
+                                    {{ skill.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-3 border-top pt-4">
+                            <button type="submit" class="btn btn-primary btn-rounded px-5">Lưu thay đổi</button>
+                            <a href="{{ url_for('candidate_profile.view_profile') }}" class="btn btn-light btn-rounded px-5">Hủy bỏ</a>
+                        </div>
+                    </form>
                 </div>
-                {% endif %}
-
-                <!-- ================= EDUCATIONS ================= -->
-                {% if show_educations %}
-                <h5 class="mb-3 d-flex justify-content-between">
-                    Education
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addEducation()">+ Add</button>
-                </h5>
-
-                <div id="education-container">
-
-                    {% set educations = candidate.educations if candidate.educations else [{}] %}
-
-                    {% for edu in educations %}
-                    <div class="card p-3 mb-3 education-item">
-                        <input class="form-control mb-2" name="educations[{{ loop.index0 }}][school]"
-                            value="{{ edu.school if edu.school else '' }}" placeholder="School Name">
-
-                        <input class="form-control mb-2" name="educations[{{ loop.index0 }}][degree]"
-                            value="{{ edu.degree if edu.degree else '' }}" placeholder="Degree / Major">
-
-                        <label class="form-label">Start Date</label>
-                        <input type="date" class="form-control mb-2 start-date"
-                            name="educations[{{ loop.index0 }}][start_date]"
-                            value="{{ edu.start_date.strftime('%Y-%m-%d') if edu.start_date else '' }}">
-
-                        <label class="form-label">End Date</label>
-                        <input type="date" class="form-control mb-2 end-date"
-                            name="educations[{{ loop.index0 }}][end_date]"
-                            value="{{ edu.end_date.strftime('%Y-%m-%d') if edu.end_date else '' }}">
-
-                        <button type="button" class="btn btn-sm btn-outline-danger"
-                            onclick="this.closest('.education-item').remove()">
-                            Remove
-                        </button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if show_skills %}
-                <h5 class="mb-3">Skills</h5>
-
-                <div class="card p-3 mb-3">
-
-                    {% set selected_ids = candidate.skills | map(attribute='skill_id') | list %}
-
-                    <select name="skills" id="skillsSelect" class="form-select" multiple>
-
-                        {% for skill in all_skills %}
-                        <option value="{{ skill.id }}" {% if skill.id in selected_ids %}selected{% endif %}>
-                            {{ skill.name }}
-                        </option>
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-                {% endif %}
-
-                <div class="mt-4">
-                    <button class="btn btn-success">Save Changes</button>
-                    <a href="{{ url_for('candidate_profile.view_profile') }}" class="btn btn-secondary">Cancel</a>
-                </div>
-
-            </form>
-
+            </div>
         </div>
     </div>
-
 </div>
 {% endblock %}
 {% block extra_js %}
