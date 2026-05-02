@@ -112,6 +112,28 @@ class JobService:
             employer_id=employer_id
         )
 
+    @staticmethod
+    def update_job(job_id, employer_id, form_data, skill_list):
+
+        # 2. Gọi Repo để update
+        return JobRepository.update(job_id, employer_id, form_data, skill_list)
+
+
+    @staticmethod
+    def delete_job_safely(job_id, employer_id):
+        job = JobRepository.find_by_id_and_employer(job_id, employer_id)
+        if not job:
+            return False, "Tin tuyển dụng không tồn tại."
+
+        applicant_count = JobRepository.count_applicants(job_id)
+
+        if applicant_count > 0:
+            JobRepository.update_status(job_id, 'CLOSED')
+            return False, f"Tin này đã có {applicant_count} người ứng tuyển. Hệ thống đã chuyển trạng thái sang 'Đã đóng' thay vì xóa hoàn toàn để lưu trữ dữ liệu ứng viên."
+
+        JobRepository.delete(job_id)
+        return True, "Xóa tin tuyển dụng thành công."
+
 
 def _parse_date(date_str):
     if not date_str:
