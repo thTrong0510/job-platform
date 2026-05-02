@@ -1,0 +1,391 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Chi tiết người dùng – {{ user.email }}{% endblock %}
+
+{% block content %}
+
+<!-- Nút Back -->
+<div class="mb-4">
+    <a href="{{ url_for('admin_users.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- LEFT: Profile card -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-4">
+
+                <!-- Avatar -->
+                <div class="profile-avatar mx-auto mb-3">
+                    {% if user.avatar_url %}
+                        <img src="{{ user.avatar_url }}" alt="">
+                    {% else %}
+                        <span class="avatar-letter">{{ user.email[0].upper() }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Name -->
+                <h4 class="fw-bold mb-1">
+                    {% if user.role == 'EMPLOYER' and user.employer %}
+                        {{ user.employer.company_name }}
+                    {% elif user.role == 'CANDIDATE' and user.candidate %}
+                        {{ user.candidate.full_name }}
+                    {% else %}
+                        {{ user.email }}
+                    {% endif %}
+                </h4>
+                <p class="text-muted mb-3">{{ user.email }}</p>
+
+                <!-- Status + Role badges -->
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <span class="status-badge status-{{ user.status.lower() }}">
+                        {% if user.status == 'PENDING' %}
+                            <span class="pulse-dot"></span> Chờ duyệt
+                        {% elif user.status == 'ACTIVE' %}
+                            Hoạt động
+                        {% elif user.status == 'REJECTED' %}
+                            Từ chối
+                        {% elif user.status == 'SUSPENDED' %}
+                            Đã khóa
+                        {% else %}
+                            {{ user.status }}
+                        {% endif %}
+                    </span>
+                    <span class="role-badge role-{{ user.role.lower() }}">
+                        {% if user.role == 'EMPLOYER' %}
+                            <i class="bi bi-building me-1"></i>Nhà tuyển dụng
+                        {% elif user.role == 'CANDIDATE' %}
+                            <i class="bi bi-person me-1"></i>Ứng viên
+                        {% else %}
+                            <i class="bi bi-shield me-1"></i>Admin
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Meta info -->
+                <ul class="list-unstyled profile-meta text-start">
+                    <li>
+                        <i class="bi bi-calendar3"></i>
+                        Đăng ký: <strong>{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '—' }}</strong>
+                    </li>
+                    <li>
+                        <i class="bi bi-shield-check"></i>
+                        Trạng thái:
+                        <strong class="
+                            {% if user.status == 'ACTIVE' %}text-success
+                            {% elif user.status == 'PENDING' %}text-warning
+                            {% else %}text-danger{% endif %}">
+                            {% if user.status == 'ACTIVE' %}Đang hoạt động
+                            {% elif user.status == 'PENDING' %}Chờ duyệt
+                            {% elif user.status == 'REJECTED' %}Đã từ chối
+                            {% elif user.status == 'SUSPENDED' %}Đã khóa
+                            {% endif %}
+                        </strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Details + Actions -->
+    <div class="col-lg-8">
+
+        <!-- Thông tin chi tiết -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0">
+                    {% if user.role == 'EMPLOYER' %}
+                        <i class="bi bi-building me-2 text-primary"></i>Thông tin Công ty
+                    {% else %}
+                        <i class="bi bi-person me-2 text-primary"></i>Thông tin Ứng viên
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body px-4">
+
+                {% if user.role == 'EMPLOYER' and user.employer %}
+                {% set e = user.employer %}
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Tên công ty</div>
+                            <div class="info-value">{{ e.company_name or '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Địa điểm</div>
+                            <div class="info-value">{{ e.location or '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Website</div>
+                            <div class="info-value">
+                                {% if e.company_website %}
+                                    <a href="{{ e.company_website }}" target="_blank" class="text-primary text-decoration-none">
+                                        {{ e.company_website }}
+                                        <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                                    </a>
+                                {% else %}—{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="info-item">
+                            <div class="info-label">Mô tả công ty</div>
+                            <div class="info-value">{{ e.company_description or '(Chưa cung cấp)' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {% elif user.role == 'CANDIDATE' and user.candidate %}
+                {% set c = user.candidate %}
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Họ tên</div>
+                            <div class="info-value">{{ c.full_name or '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Số điện thoại</div>
+                            <div class="info-value">{{ c.phone or '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Địa điểm</div>
+                            <div class="info-value">{{ c.location or '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <div class="info-label">Vị trí hiện tại</div>
+                            <div class="info-value">{{ c.current_title or '—' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="info-item">
+                            <div class="info-label">Giới thiệu</div>
+                            <div class="info-value">{{ c.bio or '(Chưa cung cấp)' }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- Action Panel -->
+        {% if user.role != 'ADMIN' %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-sliders me-2 text-primary"></i>Thay đổi Trạng thái
+                </h5>
+                <p class="text-muted small mb-0">Hành động sẽ gửi thông báo & email đến người dùng</p>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="action-grid">
+
+                    <!-- ACTIVE -->
+                    <form method="POST"
+                          action="{{ url_for('admin_users.change_status', user_id=user.id) }}"
+                          onsubmit="return confirm('Kích hoạt tài khoản này?')">
+                        <input type="hidden" name="status" value="ACTIVE">
+                        <input type="hidden" name="next" value="{{ request.url }}">
+                        <button type="submit"
+                                class="action-btn action-active"
+                                {% if user.status == 'ACTIVE' %}disabled{% endif %}>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Kích hoạt</span>
+                            <small>Cho phép đăng nhập và sử dụng</small>
+                        </button>
+                    </form>
+
+                    <!-- REJECTED -->
+                    <button type="button"
+                            class="action-btn action-reject"
+                            {% if user.status == 'REJECTED' %}disabled{% endif %}
+                            onclick="openDetailModal('REJECTED')">
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Từ chối</span>
+                        <small>Không thể đăng nhập</small>
+                    </button>
+
+                    <!-- SUSPENDED -->
+                    <button type="button"
+                            class="action-btn action-suspend"
+                            {% if user.status == 'SUSPENDED' %}disabled{% endif %}
+                            onclick="openDetailModal('SUSPENDED')">
+                        <i class="bi bi-slash-circle-fill"></i>
+                        <span>Tạm khóa</span>
+                        <small>Khóa tạm thời, có thể mở lại</small>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+
+<!-- Modal nhập lý do -->
+<div class="modal fade" id="detailStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST"
+                  action="{{ url_for('admin_users.change_status', user_id=user.id) }}"
+                  id="detailStatusForm">
+                <input type="hidden" name="status" id="detailModalStatus">
+                <input type="hidden" name="next" value="{{ request.url }}">
+
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="detailModalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <div class="alert-info-box mb-3" id="detailModalDesc"></div>
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold">
+                            Lý do <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="reason" id="detailReasonInput"
+                                  class="form-control" rows="4"
+                                  placeholder="Nhập lý do cụ thể để gửi đến người dùng..."></textarea>
+                        <div class="invalid-feedback">Vui lòng nhập lý do.</div>
+                        <div class="form-text text-muted mt-1">
+                            Lý do sẽ được gửi qua email và thông báo trong hệ thống.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn" id="detailConfirmBtn">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.profile-avatar {
+    width: 80px; height: 80px; border-radius: 20px; overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex; align-items: center; justify-content: center;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-letter { font-size: 2rem; font-weight: 800; color: white; }
+
+.profile-meta li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #f3f4f6;
+    font-size: .9rem; color: #6b7280;
+}
+.profile-meta li:last-child { border-bottom: none; }
+.profile-meta li i { color: #9ca3af; width: 18px; }
+
+.info-item { padding: 4px 0; }
+.info-label { font-size: .72rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #9ca3af; margin-bottom: 4px; }
+.info-value { font-size: .95rem; color: #1f2937; }
+
+.action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 576px) { .action-grid { grid-template-columns: 1fr; } }
+
+.action-btn {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: 6px; padding: 1rem; border-radius: 12px; border: 2px solid transparent;
+    cursor: pointer; transition: all .15s; background: #f8f9fc;
+    font-family: inherit; width: 100%;
+}
+.action-btn i { font-size: 1.6rem; }
+.action-btn span { font-weight: 600; font-size: .9rem; }
+.action-btn small { font-size: .73rem; color: #9ca3af; }
+.action-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.action-active  { border-color: #10b981; color: #065f46; }
+.action-active:not(:disabled):hover  { background: #d1fae5; }
+.action-reject  { border-color: #ef4444; color: #991b1b; }
+.action-reject:not(:disabled):hover  { background: #fee2e2; }
+.action-suspend { border-color: #6366f1; color: #4338ca; }
+.action-suspend:not(:disabled):hover { background: #ede9fe; }
+
+.status-badge { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; font-weight:600; padding:4px 12px; border-radius:999px; }
+.status-pending   { background:#fef3c7; color:#92400e; }
+.status-active    { background:#d1fae5; color:#065f46; }
+.status-rejected  { background:#fee2e2; color:#991b1b; }
+.status-suspended { background:#ede9fe; color:#5b21b6; }
+
+.role-badge { display:inline-flex; align-items:center; font-size:.78rem; font-weight:600; padding:3px 10px; border-radius:999px; }
+.role-employer  { background:#ede9fe; color:#7c3aed; }
+.role-candidate { background:#dbeafe; color:#1d4ed8; }
+.role-admin     { background:#fee2e2; color:#dc2626; }
+
+.pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b; animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
+.alert-info-box { background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:10px 14px; font-size:.88rem; color:#0c4a6e; }
+</style>
+
+{% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const detailModal = new bootstrap.Modal(document.getElementById('detailStatusModal'));
+
+    const CONFIG = {
+        REJECTED: {
+            title:    'Xác nhận Từ chối Tài khoản',
+            desc:     'Người dùng sẽ nhận email và thông báo kèm lý do từ chối.',
+            btnClass: 'btn-danger',
+            btnText:  'Từ chối tài khoản'
+        },
+        SUSPENDED: {
+            title:    'Xác nhận Tạm khóa Tài khoản',
+            desc:     'Người dùng sẽ không thể đăng nhập và nhận thông báo kèm lý do.',
+            btnClass: 'btn-warning',
+            btnText:  'Tạm khóa'
+        }
+    };
+
+    window.openDetailModal = function (status) {
+        const cfg = CONFIG[status];
+        if (!cfg) return;
+
+        document.getElementById('detailModalStatus').value      = status;
+        document.getElementById('detailModalTitle').textContent = cfg.title;
+        document.getElementById('detailModalDesc').textContent  = cfg.desc;
+        document.getElementById('detailReasonInput').value      = '';
+        document.getElementById('detailReasonInput').classList.remove('is-invalid');
+
+        const btn = document.getElementById('detailConfirmBtn');
+        btn.className   = 'btn ' + cfg.btnClass;
+        btn.textContent = cfg.btnText;
+
+        detailModal.show();
+        setTimeout(() => document.getElementById('detailReasonInput').focus(), 300);
+    };
+
+    document.getElementById('detailStatusForm').addEventListener('submit', function (e) {
+        const reason = document.getElementById('detailReasonInput').value.trim();
+        if (!reason) {
+            e.preventDefault();
+            document.getElementById('detailReasonInput').classList.add('is-invalid');
+        }
+    });
+
+});
+</script>
+{% endblock %}

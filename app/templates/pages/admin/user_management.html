@@ -1,0 +1,633 @@
+{% extends "layouts/admin_base.html" %}
+
+{% macro page_url(p) %}
+    {{ url_for("admin_users.index", page=p, role=current_role, status=current_status, keyword=keyword) }}
+{% endmacro %}
+
+{% block title %}Quản lý Người dùng{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">Quản lý Người dùng</h1>
+            <p class="text-muted mb-0">Duyệt tài khoản, thay đổi trạng thái và quản lý người dùng hệ thống</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card stat-pending">
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-number">{{ stats.total_pending }}</div>
+            <div class="stat-label">Chờ duyệt</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card stat-active">
+            <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-number">{{ stats.total_active }}</div>
+            <div class="stat-label">Hoạt động</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card stat-suspended">
+            <div class="stat-icon"><i class="bi bi-slash-circle"></i></div>
+            <div class="stat-number">{{ stats.total_suspended }}</div>
+            <div class="stat-label">Đã khóa</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card stat-rejected">
+            <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-number">{{ stats.total_rejected }}</div>
+            <div class="stat-label">Từ chối</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter -->
+<div class="filter-bar mb-4">
+    <form method="GET" action="{{ url_for('admin_users.index') }}" id="filterForm">
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-4">
+                <label class="form-label small fw-semibold text-muted">TÌM KIẾM</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" name="keyword" class="form-control border-start-0 ps-0"
+                           placeholder="Email người dùng..."
+                           value="{{ keyword }}">
+                </div>
+            </div>
+
+            <div class="col-6 col-md-2">
+                <label class="form-label small fw-semibold text-muted">VAI TRÒ</label>
+                <select name="role" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    <option value="EMPLOYER"   {% if current_role == 'EMPLOYER'   %}selected{% endif %}>Nhà tuyển dụng</option>
+                    <option value="CANDIDATE"  {% if current_role == 'CANDIDATE'  %}selected{% endif %}>Ứng viên</option>
+                </select>
+            </div>
+
+            <div class="col-6 col-md-2">
+                <label class="form-label small fw-semibold text-muted">TRẠNG THÁI</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    <option value="PENDING"   {% if current_status == 'PENDING'   %}selected{% endif %}>Chờ duyệt</option>
+                    <option value="ACTIVE"    {% if current_status == 'ACTIVE'    %}selected{% endif %}>Hoạt động</option>
+                    <option value="REJECTED"  {% if current_status == 'REJECTED'  %}selected{% endif %}>Từ chối</option>
+                    <option value="SUSPENDED" {% if current_status == 'SUSPENDED' %}selected{% endif %}>Đã khóa</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-funnel me-1"></i> Lọc
+                </button>
+                <a href="{{ url_for('admin_users.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Status Tabs -->
+<div class="status-tabs mb-3">
+    <a href="{{ url_for('admin_users.index') }}"
+       class="status-tab {% if not current_status %}active{% endif %}">
+        Tất cả
+    </a>
+    <a href="{{ url_for('admin_users.index', status='PENDING') }}"
+       class="status-tab pending {% if current_status == 'PENDING' %}active{% endif %}">
+        <i class="bi bi-hourglass-split me-1"></i>Chờ duyệt
+        {% if stats.total_pending > 0 %}
+            <span class="badge-count">{{ stats.total_pending }}</span>
+        {% endif %}
+    </a>
+    <a href="{{ url_for('admin_users.index', status='ACTIVE') }}"
+       class="status-tab active-tab {% if current_status == 'ACTIVE' %}active{% endif %}">
+        <i class="bi bi-check-circle me-1"></i>Hoạt động
+    </a>
+    <a href="{{ url_for('admin_users.index', status='SUSPENDED') }}"
+       class="status-tab suspended {% if current_status == 'SUSPENDED' %}active{% endif %}">
+        <i class="bi bi-slash-circle me-1"></i>Đã khóa
+    </a>
+    <a href="{{ url_for('admin_users.index', status='REJECTED') }}"
+       class="status-tab rejected {% if current_status == 'REJECTED' %}active{% endif %}">
+        <i class="bi bi-x-circle me-1"></i>Từ chối
+    </a>
+</div>
+
+<!-- Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-header">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Người dùng</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày đăng ký</th>
+                        <th class="text-end pe-4">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr class="user-row {% if user.status == 'PENDING' %}row-pending{% endif %}">
+                    <td class="ps-4 text-muted small">{{ user.id }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_users.detail', user_id=user.id) }}" class="fw-semibold text-decoration-none text-dark">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="user-avatar">
+                                    {% if user.avatar_url %}
+                                        <img src="{{ user.avatar_url }}" alt="">
+                                    {% else %}
+                                        <span class="avatar-initial">
+                                            {{ user.email[0].upper() }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">
+                                        {% if user.role == 'EMPLOYER' and user.employer %}
+                                            {{ user.employer.company_name }}
+                                        {% elif user.role == 'CANDIDATE' and user.candidate %}
+                                            {{ user.candidate.full_name }}
+                                        {% else %}
+                                            {{ user.email }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted small">{{ user.email }}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        <span class="role-badge role-{{ user.role.lower() }}">
+                            {% if user.role == 'EMPLOYER' %}
+                                <i class="bi bi-building me-1"></i>Nhà tuyển dụng
+                            {% elif user.role == 'CANDIDATE' %}
+                                <i class="bi bi-person me-1"></i>Ứng viên
+                            {% else %}
+                                <i class="bi bi-shield me-1"></i>Admin
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ user.status.lower() }}">
+                            {% if user.status == 'PENDING' %}
+                                <span class="pulse-dot"></span> Chờ duyệt
+                            {% elif user.status == 'ACTIVE' %}
+                                Hoạt động
+                            {% elif user.status == 'REJECTED' %}
+                                Từ chối
+                            {% elif user.status == 'SUSPENDED' %}
+                                Đã khóa
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="text-muted small">
+                        {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '—' }}
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            {% if user.role != 'ADMIN' %}
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                        data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    {% if user.status != 'ACTIVE' %}
+                                    <li>
+                                        <button class="dropdown-item text-success"
+                                                onclick="quickChangeStatus({{ user.id }}, 'ACTIVE', '{{ user.email }}')">
+                                            <i class="bi bi-check-circle me-2"></i>Kích hoạt
+                                        </button>
+                                    </li>
+                                    {% endif %}
+                                    {% if user.status != 'REJECTED' %}
+                                    <li>
+                                        <button class="dropdown-item text-danger"
+                                                onclick="openStatusModal({{ user.id }}, 'REJECTED', '{{ user.email }}')">
+                                            <i class="bi bi-x-circle me-2"></i>Từ chối
+                                        </button>
+                                    </li>
+                                    {% endif %}
+                                    {% if user.status != 'SUSPENDED' %}
+                                    <li>
+                                        <button class="dropdown-item text-warning"
+                                                onclick="openStatusModal({{ user.id }}, 'SUSPENDED', '{{ user.email }}')">
+                                            <i class="bi bi-slash-circle me-2"></i>Tạm khóa
+                                        </button>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+            <div class="text-muted small">
+                {{ pagination.items | length }} / {{ pagination.total }} người dùng
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ page_url(pagination.prev_num) if pagination.has_prev else '#' }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ page_url(p) }}">{{ p }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ page_url(pagination.next_num) if pagination.has_next else '#' }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        {% elif pagination.total == 0 %}
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-people fs-1 text-muted"></i>
+            <h5 class="mt-3">Không có người dùng nào</h5>
+            <p class="text-muted">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để tìm người dùng.</p>
+        </div>
+        {% endif %}
+    {% endif %}
+    </div>
+</div>
+
+
+<!-- ==============================
+     MODAL: Thay đổi status (cần lý do)
+================================ -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="statusForm" method="POST">
+                <input type="hidden" name="status" id="modalStatus">
+                <input type="hidden" name="next" value="{{ request.url }}">
+
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Xác nhận thay đổi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="alert-info-box mb-3" id="modalAlert">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span id="modalDesc"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Người dùng: <span id="modalUserEmail" class="text-primary"></span>
+                        </label>
+                    </div>
+
+                    <div class="mb-3" id="reasonGroup">
+                        <label class="form-label fw-semibold">
+                            Lý do <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="reason" id="reasonInput"
+                                  class="form-control" rows="3"
+                                  placeholder="Nhập lý do cụ thể..."></textarea>
+                        <div class="form-text text-muted">
+                            Lý do này sẽ được gửi đến người dùng qua email và thông báo.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn" id="modalConfirmBtn">
+                        Xác nhận
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- ==============================
+     Toast notification
+================================ -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="actionToast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+/* ── Page header ── */
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1a1f36;
+    letter-spacing: -0.5px;
+}
+
+/* ── Stat cards ── */
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border: 1px solid #f0f0f0;
+    transition: transform .15s, box-shadow .15s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+.stat-icon { font-size: 1.4rem; margin-bottom: 4px; }
+.stat-number { font-size: 2rem; font-weight: 800; line-height: 1; }
+.stat-label { font-size: .78rem; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; opacity: .7; }
+
+.stat-pending  { border-left: 4px solid #f59e0b; }
+.stat-pending  .stat-icon, .stat-pending  .stat-number { color: #f59e0b; }
+.stat-active   { border-left: 4px solid #10b981; }
+.stat-active   .stat-icon, .stat-active   .stat-number { color: #10b981; }
+.stat-suspended{ border-left: 4px solid #6366f1; }
+.stat-suspended .stat-icon, .stat-suspended .stat-number { color: #6366f1; }
+.stat-rejected { border-left: 4px solid #ef4444; }
+.stat-rejected .stat-icon, .stat-rejected .stat-number { color: #ef4444; }
+
+.filter-bar {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.status-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.status-tab {
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: .85rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: #6b7280;
+    background: #f3f4f6;
+    border: 1px solid transparent;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.status-tab:hover { background: #e5e7eb; color: #374151; }
+.status-tab.active { background: #1a1f36; color: #fff; }
+.status-tab.pending.active { background: #f59e0b; color: #fff; }
+.status-tab.active-tab.active { background: #10b981; color: #fff; }
+.status-tab.suspended.active { background: #6366f1; color: #fff; }
+.status-tab.rejected.active  { background: #ef4444; color: #fff; }
+
+.badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+    background: #ef4444;
+    color: #fff;
+}
+
+.table-header th {
+    background: #f8f9fc;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: #6b7280;
+    border-bottom: 1px solid #e8e8e8;
+    padding: .85rem 1rem;
+}
+.user-row { transition: background .1s; }
+.user-row.row-pending { background: #fffbeb; }
+.user-row:hover { background: #f8f9fc !important; }
+
+.user-avatar {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #e8edf5;
+    display: flex; align-items: center; justify-content: center;
+}
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-initial {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #4b5563;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+.role-employer  { background: #ede9fe; color: #7c3aed; }
+.role-candidate { background: #dbeafe; color: #1d4ed8; }
+.role-admin     { background: #fee2e2; color: #dc2626; }
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+.status-pending   { background: #fef3c7; color: #92400e; }
+.status-active    { background: #d1fae5; color: #065f46; }
+.status-rejected  { background: #fee2e2; color: #991b1b; }
+.status-suspended { background: #ede9fe; color: #5b21b6; }
+
+.pulse-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .5; transform: scale(.7); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+}
+.empty-state i {
+    font-size: 3rem;
+    color: #d1d5db;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.alert-info-box {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: .9rem;
+    color: #0c4a6e;
+}
+
+.toast { background: #1a1f36; color: #fff; }
+.toast.success { background: #065f46; }
+.toast.error   { background: #991b1b; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const statusModalElement = document.getElementById('statusModal');
+const statusModal = new bootstrap.Modal(statusModalElement);
+const toastEl    = document.getElementById('actionToast');
+const toast      = new bootstrap.Toast(toastEl, { delay: 3000 });
+
+const STATUS_CONFIG = {
+    REJECTED:  {
+        title: 'Từ chối tài khoản',
+        desc: 'Người dùng sẽ nhận thông báo và email về lý do từ chối.',
+        btnClass: 'btn-danger',
+        btnText: 'Xác nhận từ chối'
+    },
+    SUSPENDED: {
+        title: 'Tạm khóa tài khoản',
+        desc: 'Người dùng sẽ không thể đăng nhập và nhận thông báo kèm lý do.',
+        btnClass: 'btn-warning',
+        btnText: 'Xác nhận khóa'
+    }
+};
+
+window.openStatusModal = function(userId, status, email) {
+    const c = STATUS_CONFIG[status];
+    if (!c) return;
+
+    document.getElementById('modalTitle').textContent   = c.title;
+    document.getElementById('modalDesc').textContent    = c.desc;
+    document.getElementById('modalUserEmail').textContent = email;
+    document.getElementById('modalStatus').value        = status;
+    document.getElementById('reasonInput').value        = '';
+    document.getElementById('reasonInput').classList.remove('is-invalid');
+
+    const btn = document.getElementById('modalConfirmBtn');
+    btn.className = `btn ${c.btnClass}`;
+    btn.textContent = c.btnText;
+
+    document.getElementById('statusForm').dataset.userId = userId;
+
+    statusModal.show();
+    setTimeout(() => document.getElementById('reasonInput').focus(), 400);
+}
+
+window.quickChangeStatus = function(userId, status, email) {
+    if (!confirm(`Kích hoạt tài khoản "${email}"?`)) return;
+    submitStatusChange(userId, { status: status });
+}
+
+document.getElementById('statusForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const userId = this.dataset.userId;
+    const status = document.getElementById('modalStatus').value;
+    const reason = document.getElementById('reasonInput').value.trim();
+
+    if (!reason) {
+        document.getElementById('reasonInput').classList.add('is-invalid');
+        return;
+    }
+
+    submitStatusChange(userId, { status: status, reason: reason });
+});
+
+function submitStatusChange(userId, data) {
+    const formData = new FormData();
+    for (const key in data) {
+        formData.append(key, data[key]);
+    }
+
+    fetch(`/admin/users/${userId}/change-status`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            statusModal.hide();
+            showToast(res.message || 'Cập nhật thành công!', 'success');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showToast(res.message || 'Có lỗi xảy ra', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('Lỗi kết nối máy chủ', 'error');
+    });
+}
+
+function showToast(msg, type = 'success') {
+    document.getElementById('toastMessage').textContent = msg;
+    toastEl.classList.remove('bg-success', 'bg-danger', 'text-white');
+
+    if (type === 'success') {
+        toastEl.classList.add('bg-success', 'text-white');
+    } else {
+        toastEl.classList.add('bg-danger', 'text-white');
+    }
+    toast.show();
+}
+</script>
+{% endblock %}
