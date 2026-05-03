@@ -1,6 +1,8 @@
 from flask import Flask
 from .extensions import db, mail
 from config import Config, init_cloudinary
+from .scheduler import init_scheduler
+
 
 def create_app():
     app = Flask(__name__)
@@ -62,5 +64,7 @@ def create_app():
                 unread = 0
         return {"unread_notifications_count": unread}
     app.register_blueprint(admin_jobs_bp)
+
+    init_scheduler(app)
 
     return app

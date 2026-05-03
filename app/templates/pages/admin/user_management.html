@@ -213,7 +213,7 @@
                                         </button>
                                     </li>
                                     {% endif %}
-                                    {% if user.status != 'REJECTED' %}
+                                    {% if user.status == 'PENDING' %}
                                     <li>
                                         <button class="dropdown-item text-danger"
                                                 onclick="openStatusModal({{ user.id }}, 'REJECTED', '{{ user.email }}')">
@@ -328,8 +328,9 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary"
                             data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn" id="modalConfirmBtn">
-                        Xác nhận
+                    <button type="submit" class="btn" id="modalConfirmBtn" aria-hidden="true">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span class="btn-text">Xác nhận</span>
                     </button>
                 </div>
             </form>
@@ -525,6 +526,17 @@
 .toast { background: #1a1f36; color: #fff; }
 .toast.success { background: #065f46; }
 .toast.error   { background: #991b1b; }
+
+.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Spinner căn chỉnh */
+.spinner-border-sm {
+    margin-right: 5px;
+    vertical-align: middle;
+}
 </style>
 {% endblock %}
 
@@ -592,6 +604,32 @@ document.getElementById('statusForm').addEventListener('submit', function(e) {
 });
 
 function submitStatusChange(userId, data) {
+    const btn = document.getElementById('modalConfirmBtn');
+    const quickBtn = document.querySelector(`button[onclick*="quickChangeStatus(${userId})"]`);
+
+    const toggleLoading = (isLoading) =>{
+        const activeBtn = btn.isVisible() ? btn : quickBtn
+        if(!activeBtn) return;
+
+        const spinner = activeBtn.querySelector('.spinner-border');
+        const btnText = activeBtn.querySelector('.btn-text') || activeBtn;
+
+        if(isLoading) {
+            activeBtn.classList.add('disabled');
+            if(spinner) spinner.classList.remove('d-none');
+            if (!activeBtn.querySelector('.btn-text')) activeBtn.dataOldHtml = activeBtn.innerHTML;
+        } else {
+            activeBtn.classList.remove('disabled')
+            if (spinner) spinner.classList.add('d-none')
+        }
+    }
+
+    const spinner = btn.querySelector('.spinner-border');
+    const btnText = btn.querySelector('.btn-text');
+    btn.disabled = true;
+    if(spinner) spinner.classList.remove('d-none');
+    if(btnText) btnText.textContent = ' Đang xử lý...';
+
     const formData = new FormData();
     for (const key in data) {
         formData.append(key, data[key]);
@@ -610,6 +648,9 @@ function submitStatusChange(userId, data) {
             setTimeout(() => location.reload(), 1200);
         } else {
             showToast(res.message || 'Có lỗi xảy ra', 'error');
+            btn.disabled = false;
+            if(spinner) spinner.classList.add('d-none');
+            if(btnText) btnText.textContent = 'Xác nhận';
         }
     })
     .catch(err => {

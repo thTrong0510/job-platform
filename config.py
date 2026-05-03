@@ -31,6 +31,8 @@ class Config:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = ('JobPlatform', os.getenv('MAIL_USERNAME'))
 
+    SERVER_NAME = "localhost:5000"
+
 def init_cloudinary(app):
 
     cloudinary.config(

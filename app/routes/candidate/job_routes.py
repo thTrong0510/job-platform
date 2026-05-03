@@ -4,10 +4,10 @@ from werkzeug.utils import redirect
 from app.common.check_empty_dict import is_filters_empty
 from app.common.info import get_current_candidate
 from app.services.candidate.job_service import JobService
-from common.decorators import login_required
-from common.info import get_current_candidate, get_current_user
-from services.candidate.application_service import ApplicationService
-from services.candidate.cv_service import CVService
+from app.common.decorators import login_required
+from app.common.info import get_current_candidate, get_current_user
+from app.services.candidate.application_service import ApplicationService
+from app.services.candidate.cv_service import CVService
 
 job_bp = Blueprint('jobs', __name__, url_prefix='/jobs')
 

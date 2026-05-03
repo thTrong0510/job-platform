@@ -1,7 +1,7 @@
 from app.repositories.admin.user_repository import UserRepository
-from app.services.admin.notification_service import AdminNotificationService
+from app.services.admin.notification_service import MailService
 
-VALID_STATUSES = ['ACTIVE', 'REJECTED', 'SUSPENDED', 'PENDING']
+VALID_STATUSES = ['ACTIVE', 'REJECTED', 'SUSPENDED']
 REASON_REQUIRED = ['REJECTED', 'SUSPENDED']
 
 
@@ -41,11 +41,12 @@ class AdminUserService:
         if old_status == new_status:
             return False, "Trạng thái đang là giá trị này rồi."
 
+        if str(new_status).upper() == 'REJECTED' and str(old_status).upper() != 'PENDING':
+            return False, "Chỉ khi trạng thái là PENDING mới cần chuyển sang REJECTED "
+
         user.status = new_status
         UserRepository.save(user)
-
-        if new_status in ['ACTIVE', 'REJECTED', 'SUSPENDED']:
-            AdminNotificationService.notify_status_change(user, new_status, reason)
+        MailService.notify_status_change(user, new_status, reason)
 
         return True, f"Đã cập nhật trạng thái."
 

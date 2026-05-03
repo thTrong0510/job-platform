@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 30px auto; background: #fff; border-radius: 10px; overflow: hidden; }
+    .header { background: #48856a; color: white; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; }
+    .body { padding: 24px; }
+    .greeting { font-size: 16px; color: #333; margin-bottom: 16px; }
+    .job-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .job-title { font-size: 16px; font-weight: bold; color: #2e644b; margin: 0 0 6px; }
+    .job-meta { font-size: 13px; color: #6b7280; margin: 2px 0; }
+    .btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 10px 24px;
+      background: #2d6a4f;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .footer { text-align: center; padding: 16px; font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔔 Gợi ý việc làm phù hợp với bạn</h1>
+    </div>
+    <div class="body">
+      <p class="greeting">Xin chào <strong>{{ candidate_name }}</strong>,</p>
+      <p>JobPlatform vừa tìm thấy những vị trí phù hợp nhất với kỹ năng và kinh nghiệm của bạn trong tuần này:</p>
+
+      {% for job in jobs %}
+      <div class="job-card">
+        <p class="job-title">{{ job.title }}</p>
+        <p class="job-meta">📍 {{ job.location or 'Không xác định' }}</p>
+        <p style="font-weight: 600; color: #1a1d1f;">💰
+          {% if job.salary_min and job.salary_max %}
+            ${{ "{:,.0f}".format(job.salary_min) }} – ${{ "{:,.0f}".format(job.salary_max) }}
+          {% else %}
+            Thỏa thuận
+          {% endif %}
+        </p>
+        <p class="job-meta">🕒 Hạn nộp: {{ job.end_date.strftime('%d/%m/%Y') if job.end_date else 'Không xác định' }}</p>
+        <a class="btn" href="{{ url_for('jobs.job_detail', job_id=job.id, _external=True) }}">Ứng tuyển ngay</a>
+      </div>
+      {% endfor %}
+
+      <p style="color:#6b7280; font-size:13px;">
+        Bạn nhận được email này vì đã quan tâm đến cơ hội nghề nghiệp tại Job Platform.
+      </p>
+    </div>
+    <div class="footer">© 2025 Job Platform. All rights reserved.</div>
+  </div>
+</body>
+</html>

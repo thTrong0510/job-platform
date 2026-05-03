@@ -210,7 +210,7 @@
                     <!-- REJECTED -->
                     <button type="button"
                             class="action-btn action-reject"
-                            {% if user.status == 'REJECTED' %}disabled{% endif %}
+                            {% if user.status != 'PENDING' %}disabled{% endif %}
                             onclick="openDetailModal('REJECTED')">
                         <i class="bi bi-x-circle-fill"></i>
                         <span>Từ chối</span>
