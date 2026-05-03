@@ -8,11 +8,11 @@ class AdminJobService:
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def get_jobs(filters: dict, page: int = 1):
-        keyword = filters.get("keyword", "").strip() or None
-        status  = filters.get("status",  "").strip() or None
+        keyword    = filters.get("keyword",    "").strip() or None
+        status     = filters.get("status",     "").strip() or None
+        visibility = filters.get("visibility", "").strip()
 
         # is_hidden filter: "hidden" → True | "visible" → False | "" → None (tất cả)
-        visibility = filters.get("visibility", "").strip()
         if visibility == "hidden":
             is_hidden = True
         elif visibility == "visible":
@@ -28,7 +28,7 @@ class AdminJobService:
         )
 
     # ─────────────────────────────────────────────────────────
-    # Stats cho dashboard / header
+    # Stats
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def get_stats():
@@ -42,7 +42,7 @@ class AdminJobService:
         return AdminJobRepository.find_by_id(job_id)
 
     # ─────────────────────────────────────────────────────────
-    # Ẩn / hiện job
+    # Ẩn / Hiện job
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def toggle_hidden(job_id: int):
@@ -59,6 +59,8 @@ class AdminJobService:
 
     # ─────────────────────────────────────────────────────────
     # Xóa job
+    # Nếu đã có hồ sơ ứng tuyển → đóng tin thay vì xóa
+    # Nếu chưa có → xóa hẳn
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def delete_job(job_id: int):
@@ -67,5 +69,18 @@ class AdminJobService:
             return False, "Không tìm thấy tin tuyển dụng."
 
         job, _ = result
+
+        if job.applications:
+            # Có hồ sơ ứng tuyển → đóng tin để bảo toàn dữ liệu
+            job.status    = "CLOSED"
+            job.is_hidden = True
+            AdminJobRepository.save(job)
+            return (
+                True,
+                f"Tin tuyển dụng có {len(job.applications)} hồ sơ ứng tuyển — "
+                "đã đóng và ẩn tin thay vì xóa để bảo toàn dữ liệu ứng viên."
+            )
+
+        # Không có hồ sơ → xóa hẳn
         AdminJobRepository.delete(job)
         return True, "Đã xóa tin tuyển dụng thành công."

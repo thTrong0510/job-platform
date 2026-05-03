@@ -32,6 +32,7 @@ def create_app():
     from app.routes.admin.user_routes import admin_user_bp
     from app.routes.auth.admin_auth_routes import admin_auth_bp
     from .routes.admin.admin_job_routes import admin_jobs_bp
+    from .routes.employer.company_profile_routes import company_profile_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -47,6 +48,7 @@ def create_app():
     app.register_blueprint(cv_extraction_bp)
     app.register_blueprint(admin_auth_bp)
     app.register_blueprint(admin_user_bp)
+    app.register_blueprint(company_profile_bp)
 
 
     # ── Context processor: inject unread count vào mọi template ──

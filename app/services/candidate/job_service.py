@@ -41,7 +41,8 @@ class JobService:
         if not candidate_skill_ids and not positions:
             return []
 
-        all_jobs = Job.query.filter_by(status='OPEN').all()
+        # >>> FIX: Chỉ gợi ý job OPEN và chưa bị admin ẩn >>>
+        all_jobs = Job.query.filter_by(status='OPEN').filter(Job.is_hidden == False).all()
         recommended_list = []
 
         for job in all_jobs:
