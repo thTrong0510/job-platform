@@ -9,7 +9,7 @@ from app.common.info import get_current_candidate, get_current_user
 from app.services.candidate.application_service import ApplicationService
 from app.services.candidate.cv_service import CVService
 
-job_bp = Blueprint('jobs', __name__, url_prefix='/jobs')
+job_bp = Blueprint('jobs', __name__)
 
 @job_bp.route('/', methods=['GET'])
 def job_list():

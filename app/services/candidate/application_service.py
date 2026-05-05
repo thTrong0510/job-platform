@@ -20,3 +20,9 @@ class ApplicationService:
         )
 
         ApplicationRepository.save(application)
+
+    @staticmethod
+    def get_candidate_history(email):
+        if not email:
+            return []
+        return ApplicationRepository.get_by_candidate_email(email)
