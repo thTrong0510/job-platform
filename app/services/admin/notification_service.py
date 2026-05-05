@@ -1,7 +1,6 @@
 from app.extensions import mail
 from flask_mail import Message
-from flask import current_app
-
+from flask import current_app, render_template
 
 STATUS_MESSAGES = {
     'ACTIVE': {
@@ -50,7 +49,7 @@ Trân trọng,
 }
 
 
-class AdminNotificationService:
+class MailService:
 
     @staticmethod
     def notify_status_change(user, new_status: str, reason: str = None):
@@ -73,3 +72,13 @@ class AdminNotificationService:
             mail.send(msg)
         except Exception as e:
             current_app.logger.error(f"Failed to send email to {user.email}: {e}")
+
+
+    @staticmethod
+    def send_recommendation_email(email, candidate_name, jobs:list):
+        msg = Message(
+            subject="Việc làm mới nhất phù hợp với bạn",
+            recipients = [email]
+        )
+        msg.html = render_template("pages/admin/recommendation.html",candidate_name=candidate_name, jobs=jobs)
+        mail.send(msg)

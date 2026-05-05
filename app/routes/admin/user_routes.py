@@ -18,7 +18,7 @@ def index():
         status=status or None,
         keyword=keyword or None,
         page=page,
-        per_page=2
+        per_page=10
     )
     stats = AdminUserService.get_dashboard_stats()
 
@@ -59,4 +59,4 @@ def change_status(user_id):
 
     flash(message, 'success' if success else 'danger')
 
-    return redirect(url_for('admin_users.index'))
+    return redirect(url_for('admin_users.detail', user_id=user_id))

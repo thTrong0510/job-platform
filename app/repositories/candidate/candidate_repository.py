@@ -2,6 +2,7 @@ from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models.candidate import Candidate
 from app.models.skill import CandidateSkill
+from app.models.user import User
 
 class CandidateRepository:
 
@@ -50,3 +51,8 @@ class CandidateRepository:
         candidate = Candidate.query.get(candidate_id)
         candidate.bio = form_data.get("bio", "")
         db.session.commit()
+
+    @staticmethod
+    def find_all_candidate():
+        return (Candidate.query.join(User, User.id == Candidate.user_id)
+                .filter(User.role == 'CANDIDATE', User.status == 'ACTIVE').all())
