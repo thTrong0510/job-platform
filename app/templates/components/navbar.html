@@ -12,7 +12,6 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav ms-auto align-items-center gap-1">
 
-                {% if session.get("user_id") and session.get("user_role") == "CANDIDATE" %}
                 {# -- Nút Chuyển sang Nhà tuyển dụng (Nổi bật) -- #}
                 <li class="nav-item me-2">
                     <a class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-medium"
@@ -20,6 +19,8 @@
                         <i class="bi bi-briefcase me-1"></i>Tuyển dụng
                     </a>
                 </li>
+
+                {% if session.get("user_id") and session.get("user_role") == "CANDIDATE" %}
 
                 {# -- Quản lý CV -- #}
                 <li class="nav-item">

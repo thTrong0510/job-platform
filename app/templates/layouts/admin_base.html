@@ -121,17 +121,10 @@
         </div>
         <div class="mt-4 px-2">
             <nav class="nav flex-column gap-2">
-                <a class="nav-link {{ 'active' if request.endpoint == 'admin.dashboard' else '' }}" href="#">
-                    <i class="bi bi-speedometer2"></i> Tổng quan
-                </a>
 
                 <a class="nav-link {{ 'active' if 'admin_users' in request.endpoint else '' }}"
                     href="{{ url_for('admin_users.index') }}">
                     <i class="bi bi-people"></i> Quản lý người dùng
-                </a>
-
-                <a class="nav-link {{ 'active' if request.endpoint == 'cv' else '' }}" href="#">
-                    <i class="bi bi-file-earmark-text"></i> Quản lý CV
                 </a>
 
                 <a class="nav-link {{ 'active' if 'admin_jobs' in request.endpoint else '' }}"

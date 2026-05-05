@@ -20,11 +20,19 @@ class JobService:
         return pagination
 
     @staticmethod
-    def get_filter_options():
-        return {
-            'locations': JobRepository.get_distinct_locations()
-        }
+    def get_filter_options(jobs):
 
+        if not jobs:
+            return {'locations': JobRepository.get_distinct_locations()}
+
+        locations = list({
+            job.location for job in jobs
+            if job.location
+        })
+
+        return {
+            'locations': sorted(locations)
+        }
     @staticmethod
     def get_job_detail(job_id):
         return JobRepository.find_by_id(job_id)
@@ -71,3 +79,20 @@ class JobService:
         recommended_list.sort(key=lambda x: x['score'], reverse=True)
 
         return [item['job'] for item in recommended_list[:limit]]
+
+
+    @staticmethod
+    def search_all_job(filters: dict):
+        keyword = filters.get('keyword', '').strip() or None
+        location = filters.get('location', '').strip() or None
+
+        try:
+            salary_min = int(filters['salary_min']) if filters.get('salary_min') else None
+            salary_max = int(filters['salary_max']) if filters.get('salary_max') else None
+            experience = int(filters['experience']) if filters.get('experience') else None
+        except (ValueError, TypeError):
+            salary_min = salary_max = experience = None
+
+        jobs_list = JobRepository.search_jobs(keyword=keyword, location=location, salary_min=salary_min, salary_max=salary_max, experience=experience, is_pagination=False)
+        print(keyword, salary_min)
+        return jobs_list

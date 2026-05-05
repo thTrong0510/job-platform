@@ -17,6 +17,8 @@ def login():
             session["user_id"]    = user.id
             session["user_email"] = user.email
             session["user_role"]  = user.role
+            session.pop("candidate_id", None)
+            session.pop("employer_id", None)
 
             return redirect(url_for("admin_users.index"))
 

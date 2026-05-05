@@ -158,14 +158,13 @@
                    title="Chỉnh sửa">
                     <i class="bi bi-pencil"></i>
                 </a>
-                {% endif %}
-                <button type="button"
+				<button type="button"
                         class="btn btn-sm btn-outline-danger"
                         title="Xóa tin"
-                        {% if job.is_hidden %}disabled title="Không thể xóa tin đang bị Admin ẩn"{% endif %}
                         onclick="confirmDelete('{{ job.id }}', '{{ job.title }}')">
                     <i class="bi bi-trash"></i>
                 </button>
+                {% endif %}
             </div>
         </td>
     </tr>

@@ -22,7 +22,11 @@ def job_list():
     }
     page = request.args.get('page', 1, type=int)
     pagination = JobService.search_job(filters, page)
-    options = JobService.get_filter_options()
+    job_list = JobService.search_all_job(filters)
+    if is_filters_empty(filters):
+        options = JobService.get_filter_options([])
+    else:
+        options = JobService.get_filter_options(job_list)
 
     candidate = get_current_candidate()
 
@@ -37,7 +41,7 @@ def job_list():
                            locations=options['locations'],
                            recommended_jobs=recommended_jobs)
 
-@job_bp.route('/<int:job_id>', methods=['GET'])
+@job_bp.route('/jobs/<int:job_id>', methods=['GET'])
 def job_detail(job_id):
     online_cvs = []
     upload_cvs = []
@@ -49,7 +53,7 @@ def job_detail(job_id):
                            online_cvs=online_cvs,
                            upload_cvs=upload_cvs)
 
-@job_bp.route("/apply/<int:job_id>", methods=["POST"])
+@job_bp.route("/jobs/apply/<int:job_id>", methods=["POST"])
 @login_required
 def apply_job(job_id):
     cv_id = request.form.get("cv_id")
