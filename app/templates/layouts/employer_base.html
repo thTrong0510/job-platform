@@ -37,7 +37,6 @@
         }
         .topbar-user { color: rgba(255,255,255,.75); font-size: .85rem; }
 
-        /* ── Sidebar ── */
         .emp-sidebar {
             width: var(--sb-w);
             background: #fff;
@@ -79,8 +78,7 @@
             font-size: 1rem; color: #9ca3af;
             width: 18px; text-align: center; flex-shrink: 0;
         }
-        .sb-link:hover,
-        .sb-link.active {
+        .sb-link:hover, .sb-link.active {
             background: var(--ep-light);
             color: var(--ep);
             border-left-color: var(--ep);
@@ -92,7 +90,6 @@
         .sb-link.danger i { color: #dc2626; }
         .sb-link.danger:hover { background: #fef2f2; border-left-color: #dc2626; }
 
-        /* ── Main ── */
         .emp-main {
             margin-left: var(--sb-w);
             margin-top: 60px;
@@ -101,7 +98,6 @@
             padding: 32px;
         }
 
-        /* ── Flash toast ── */
         .flash-toast {
             position: fixed; top: 70px; right: 20px;
             z-index: 1060; min-width: 320px; max-width: 420px;
@@ -183,9 +179,12 @@
     </a>
 
     <p class="sb-section">Tài khoản</p>
-    <a href="#" class="sb-link">
+
+    <a href="{{ url_for('company_profile.view') }}"
+       class="sb-link {% if request.endpoint and request.endpoint.startswith('company_profile') %}active{% endif %}">
         <i class="bi bi-building-fill"></i> Hồ sơ công ty
     </a>
+
     <a href="{{ url_for('employer.logout') }}" class="sb-link danger">
         <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>

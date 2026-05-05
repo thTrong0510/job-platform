@@ -10,7 +10,9 @@ class JobRepository:
         q = (Job.query.join(Job.employer)
             .outerjoin(JobSkill, JobSkill.job_id == Job.id)
             .outerjoin(Skill, Skill.id == JobSkill.skill_id)
-            .filter(Job.status == 'OPEN'))
+            .filter(Job.status == 'OPEN')
+            # >>> FIX: Chỉ hiển thị job chưa bị admin ẩn >>>
+            .filter(Job.is_hidden == False))
 
         # keyword search
         if keyword:
@@ -72,7 +74,12 @@ class JobRepository:
 
     @staticmethod
     def get_distinct_locations():
-        results = db.session.query(Job.location).filter(Job.location.isnot(None), Job.status == 'OPEN').distinct().all()
+        results = db.session.query(Job.location).filter(
+            Job.location.isnot(None),
+            Job.status == 'OPEN',
+            # >>> FIX: Không lấy location của job đang bị ẩn >>>
+            Job.is_hidden == False
+        ).distinct().all()
         return [r[0] for r in results if r[0]]
 
     @staticmethod

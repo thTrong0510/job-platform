@@ -6,7 +6,7 @@ from app.services.candidate.skill_service import SkillService
 from app.services.candidate.user_service import UserService
 from datetime import datetime
 
-from common.ProfileFromBuilder import parse_nested_form
+from app.common.ProfileFromBuilder import parse_nested_form
 
 candidate_profile_bp = Blueprint("candidate_profile", __name__, url_prefix="/candidate")
 
