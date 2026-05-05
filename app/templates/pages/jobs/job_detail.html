@@ -206,14 +206,15 @@
     }
 
     /* Khi radio được check, làm nổi bật card */
-    .cv-radio-input:checked + .cv-selection-card {
+    .cv-radio-input:checked+.cv-selection-card {
         border-color: #0d6efd;
         background-color: #f0f5ff;
         box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
     }
 
     .cv-radio-input {
-        display: none; /* Ẩn nút radio thực tế */
+        display: none;
+        /* Ẩn nút radio thực tế */
     }
 
     .view-cv-btn {
@@ -247,7 +248,7 @@
         {# Breadcrumb #}
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('jobs.job_list') }}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{ url_for('jobs.job_list') }}">Jobs</a></li>
                 <li class="breadcrumb-item active">{{ job.title }}</li>
             </ol>
@@ -377,11 +378,8 @@
 
                     {# Apply button #}
                     {% if job.status == 'OPEN' %}
-                    {% if session.get('candidate_id') %}
-                    <button
-                        class="btn btn-apply w-100 mb-3"
-                        data-bs-toggle="modal"
-                        data-bs-target="#applyModal">
+                    {% if session.get('candidate_id') and session.get("user_role") == "CANDIDATE" %}
+                    <button class="btn btn-apply w-100 mb-3" data-bs-toggle="modal" data-bs-target="#applyModal">
                         <i class="bi bi-send-fill me-2"></i> Ứng tuyển ngay
                     </button>
                     {% else %}
@@ -517,64 +515,66 @@
                         {% set all_cvs = online_cvs + upload_cvs %}
 
                         {% if all_cvs %}
-                            {% for cv in all_cvs %}
-                            <div class="mb-3">
-                                <input class="cv-radio-input"
-                                       type="radio"
-                                       name="cv_id"
-                                       id="cv_{{ cv.id }}"
-                                       value="{{ cv.id }}"
-                                       required>
-                                <label class="cv-selection-card w-100 p-3 d-flex align-items-center justify-content-between" for="cv_{{ cv.id }}">
-                                    <div class="d-flex align-items-center">
-                                        <!-- Icon loại CV -->
-                                        <div class="cv-icon {{ 'bg-primary-subtle text-primary' if cv.type == 'ONLINE' else 'bg-success-subtle text-success' }}">
-                                            <i class="bi {{ 'bi-file-earmark-richtext' if cv.type == 'ONLINE' else 'bi-file-earmark-pdf' }}"></i>
-                                        </div>
-
-                                        <div class="ms-3 text-start">
-                                            <div class="fw-bold text-dark mb-0">
-                                                {{ cv.title if cv.type == 'ONLINE' else cv.file_name }}
-                                            </div>
-                                            <div class="text-muted" style="font-size: 0.8rem;">
-                                                <i class="bi bi-clock-history me-1"></i> Cập nhật: {{ cv.updated_at.strftime('%d/%m/%Y %H:%M') }}
-                                            </div>
-                                            <span class="badge {{ 'bg-primary' if cv.type == 'ONLINE' else 'bg-success' }} mt-1" style="font-size: 0.65rem;">
-                                                {{ cv.type }}
-                                            </span>
-                                        </div>
+                        {% for cv in all_cvs %}
+                        <div class="mb-3">
+                            <input class="cv-radio-input" type="radio" name="cv_id" id="cv_{{ cv.id }}"
+                                value="{{ cv.id }}" required>
+                            <label class="cv-selection-card w-100 p-3 d-flex align-items-center justify-content-between"
+                                for="cv_{{ cv.id }}">
+                                <div class="d-flex align-items-center">
+                                    <!-- Icon loại CV -->
+                                    <div
+                                        class="cv-icon {{ 'bg-primary-subtle text-primary' if cv.type == 'ONLINE' else 'bg-success-subtle text-success' }}">
+                                        <i
+                                            class="bi {{ 'bi-file-earmark-richtext' if cv.type == 'ONLINE' else 'bi-file-earmark-pdf' }}"></i>
                                     </div>
 
-                                    <!-- Nút xem nhanh -->
-                                    <div class="d-flex align-items-center">
-
-                                        <a href="{{ url_for('candidate.view_cv', cv_id=cv.id, next=request.full_path) if cv.type == 'ONLINE' else cv.file_url }}"
-                                           target="_blank"
-                                           class="view-cv-btn btn btn-link text-muted p-2"
-                                           title="Xem trước CV">
-                                           <i class="bi bi-eye-fill fs-5"></i>
-                                        </a>
-                                        <div class="check-indicator ms-2 text-primary">
-                                            <i class="bi bi-check-circle-fill"></i>
+                                    <div class="ms-3 text-start">
+                                        <div class="fw-bold text-dark mb-0">
+                                            {{ cv.title if cv.type == 'ONLINE' else cv.file_name }}
                                         </div>
+                                        <div class="text-muted" style="font-size: 0.8rem;">
+                                            <i class="bi bi-clock-history me-1"></i> Cập nhật: {{
+                                            cv.updated_at.strftime('%d/%m/%Y %H:%M') }}
+                                        </div>
+                                        <span
+                                            class="badge {{ 'bg-primary' if cv.type == 'ONLINE' else 'bg-success' }} mt-1"
+                                            style="font-size: 0.65rem;">
+                                            {{ cv.type }}
+                                        </span>
                                     </div>
-                                </label>
-                            </div>
-                            {% endfor %}
+                                </div>
+
+                                <!-- Nút xem nhanh -->
+                                <div class="d-flex align-items-center">
+
+                                    <a href="{{ url_for('candidate.view_cv', cv_id=cv.id, next=request.full_path) if cv.type == 'ONLINE' else cv.file_url }}"
+                                        target="_blank" class="view-cv-btn btn btn-link text-muted p-2"
+                                        title="Xem trước CV">
+                                        <i class="bi bi-eye-fill fs-5"></i>
+                                    </a>
+                                    <div class="check-indicator ms-2 text-primary">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
                         {% else %}
-                            <div class="text-center py-4 bg-light rounded-4 border border-dashed">
-                                <i class="bi bi-file-earmark-x fs-1 text-muted"></i>
-                                <p class="mt-2 text-muted small">Bạn chưa có CV nào trong hồ sơ.</p>
-                                <a href="{{ url_for('candidate.manage_cvs') }}" class="btn btn-sm btn-outline-primary mt-2">
-                                    Tạo CV ngay
-                                </a>
-                            </div>
+                        <div class="text-center py-4 bg-light rounded-4 border border-dashed">
+                            <i class="bi bi-file-earmark-x fs-1 text-muted"></i>
+                            <p class="mt-2 text-muted small">Bạn chưa có CV nào trong hồ sơ.</p>
+                            <a href="{{ url_for('candidate.manage_cvs') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                Tạo CV ngay
+                            </a>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
-                    <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal">Để sau</button>
+                    <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal">Để
+                        sau</button>
                     <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm fw-bold">
                         Gửi hồ sơ ngay <i class="bi bi-arrow-right ms-2"></i>
                     </button>

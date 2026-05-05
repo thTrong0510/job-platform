@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from app.services.candidate.candidate_service import CandidateService
-from app.common.decorators import login_required
+from app.common.decorators import candidate_required
 from app.common.info import get_current_candidate
 from app.services.candidate.skill_service import SkillService
 from app.services.candidate.user_service import UserService
@@ -11,7 +11,7 @@ from common.ProfileFromBuilder import parse_nested_form
 candidate_profile_bp = Blueprint("candidate_profile", __name__, url_prefix="/candidate")
 
 @candidate_profile_bp.route("/profile", methods=["GET"])
-@login_required
+@candidate_required
 def view_profile():
     candidate_id = get_current_candidate().id
 
@@ -23,7 +23,7 @@ def view_profile():
     )
 
 @candidate_profile_bp.route("/profile/edit", methods=["GET", "POST"])
-@login_required
+@candidate_required
 def edit_profile():
     candidate_id = get_current_candidate().id
     form_data = request.form
@@ -70,7 +70,7 @@ def edit_profile():
     all_skills = SkillService.get_all_skills()
 
     if not candidate:
-        return redirect(url_for("main.home"))
+        return redirect(url_for("jobs.job_list"))
 
     return render_template(
         "pages/candidate/profile_edit.html",
@@ -80,7 +80,7 @@ def edit_profile():
     )
 
 @candidate_profile_bp.route("/upload-avatar", methods=["POST"])
-@login_required
+@candidate_required
 def upload_avatar():
     file = request.files.get("avatar")
     candidate_id = get_current_candidate().id

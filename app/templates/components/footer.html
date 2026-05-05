@@ -1,5 +1,75 @@
-<footer class="bg-light text-center text-muted py-3 mt-5 border-top">
-    <div class="container">
-        © 2026 Job Platform | Built with Flask
+<footer class="bg-dark text-white pt-5 pb-4 mt-5 border-top">
+    <div class="container text-md-start">
+        <div class="row text-md-start">
+
+            <!-- Cột 1: Giới thiệu ngắn -->
+            <div class="col-md-4 col-lg-4 col-xl-4 mx-auto mt-3">
+                <h5 class="text-uppercase mb-4 fw-bold text-primary">
+                    <i class="bi bi-rocket-takeoff-fill me-2"></i>JobPlatform
+                </h5>
+                <p class="text-white-50 small" style="line-height: 1.8;">
+                    Nền tảng kết nối ứng viên tài năng với những nhà tuyển dụng hàng đầu.
+                    Chúng tôi giúp bạn xây dựng sự nghiệp mơ ước với hàng ngàn cơ hội việc làm mỗi ngày.
+                </p>
+                <div class="mt-4">
+                    <a href="#" class="text-white me-3 fs-5"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white me-3 fs-5"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="text-white me-3 fs-5"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="text-white fs-5"><i class="bi bi-github"></i></a>
+                </div>
+            </div>
+
+            <!-- Cột 2: Dành cho ứng viên -->
+            <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                <h6 class="text-uppercase mb-4 fw-bold">Ứng viên</h6>
+                <ul class="list-unstyled small">
+                    <li class="mb-2"><a href="{{ url_for('jobs.job_list') }}" class="text-white-50 text-decoration-none hover-white">Tìm việc làm</a></li>
+                    <li class="mb-2"><a href="{{ url_for('candidate_profile.view_profile') }}" class="text-white-50 text-decoration-none hover-white">Hồ sơ cá nhân</a></li>
+                    <li class="mb-2"><a href="{{ url_for('candidate.manage_cvs') }}" class="text-white-50 text-decoration-none hover-white">Quản lý CV</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-white">Cẩm nang nghề nghiệp</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Dành cho Nhà tuyển dụng -->
+            <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+                <h6 class="text-uppercase mb-4 fw-bold">Nhà tuyển dụng</h6>
+                <ul class="list-unstyled small">
+                    <li class="mb-2"><a href="{{ url_for('employer_jobs.create') }}" class="text-white-50 text-decoration-none hover-white">Đăng tin tuyển dụng</a></li>
+                    <li class="mb-2"><a href="{{ url_for('employer_jobs.index') }}" class="text-white-50 text-decoration-none hover-white">Quản lý tin đăng</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-white">Tìm kiếm nhân sự</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-white">Báo cáo tuyển dụng</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Liên hệ -->
+            <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                <h6 class="text-uppercase mb-4 fw-bold">Liên hệ</h6>
+                <ul class="list-unstyled small text-white-50">
+                    <li class="mb-2"><i class="bi bi-geo-alt-fill me-2 text-primary"></i> 123 Đường ABC, Quận 1, TP. HCM</li>
+                    <li class="mb-2"><i class="bi bi-envelope-fill me-2 text-primary"></i> support@jobplatform.com</li>
+                    <li class="mb-2"><i class="bi bi-telephone-fill me-2 text-primary"></i> +84 123 456 789</li>
+                    <li class="mb-3"><i class="bi bi-clock-fill me-2 text-primary"></i> Thứ 2 - Thứ 7: 8:00 - 18:00</li>
+                </ul>
+            </div>
+        </div>
+
+        <hr class="mb-4 mt-5 border-secondary">
+
+        <!-- Dòng bản quyền -->
+        <div class="row align-items-center">
+            <div class="col-md-7 col-lg-8">
+                <p class="small text-white-50 mb-0">
+                    © 2026 <strong>JobPlatform</strong>. Tất cả quyền được bảo lưu.
+                    Phát triển bởi <span class="text-primary">Flask Framework</span>.
+                </p>
+            </div>
+            <div class="col-md-5 col-lg-4 text-md-end mt-3 mt-md-0">
+                <ul class="list-inline mb-0 small">
+                    <li class="list-inline-item"><a href="#" class="text-white-50 text-decoration-none hover-white">Điều khoản</a></li>
+                    <li class="list-inline-item ms-3"><a href="#" class="text-white-50 text-decoration-none hover-white">Bảo mật</a></li>
+                    <li class="list-inline-item ms-3"><a href="#" class="text-white-50 text-decoration-none hover-white">Cookies</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </footer>

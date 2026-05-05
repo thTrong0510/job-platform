@@ -1,0 +1,46 @@
+{% extends "layouts/admin_base.html" %}
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold">Chỉnh sửa Template: {{ template.name }}</h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="{{ url_for('cv_templates.edit', template_id=template.id) }}" method="POST" enctype="multipart/form-data">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Tên Template</label>
+                        <input type="text" name="name" class="form-control"
+                               value="{{ old_data.get('name', template.name) if old_data else template.name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Thay đổi ảnh Preview (Để trống nếu giữ nguyên)</label>
+                        <input type="file" name="preview_image" class="form-control" accept="image/*">
+                        {% if template.preview_image %}
+                            <div class="mt-2 small text-muted">
+                                <i class="bi bi-image me-1"></i> Ảnh hiện tại: <code>{{ template.preview_image }}</code>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mô tả</label>
+                    <textarea name="description" class="form-control" rows="2">{{ old_data.get('description', template.description) if old_data else template.description }}</textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">HTML Content (Jinja2 Support)</label>
+                    <div class="alert alert-info py-2 small">
+                        Sử dụng biến <code>{{ '{{ data.full_name }}' }}</code>, <code>{{ '{% for exp in data.experiences %}' }}</code> để render dữ liệu.
+                    </div>
+                    <textarea name="html_content" class="form-control text-monospace" rows="15"
+                              style="font-size: 13px; font-family: SFMono-Regular, Menlo, monospace;">{{ old_data.get('html_content', template.html_content) if old_data else template.html_content }}</textarea>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('cv_templates.index') }}" class="btn btn-light px-4">Quay lại</a>
+                    <button type="submit" class="btn btn-primary px-5">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+footer a.hover-white:hover {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+    transition: all 0.3s ease;
+}
+
+footer .bi {
+    transition: transform 0.3s ease;
+}
+
+footer a:hover .bi {
+    transform: translateY(-3px);
+}
+
+footer hr {
+    opacity: 0.1;
+}
+
+/* Tùy chỉnh màu text-primary nếu bạn muốn đổi sang màu xanh lá của nút Post */
+.text-primary {
+    color: #3A7734 !important;
+}

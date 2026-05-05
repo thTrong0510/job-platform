@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, render_template_string
-from app.common.decorators import login_required
 from app.common.info import get_current_candidate
 from app.common.CVFormBuilder import CVFormBuilder
 from app.services.candidate.candidate_service import CandidateService
@@ -8,11 +7,12 @@ from app.services.candidate.cv_skill_service import CVSkillService
 from app.services.candidate.cv_template_service import CvTemplateService
 from app.services.candidate.skill_service import SkillService
 from app.common.info import get_current_user
+from common.decorators import candidate_required
 
 candidate_bp = Blueprint("candidate", __name__, url_prefix="/candidate")
 
 @candidate_bp.route("/cvs", methods=["GET"])
-@login_required
+@candidate_required
 def manage_cvs():
     candidate = get_current_candidate()
     online_cvs, upload_cvs = CVService.get_candidate_cvs(candidate.id)
@@ -76,7 +76,7 @@ def create_cv_by_template(template_id):
     )
 
 @candidate_bp.route("/cvs/<int:cv_id>")
-@login_required
+@candidate_required
 def view_cv(cv_id):
     cv = CVService.get_cv_for_view(cv_id)
     html_template = cv.template.html_content
@@ -96,7 +96,7 @@ def view_cv(cv_id):
     )
 
 @candidate_bp.route("/cvs/<int:cv_id>/edit", methods=["GET", "POST"])
-@login_required
+@candidate_required
 def edit_cv(cv_id):
     cv = CVService.get_cv_for_view(cv_id)
 
@@ -135,13 +135,13 @@ def edit_cv(cv_id):
     )
 
 @candidate_bp.route("/delete-cv/<int:cv_id>", methods=["POST"])
-@login_required
+@candidate_required
 def delete_cv(cv_id):
     CVService.delete_cv(cv_id)
-
+    flash("CV deleted successfully!", "info")
     return redirect(url_for("candidate.manage_cvs"))
 
 @candidate_bp.route("/", methods=["GET"])
-@login_required
+@candidate_required
 def upload_cv():
     return redirect(url_for("cv_upload.index"))

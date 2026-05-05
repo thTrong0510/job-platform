@@ -1,0 +1,56 @@
+{% extends "layouts/admin_base.html" %}
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('cv_templates.index') }}">Templates</a></li>
+            <li class="breadcrumb-item active">Thêm mới</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form action="{{ url_for('cv_templates.create') }}" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Tên Template</label>
+                        <!-- Thêm old_data cho trường name -->
+                        <input type="text" name="name"
+                               value="{{ old_data.get('name', '') if old_data else '' }}"
+                               class="form-control" placeholder="Ví dụ: Modern Blue" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ảnh Preview (Screenshot)</label>
+                        <input type="file" name="preview_image" class="form-control" accept="image/*" required>
+                        {% if old_data %}
+                            <small class="text-warning">Lưu ý: Bạn cần chọn lại file ảnh nếu có lỗi xảy ra.</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mô tả ngắn</label>
+                    <!-- Thêm old_data cho textarea description -->
+                    <textarea name="description" class="form-control" rows="2">{{ old_data.get('description', '') if old_data else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">HTML Content (Jinja2 Support)</label>
+                    <div class="alert alert-info py-2 small">
+                        Sử dụng biến <code>{{ '{{ data.full_name }}' }}</code>, <code>{{ '{% for exp in data.experiences %}' }}</code> để render dữ liệu.
+                    </div>
+                    <!-- Thêm old_data cho textarea html_content -->
+                    <textarea name="html_content" class="form-control text-monospace"
+                              style="font-family: SFMono-Regular, Menlo, monospace; font-size: 12px;"
+                              rows="15" required>{{ old_data.get('html_content', '') if old_data else '' }}</textarea>
+                </div>
+
+                <div class="text-end">
+                    <a href="{{ url_for('cv_templates.index') }}" class="btn btn-light px-4 me-2">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4">Lưu Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -13,7 +13,7 @@ def login():
 
         user = AuthService.login(email)
 
-        if user and user.check_password(password) and user.role.__eq__("ADMIN"):
+        if user and user.check_password(password) and user.role == "ADMIN":
             session["user_id"]    = user.id
             session["user_email"] = user.email
             session["user_role"]  = user.role

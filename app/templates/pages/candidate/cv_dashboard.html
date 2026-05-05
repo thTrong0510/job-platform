@@ -175,7 +175,7 @@
 
                     <div class="d-flex gap-3 justify-content-center mt-4">
                         <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal">Hủy bỏ</button>
-                        <form id="deleteForm" method="POST">
+                        <form id="deleteForm" method="POST" action="">
                             <button type="submit" class="btn btn-danger px-4 rounded-pill">Đồng ý xóa</button>
                         </form>
                     </div>
@@ -184,4 +184,26 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var deleteModal = document.getElementById('deleteModal');
+
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+
+            var cvId = button.getAttribute('data-cv-id');
+            var cvTitle = button.getAttribute('data-cv-title');
+
+            var titleSpan = deleteModal.querySelector('#cvTitleToDelete');
+            titleSpan.textContent = cvTitle;
+
+            var deleteForm = deleteModal.querySelector('#deleteForm');
+            deleteForm.action = '/candidate/delete-cv/' + cvId;
+        });
+    }
+});
+</script>
 {% endblock %}
