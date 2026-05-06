@@ -5,30 +5,28 @@
 
 {# ── Flash messages ── #}
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show rounded-3 mb-4" role="alert">
-        {% if category == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
-        {% elif category == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
-        {% elif category == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
-        {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
-        {{ message | safe }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} alert-dismissible fade show rounded-3 mb-4" role="alert">
+    {% if category == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+    {% elif category == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {% elif category == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
+    {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+    {{ message | safe }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
 {% endwith %}
 
 {# ── Breadcrumb ── #}
 <div class="d-flex align-items-center gap-2 mb-4">
-    <a href="{{ url_for('admin_jobs.index') }}"
-       class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+    <a href="{{ url_for('admin_jobs.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
         <i class="bi bi-arrow-left me-1"></i>Danh sách
     </a>
     <span class="text-muted" style="font-size:.85rem;">
         / <strong>{{ job.title }}</strong>
     </span>
     {% if job.is_hidden %}
-    <span class="badge rounded-pill fw-semibold ms-1"
-          style="background:#fee2e2;color:#991b1b;font-size:.72rem;">
+    <span class="badge rounded-pill fw-semibold ms-1" style="background:#fee2e2;color:#991b1b;font-size:.72rem;">
         🚫 Đang ẩn
     </span>
     {% endif %}
@@ -57,14 +55,12 @@
                         {% endif %}
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        <span class="badge rounded-pill fw-semibold px-3 py-2"
-                              style="{% if job.status == 'OPEN' %}background:#d1fae5;color:#065f46;
+                        <span class="badge rounded-pill fw-semibold px-3 py-2" style="{% if job.status == 'OPEN' %}background:#d1fae5;color:#065f46;
                                      {% else %}background:#f3f4f6;color:#6b7280;{% endif %}
                                      font-size:.8rem;">
                             {% if job.status == 'OPEN' %}🟢 Đang tuyển{% else %}⚫ Đã đóng{% endif %}
                         </span>
-                        <span class="badge rounded-pill fw-semibold px-3 py-2"
-                              style="{% if job.is_hidden %}background:#fee2e2;color:#991b1b;
+                        <span class="badge rounded-pill fw-semibold px-3 py-2" style="{% if job.is_hidden %}background:#fee2e2;color:#991b1b;
                                      {% else %}background:#d8f3dc;color:#1a7431;{% endif %}
                                      font-size:.8rem;">
                             {% if job.is_hidden %}🚫 Đang ẩn{% else %}👁 Hiển thị{% endif %}
@@ -75,8 +71,8 @@
 
             {# ── Detail list ── #}
             <div class="card-body p-4">
-                <p class="text-uppercase fw-bold text-muted mb-3"
-                   style="font-size:.7rem;letter-spacing:.1em;">Thông tin chung</p>
+                <p class="text-uppercase fw-bold text-muted mb-3" style="font-size:.7rem;letter-spacing:.1em;">Thông tin
+                    chung</p>
 
                 <ul class="list-unstyled mb-0">
                     <li class="d-flex gap-3 py-2 border-bottom" style="font-size:.875rem;">
@@ -99,13 +95,13 @@
                         </span>
                         <span class="fw-medium text-dark">
                             {% if job.salary_min and job.salary_max %}
-                                {{ "{:,.0f}".format(job.salary_min) }} – {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                            {{ "${:,.0f}".format(job.salary_min) }} – {{ "${:,.0f}".format(job.salary_max) }}
                             {% elif job.salary_min %}
-                                Từ {{ "{:,.0f}".format(job.salary_min) }} VNĐ
+                            Từ {{ "${:,.0f}".format(job.salary_min) }}
                             {% elif job.salary_max %}
-                                Đến {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                            Đến {{ "${:,.0f}".format(job.salary_max) }}
                             {% else %}
-                                Thỏa thuận
+                            Thỏa thuận
                             {% endif %}
                         </span>
                     </li>
@@ -147,12 +143,12 @@
                 {# Skills #}
                 {% if job.skills %}
                 <hr class="my-3">
-                <p class="text-uppercase fw-bold text-muted mb-3"
-                   style="font-size:.7rem;letter-spacing:.1em;">Kỹ năng yêu cầu</p>
+                <p class="text-uppercase fw-bold text-muted mb-3" style="font-size:.7rem;letter-spacing:.1em;">Kỹ năng
+                    yêu cầu</p>
                 <div class="d-flex flex-wrap gap-2">
                     {% for js in job.skills %}
                     <span class="badge rounded-pill fw-semibold px-3 py-2"
-                          style="background:var(--admin-light);color:var(--admin-dark);font-size:.8rem;">
+                        style="background:var(--admin-light);color:var(--admin-dark);font-size:.8rem;">
                         <i class="bi bi-check2 me-1"></i>{{ js.skill.name }}
                     </span>
                     {% endfor %}
@@ -161,10 +157,9 @@
 
                 {# Description #}
                 <hr class="my-3">
-                <p class="text-uppercase fw-bold text-muted mb-3"
-                   style="font-size:.7rem;letter-spacing:.1em;">Mô tả công việc</p>
-                <div class="rounded-3 p-4"
-                     style="background:#f8f9fa;font-size:.875rem;
+                <p class="text-uppercase fw-bold text-muted mb-3" style="font-size:.7rem;letter-spacing:.1em;">Mô tả
+                    công việc</p>
+                <div class="rounded-3 p-4" style="background:#f8f9fa;font-size:.875rem;
                             color:#343a40;line-height:1.8;
                             white-space:pre-wrap;word-break:break-word;">{{ job.description }}</div>
             </div>
@@ -183,48 +178,45 @@
                 </h6>
 
                 {# Toggle hidden #}
-                <form method="POST"
-                      action="{{ url_for('admin_jobs.toggle_hidden', job_id=job.id) }}">
+                <form method="POST" action="{{ url_for('admin_jobs.toggle_hidden', job_id=job.id) }}">
                     <input type="hidden" name="back_to" value="detail">
                     {% if job.is_hidden %}
                     <button type="submit" class="btn w-100 fw-bold mb-1 rounded-3"
-                            style="background:#d1fae5;color:#065f46;border:none;padding:11px;">
+                        style="background:#d1fae5;color:#065f46;border:none;padding:11px;">
                         <i class="bi bi-eye-fill me-2"></i>Hiện lại tin này
                     </button>
                     {% else %}
                     <button type="submit" class="btn w-100 fw-bold mb-1 rounded-3"
-                            style="background:#fef3c7;color:#92400e;border:none;padding:11px;">
+                        style="background:#fef3c7;color:#92400e;border:none;padding:11px;">
                         <i class="bi bi-eye-slash-fill me-2"></i>Ẩn tin vi phạm
                     </button>
                     {% endif %}
                 </form>
 
-                <div class="rounded-3 p-3 mb-3 mt-2"
-                     style="background:#f8f9fa;border:1px solid #e9ecef;
+                <div class="rounded-3 p-3 mb-3 mt-2" style="background:#f8f9fa;border:1px solid #e9ecef;
                             font-size:.8rem;color:#6c757d;line-height:1.6;">
                     <i class="bi bi-info-circle me-1"></i>
                     {% if job.is_hidden %}
-                        Tin đang bị ẩn — ứng viên <strong>không thể</strong> tìm thấy.
-                        Nhấn "Hiện lại" nếu nội dung đã được xử lý.
+                    Tin đang bị ẩn — ứng viên <strong>không thể</strong> tìm thấy.
+                    Nhấn "Hiện lại" nếu nội dung đã được xử lý.
                     {% else %}
-                        Ẩn tin sẽ khiến ứng viên không thể tìm thấy.
-                        Dữ liệu vẫn được giữ nguyên, có thể mở lại bất kỳ lúc nào.
+                    Ẩn tin sẽ khiến ứng viên không thể tìm thấy.
+                    Dữ liệu vẫn được giữ nguyên, có thể mở lại bất kỳ lúc nào.
                     {% endif %}
                 </div>
 
                 <hr style="border-color:#f0f0f0;">
 
                 {# Delete #}
-                <form method="POST"
-                      action="{{ url_for('admin_jobs.delete', job_id=job.id) }}"
-                      onsubmit="return confirm('{% if job.applications %}Tin này có {{ job.applications|length }} hồ sơ ứng tuyển. Hệ thống sẽ đóng và ẩn tin thay vì xóa để bảo toàn dữ liệu. Tiếp tục?{% else %}Xóa vĩnh viễn tin này? Hành động không thể hoàn tác.{% endif %}')">
+                <form method="POST" action="{{ url_for('admin_jobs.delete', job_id=job.id) }}"
+                    onsubmit="return confirm('{% if job.applications %}Tin này có {{ job.applications|length }} hồ sơ ứng tuyển. Hệ thống sẽ đóng và ẩn tin thay vì xóa để bảo toàn dữ liệu. Tiếp tục?{% else %}Xóa vĩnh viễn tin này? Hành động không thể hoàn tác.{% endif %}')">
                     <button type="submit" class="btn w-100 fw-bold rounded-3"
-                            style="background:#fee2e2;color:#991b1b;border:none;padding:11px;">
+                        style="background:#fee2e2;color:#991b1b;border:none;padding:11px;">
                         <i class="bi bi-trash3-fill me-2"></i>
                         {% if job.applications %}
-                            Đóng & Ẩn tin ({{ job.applications|length }} hồ sơ)
+                        Đóng & Ẩn tin ({{ job.applications|length }} hồ sơ)
                         {% else %}
-                            Xóa vĩnh viễn
+                        Xóa vĩnh viễn
                         {% endif %}
                     </button>
                 </form>
@@ -243,12 +235,11 @@
                 <hr style="border-color:#f0f0f0;">
 
                 {# Employer info #}
-                <p class="text-uppercase fw-bold text-muted mb-3"
-                   style="font-size:.68rem;letter-spacing:.1em;">Nhà tuyển dụng</p>
+                <p class="text-uppercase fw-bold text-muted mb-3" style="font-size:.68rem;letter-spacing:.1em;">Nhà
+                    tuyển dụng</p>
 
                 <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                         style="width:38px;height:38px;background:var(--admin-light);
+                    <div class="rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:38px;height:38px;background:var(--admin-light);
                                 color:var(--admin-dark);font-size:.9rem;">
                         {{ employer.company_name[0] | upper }}
                     </div>
@@ -264,9 +255,7 @@
                     </div>
                 </div>
 
-                <a href="{{ url_for('admin_users.index') }}"
-                   class="btn btn-sm w-100 rounded-pill fw-semibold"
-                   style="background:var(--admin-light);color:var(--admin-dark);
+                <a href="{{ url_for('admin_users.index') }}" class="btn btn-sm w-100 rounded-pill fw-semibold" style="background:var(--admin-light);color:var(--admin-dark);
                           border:none;font-size:.82rem;">
                     <i class="bi bi-building me-1"></i>Quản lý tài khoản
                 </a>

@@ -17,7 +17,6 @@ def create():
         if result == "duplicate_slug":
             flash('Lỗi: Tên Template này đã tồn tại hoặc tạo ra Slug trùng lặp!', 'danger')
             return render_template('pages/admin/cv_templates_create.html', old_data=request.form)
-        flash('Thêm template thành công!', 'success')
         return redirect(url_for('cv_templates.index'))
     return render_template('pages/admin/cv_templates_create.html')
 
@@ -30,7 +29,6 @@ def edit(template_id):
         if result == "duplicate_slug":
             flash('Lỗi: Tên Template này đã tồn tại hoặc tạo ra Slug trùng lặp!', 'danger')
             return render_template('pages/admin/cv_templates_edit.html', old_data=request.form)
-        flash('Cập nhật thành công!', 'success')
         return redirect(url_for('cv_templates.index'))
     return render_template('pages/admin/cv_templates_edit.html', template=template)
 

@@ -7,7 +7,7 @@ from app.repositories.admin.cv_template_repository import CVTemplateRepository
 from slugify import slugify
 from app.extensions import db
 from app.models.cv import CVTemplate
-from common.CloudinaryUtil import CloudinaryUtil
+from app.common.CloudinaryUtil import CloudinaryUtil
 
 
 class CVTemplateService:

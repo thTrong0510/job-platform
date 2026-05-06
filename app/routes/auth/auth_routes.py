@@ -15,7 +15,17 @@ def register():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
         fullname = request.form.get("fullname")
+
+        if password != confirm_password:
+            flash("Mật khẩu xác nhận không trùng khớp", "warning")
+            return render_template("/pages/auth/register.html", email=email, password=password, fullname=fullname)
+
+        if UserService.get_user_by_email(email):
+            flash("Email đã tồn tại", "warning")
+            return render_template("/pages/auth/register.html", email=email, password=password, fullname=fullname)
+
 
         user = User(
             email=email,

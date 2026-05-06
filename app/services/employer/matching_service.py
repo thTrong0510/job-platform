@@ -14,8 +14,8 @@ from app.models.recommendation import JobRecommendation
 from app.repositories.candidate.cv_skill_repository import CVSkillRepository
 from app.repositories.candidate.skill_repository import SkillRepository
 from app.services.employer.cv_text_extractor import CVTextExtractor
- 
- 
+from repositories.employer.recommend_job_repository import RecommendJobRepository
+
 # ── Khởi tạo Gemini client (lazy singleton) ──────────────────────
 _client = None
  
@@ -54,22 +54,19 @@ class MatchingService:
             return cached
         return MatchingService._calculate_and_save(application)
  
-    # ── Public: force recalculate ──────────────────────────────────
-    @staticmethod
-    def recalculate(application) -> float | None:
-        """Xóa cache cũ và tính lại."""
-        MatchingService._delete_from_db(
-            application.cv.candidate_id, application.job_id
-        )
-        return MatchingService._calculate_and_save(application)
- 
     # ── Internal: load từ DB ──────────────────────────────────────
     @staticmethod
     def _load_from_db(candidate_id: int, job_id: int) -> float | None:
+
         rec = JobRecommendation.query.filter_by(
             candidate_id=candidate_id,
             job_id=job_id,
         ).first()
+
+        if rec is None:
+            RecommendJobRepository.save(candidate_id, job_id)
+            return None
+
         if rec and rec.score is not None:
             return float(rec.score)
         return None

@@ -105,27 +105,6 @@ class ApplicationService:
         return count
 
     # ─────────────────────────────────────────────────────────
-    # Force tính lại toàn bộ score — có delay giữa các call
-    # ─────────────────────────────────────────────────────────
-    @staticmethod
-    def recalculate_all(employer_id):
-        """
-        Tính lại điểm cho TẤT CẢ application của employer.
-        Có delay giữa các call để không vượt free-tier rate limit.
-        """
-        from app.services.employer.matching_service import MatchingService
-
-        all_apps = ApplicationRepository.get_all_applications(employer_id)
-        count = 0
-        for i, app in enumerate(all_apps):
-            if i > 0:
-                time.sleep(_GEMINI_CALL_DELAY)
-            score = MatchingService.recalculate(app)
-            if score is not None:
-                count += 1
-        return count
-
-    # ─────────────────────────────────────────────────────────
     # Danh sách hồ sơ (score đọc từ DB, không gọi Gemini)
     # ─────────────────────────────────────────────────────────
     @staticmethod

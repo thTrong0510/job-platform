@@ -453,7 +453,7 @@
                             <i class="bi bi-cash text-secondary me-2"></i>
                             <strong>Lương:</strong>
                             {% if job.salary_min and job.salary_max %}
-                            {{ "{:,.0f}".format(job.salary_min) }} – {{ "{:,.0f}".format(job.salary_max) }} $
+                            {{ "${:,.0f}".format(job.salary_min) }} – {{ "${:,.0f}".format(job.salary_max) }}
                             {% else %}
                             Thỏa thuận
                             {% endif %}

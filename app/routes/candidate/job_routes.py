@@ -2,12 +2,11 @@ from flask import Blueprint, request, render_template, flash, url_for
 from werkzeug.utils import redirect
 
 from app.common.check_empty_dict import is_filters_empty
-from app.common.info import get_current_candidate
 from app.services.candidate.job_service import JobService
-from app.common.decorators import login_required
 from app.common.info import get_current_candidate, get_current_user
 from app.services.candidate.application_service import ApplicationService
 from app.services.candidate.cv_service import CVService
+from common.decorators import candidate_required
 
 job_bp = Blueprint('jobs', __name__)
 
@@ -54,7 +53,7 @@ def job_detail(job_id):
                            upload_cvs=upload_cvs)
 
 @job_bp.route("/jobs/apply/<int:job_id>", methods=["POST"])
-@login_required
+@candidate_required
 def apply_job(job_id):
     cv_id = request.form.get("cv_id")
     email = get_current_user().email

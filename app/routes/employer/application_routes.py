@@ -116,21 +116,3 @@ def score_new():
         flash(f"Lỗi khi tính điểm: {e}", "danger")
 
     return redirect(url_for("employer_applications.index"))
-
-
-# ─────────────────────────────────────────────────────────
-# RECALCULATE ALL  POST /employer/applications/recalculate
-# Force tính lại TOÀN BỘ score (tốn nhiều quota hơn)
-# ─────────────────────────────────────────────────────────
-@employer_applications_bp.route("/recalculate", methods=["POST"])
-@employer_required
-def recalculate():
-    employer = get_current_employer()
-
-    try:
-        count = ApplicationService.recalculate_all(employer.id)
-        flash(f"Đã tính lại điểm phù hợp cho {count} hồ sơ thành công.", "success")
-    except Exception as e:
-        flash(f"Lỗi khi tính lại điểm: {e}", "danger")
-
-    return redirect(url_for("employer_applications.index"))

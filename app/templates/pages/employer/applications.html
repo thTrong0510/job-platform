@@ -342,16 +342,6 @@
                 {% endif %}
             </button>
         </form>
-
-        {# Tính lại toàn bộ — cần xác nhận vì tốn quota #}
-        <form method="POST" action="{{ url_for('employer_applications.recalculate') }}" class="score-form"
-            onsubmit="return confirm('Tính lại điểm toàn bộ sẽ gọi AI cho tất cả hồ sơ và có thể mất vài phút. Tiếp tục?')">
-            <button type="submit" class="btn-recalc"
-                title="Tính lại điểm tất cả hồ sơ (dùng khi mô tả công việc thay đổi)">
-                <i class="bi bi-arrow-clockwise"></i> Tính lại tất cả
-            </button>
-        </form>
-
         <a href="{{ url_for('employer.dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
             <i class="bi bi-arrow-left me-1"></i>Dashboard
         </a>
