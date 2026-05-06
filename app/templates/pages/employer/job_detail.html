@@ -5,6 +5,24 @@
 {% block content %}
 <div class="container-fluid px-4 py-4" style="max-width: 960px;">
 
+    {# >>> THÊM MỚI: Banner cảnh báo khi tin bị admin ẩn >>> #}
+    {% if job.is_hidden %}
+    <div class="alert border-0 mb-4 d-flex align-items-start gap-3"
+         style="background:#fff5f5; border-left:4px solid #dc2626 !important;
+                border-left-style:solid !important; border-radius:12px;">
+        <i class="bi bi-eye-slash-fill text-danger flex-shrink-0 mt-1" style="font-size:1.3rem;"></i>
+        <div>
+            <div class="fw-bold text-danger mb-1">
+                Tin tuyển dụng này đang bị Admin ẩn
+            </div>
+            <p class="mb-0 text-muted small">
+                Tin tuyển dụng "<strong>{{ job.title }}</strong>" hiện không hiển thị với ứng viên
+                do vi phạm chính sách nền tảng. Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
 	<div class="card border-0 shadow-sm mb-4">
 		<div class="card-body px-4 py-4">
 			<div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
@@ -23,6 +41,14 @@
 						<i class="bi bi-archive me-1"></i>Đã đóng
 					</span>
 					{% endif %}
+
+                    {# >>> THÊM MỚI: Badge ẩn >>> #}
+                    {% if job.is_hidden %}
+                    <span class="badge fs-6 rounded-pill px-3 py-2"
+                          style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;">
+                        <i class="bi bi-eye-slash-fill me-1"></i>Đang bị ẩn
+                    </span>
+                    {% endif %}
 				</div>
 			</div>
 		</div>
@@ -56,6 +82,21 @@
 						<dd class="col-7 fw-semibold">
 							{{ 'Đang tuyển' if job.status == 'OPEN' else 'Đã đóng' }}
 						</dd>
+
+                        {# >>> THÊM MỚI >>> #}
+                        <dt class="col-5 text-muted fw-normal">Hiển thị</dt>
+                        <dd class="col-7">
+                            {% if job.is_hidden %}
+                                <span class="text-danger fw-semibold">
+                                    <i class="bi bi-eye-slash-fill me-1"></i>Đang bị ẩn
+                                </span>
+                            {% else %}
+                                <span class="text-success fw-semibold">
+                                    <i class="bi bi-eye-fill me-1"></i>Đang hiển thị
+                                </span>
+                            {% endif %}
+                        </dd>
+
 						<dt class="col-5 text-muted fw-normal">Ngày đăng</dt>
 						<dd class="col-7">{{ job.created_at.strftime('%d/%m/%Y') }}</dd>
 						<dt class="col-5 text-muted fw-normal">Hạn nộp</dt>
@@ -92,7 +133,6 @@
 					{% endif %}
 				</div>
 			</div>
-
 
 		</div>
 	</div>

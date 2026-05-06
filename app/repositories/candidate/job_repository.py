@@ -6,11 +6,13 @@ from app.extensions import db
 
 class JobRepository:
     @staticmethod
-    def search_jobs(keyword=None, location=None, salary_min=None, salary_max=None, experience=None, sort='newest', page=1, per_page=3):
+    def search_jobs(keyword=None, location=None, salary_min=None, salary_max=None, experience=None, sort='newest', page=1, per_page=3, is_pagination=True):
         q = (Job.query.join(Job.employer)
             .outerjoin(JobSkill, JobSkill.job_id == Job.id)
             .outerjoin(Skill, Skill.id == JobSkill.skill_id)
-            .filter(Job.status == 'OPEN'))
+            .filter(Job.status == 'OPEN')
+            # >>> FIX: Chỉ hiển thị job chưa bị admin ẩn >>>
+            .filter(Job.is_hidden == False))
 
         # keyword search
         if keyword:
@@ -47,32 +49,24 @@ class JobRepository:
         if experience is not None:
             q = q.filter(Job.experience_required <= experience)
 
-        # # sort
-        # if sort == 'salary_desc':
-        #     q = q.order_by(Job.salary_max.desc().nullslast())
-        # elif sort == 'salary_asc':
-        #     q = q.order_bt(Job.salary_min.asc().nullslast())
-        # elif sort == 'deadline':
-        #     q = q.order_by(Job.end_date.asc().nullslast())
-        # else:
-        #     q = q.order_by(Job.created_at.desc())
-        #
-        # # pagination
-        # pagination = q.paginate(page=page, per_page=per_page, error_out=False)
-        #
-        # return pagination
-
         q = q.order_by(Job.created_at.desc())
-        pagination = q.paginate(page=page, per_page=per_page, error_out=False)
+        if is_pagination:
+            pagination = q.paginate(page=page, per_page=per_page, error_out=False)
+            return pagination
 
         # print(q.statement.compile(compile_kwargs={"literal_binds": True}))
         print(str(q.statement))
 
-        return pagination
+        return q
 
     @staticmethod
     def get_distinct_locations():
-        results = db.session.query(Job.location).filter(Job.location.isnot(None), Job.status == 'OPEN').distinct().all()
+        results = db.session.query(Job.location).filter(
+            Job.location.isnot(None),
+            Job.status == 'OPEN',
+            # >>> FIX: Không lấy location của job đang bị ẩn >>>
+            Job.is_hidden == False
+        ).distinct().all()
         return [r[0] for r in results if r[0]]
 
     @staticmethod

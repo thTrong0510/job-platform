@@ -199,30 +199,8 @@
                         </div>
                     </div>
 
-                    <div class="d-grid mt-4">
-                        <a href="{{ url_for('candidate_profile.edit_profile', section='all') }}"
-                            class="btn btn-primary btn-rounded shadow-sm">
-                            <i class="bi bi-pencil-square me-2"></i>Sửa hồ sơ
-                        </a>
-                    </div>
-
-                    <p class="mb-1">
-                        <i class="bi bi-envelope"></i>
-                        {{ candidate.user.email if candidate.user and candidate.user.email else "Chưa cập nhật email" }}
-                    </p>
-
-                    <p class="mb-1">
-                        <i class="bi bi-telephone"></i>
-                        {{ candidate.phone if candidate.phone else "Chưa cập nhật số điện thoại" }}
-                    </p>
-
-                    <p>
-                        <i class="bi bi-geo-alt"></i>
-                        {{ candidate.location if candidate.location else "Chưa cập nhật địa điểm" }}
-                    </p>
-
                     <div class="d-grid gap-2 mt-4">
-                        <a href="{{ url_for('cv_extraction.fill_from_cv') }}" class="btn btn-fill-cv btn-lg">
+                        <a href="{{ url_for('cv_extraction.fill_from_cv') }}" class="btn btn-outline-primary btn-sm mt-3">
                             <i class="bi bi-magic"></i> Fill Profile from CV
                         </a>
 

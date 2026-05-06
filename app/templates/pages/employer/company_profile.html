@@ -1,0 +1,357 @@
+{% extends "layouts/employer_base.html" %}
+{% block title %}Hồ sơ công ty – {{ employer.company_name if employer else '' }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root { --green:#3a7734; --green-light:#e8f3ee; --green-pale:#b0d4b8; --green-dark:#2d4a3e; }
+
+    .profile-hero {
+        background: linear-gradient(135deg, var(--green-dark), var(--green));
+        border-radius: 20px; padding: 32px 36px; color: #fff;
+        margin-bottom: 24px;
+        display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+    }
+    .hero-avatar {
+        width: 88px; height: 88px; border-radius: 20px;
+        background: rgba(255,255,255,.2);
+        border: 3px solid rgba(255,255,255,.4);
+        color: #fff; font-weight: 800; font-size: 2.4rem;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Info card ── */
+    .info-card {
+        border: none; border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        overflow: hidden;
+    }
+    .info-card .card-body { padding: 28px; }
+
+    /* ── Detail list (view mode) ── */
+    .detail-list { list-style:none; padding:0; margin:0; }
+    .detail-list li {
+        display:flex; gap:14px; padding:11px 0;
+        border-bottom:1px solid #f3f4f6; font-size:.9rem;
+        align-items: flex-start;
+    }
+    .detail-list li:last-child { border-bottom:none; }
+    .detail-list .lbl {
+        color:#6b7280; min-width:150px; flex-shrink:0;
+        display:flex; align-items:center; gap:7px;
+    }
+    .detail-list .val { color:#111827; font-weight:500; line-height:1.6; }
+    .detail-list .val.empty { color:#9ca3af; font-style:italic; font-weight:400; }
+
+    /* ── Edit form ── */
+    .edit-card {
+        border: none; border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .edit-card .card-body { padding: 32px; }
+
+    .form-label { font-weight: 600; font-size: .875rem; color: #374151; margin-bottom: 5px; }
+    .form-label .req { color: #ef4444; margin-left: 2px; }
+    .form-label .opt { color: #9ca3af; font-weight: 400; font-size: .8rem; margin-left: 4px; }
+
+    .form-control, .form-select {
+        border-radius: 10px; border: 1.5px solid #e5e7eb;
+        padding: 10px 14px; font-size: .9rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(58,119,52,.12);
+    }
+    textarea.form-control { resize: vertical; min-height: 110px; }
+
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .form-control { padding-left: 42px; }
+    .input-icon-wrap .field-icon {
+        position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+        color: #9ca3af; font-size: 1rem; pointer-events: none;
+    }
+    .input-icon-wrap.textarea-wrap .field-icon { top: 14px; transform: none; }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--green-dark), var(--green));
+        color: #fff; border: none; border-radius: 10px;
+        padding: 12px 32px; font-weight: 700; font-size: .95rem;
+        transition: opacity .2s;
+    }
+    .btn-save:hover { opacity: .9; color: #fff; }
+
+    .btn-edit {
+        background: var(--green-light); color: var(--green);
+        border: 1.5px solid var(--green-pale); border-radius: 10px;
+        padding: 10px 24px; font-weight: 600; font-size: .9rem;
+        text-decoration: none; transition: background .2s;
+        display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-edit:hover { background: #d1f0e0; color: var(--green); }
+
+    /* ── Section title ── */
+    .sec-title {
+        font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+        text-transform: uppercase; color: #9ca3af;
+        display: flex; align-items: center; gap: 8px; margin-bottom: 18px;
+    }
+    .sec-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+
+    /* ── Verified badge ── */
+    .verified-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #d1fae5; color: #065f46;
+        border-radius: 50px; font-size: .75rem; font-weight: 700;
+        padding: 4px 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Back ── #}
+<div class="mb-4">
+    <a href="{{ url_for('employer.dashboard') }}"
+       class="text-decoration-none text-muted fw-medium d-inline-flex align-items-center gap-2"
+       style="font-size:.9rem;">
+        <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+    </a>
+</div>
+
+{# ── Hero ── #}
+<div class="profile-hero">
+    <div class="hero-avatar">{{ employer.company_name[0] | upper }}</div>
+    <div class="flex-grow-1">
+        <h2 class="fw-bold mb-1">{{ employer.company_name }}</h2>
+        {% if employer.location %}
+        <p class="mb-1 opacity-80" style="font-size:.95rem;">
+            <i class="bi bi-geo-alt me-1"></i>{{ employer.location }}
+        </p>
+        {% endif %}
+        <span class="verified-chip">
+            <i class="bi bi-patch-check-fill"></i> Đã xác thực bởi Admin
+        </span>
+    </div>
+    {% if not editing %}
+    <a href="{{ url_for('company_profile.edit') }}" class="btn-edit ms-auto">
+        <i class="bi bi-pencil-fill"></i> Chỉnh sửa
+    </a>
+    {% endif %}
+</div>
+
+{# ═══════════════════════════ VIEW MODE ═══════════════════════════ #}
+{% if not editing %}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="info-card card">
+            <div class="card-body">
+                <p class="sec-title">Thông tin công ty</p>
+                <ul class="detail-list">
+                    <li>
+                        <span class="lbl">
+                            <i class="bi bi-building text-muted"></i>Tên công ty
+                        </span>
+                        <span class="val">{{ employer.company_name }}</span>
+                    </li>
+                    <li>
+                        <span class="lbl">
+                            <i class="bi bi-envelope text-muted"></i>Email
+                        </span>
+                        <span class="val">{{ session.get('user_email') }}</span>
+                    </li>
+                    <li>
+                        <span class="lbl">
+                            <i class="bi bi-geo-alt text-muted"></i>Địa chỉ
+                        </span>
+                        {% if employer.location %}
+                            <span class="val">{{ employer.location }}</span>
+                        {% else %}
+                            <span class="val empty">Chưa cập nhật</span>
+                        {% endif %}
+                    </li>
+                    <li>
+                        <span class="lbl">
+                            <i class="bi bi-globe2 text-muted"></i>Website
+                        </span>
+                        {% if employer.company_website %}
+                            <a href="{{ employer.company_website }}" target="_blank"
+                               class="val text-decoration-none" style="color:var(--green);">
+                                {{ employer.company_website }}
+                            </a>
+                        {% else %}
+                            <span class="val empty">Chưa cập nhật</span>
+                        {% endif %}
+                    </li>
+                    <li>
+                        <span class="lbl">
+                            <i class="bi bi-calendar3 text-muted"></i>Ngày tham gia
+                        </span>
+                        <span class="val">
+                            {{ employer.created_at.strftime('%d/%m/%Y') if employer.created_at else '—' }}
+                        </span>
+                    </li>
+                </ul>
+
+                {% if employer.company_description %}
+                <p class="sec-title mt-4">Giới thiệu công ty</p>
+                <p style="font-size:.9rem; line-height:1.85; color:#374151;">
+                    {{ employer.company_description }}
+                </p>
+                {% else %}
+                <p class="sec-title mt-4">Giới thiệu công ty</p>
+                <p class="text-muted fst-italic" style="font-size:.88rem;">
+                    Chưa có mô tả. <a href="{{ url_for('company_profile.edit') }}"
+                    class="text-decoration-none fw-semibold" style="color:var(--green);">
+                    Thêm ngay →</a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="info-card card">
+            <div class="card-body">
+                <p class="sec-title">Thao tác</p>
+                <a href="{{ url_for('company_profile.edit') }}"
+                   class="btn w-100 rounded-pill fw-semibold mb-2"
+                   style="background:var(--green); color:#fff;">
+                    <i class="bi bi-pencil-fill me-2"></i>Chỉnh sửa hồ sơ
+                </a>
+                <a href="{{ url_for('employer.dashboard') }}"
+                   class="btn btn-outline-secondary w-100 rounded-pill fw-semibold"
+                   style="font-size:.88rem;">
+                    <i class="bi bi-grid-1x2-fill me-2"></i>Về Dashboard
+                </a>
+
+                <hr class="my-3">
+                <p class="sec-title">Lưu ý</p>
+                <p class="text-muted" style="font-size:.8rem; line-height:1.7;">
+                    <i class="bi bi-info-circle me-1 text-primary"></i>
+                    Tên, email, địa chỉ công ty đã được Admin xác thực. Nếu muốn thay đổi, vui lòng
+                    liên hệ hỗ trợ để được kiểm duyệt lại.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ═══════════════════════════ EDIT MODE ═══════════════════════════ #}
+{% else %}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="edit-card card">
+            <div class="card-body">
+                <p class="sec-title">Chỉnh sửa thông tin</p>
+
+                <form method="POST" action="{{ url_for('company_profile.edit') }}" novalidate>
+
+                    <!-- <div class="mb-4">
+                        <label class="form-label">
+                            Tên công ty <span class="req">*</span>
+                        </label>
+                        <div class="input-icon-wrap">
+                            <i class="bi bi-building field-icon"></i>
+                            <input type="text" name="company_name" class="form-control"
+                                   value="{{ employer.company_name }}"
+                                   placeholder="Tên chính xác theo Giấy phép kinh doanh"
+                                   maxlength="255" required>
+                        </div>
+                        <small class="text-muted">
+                            Thay đổi tên công ty có thể cần Admin xác minh lại.
+                        </small>
+                    </div> -->
+
+                    <!-- <div class="mb-4">
+                        <label class="form-label">
+                            Địa chỉ / Khu vực <span class="opt">(tuỳ chọn)</span>
+                        </label>
+                        <div class="input-icon-wrap">
+                            <i class="bi bi-geo-alt field-icon"></i>
+                            <input type="text" name="location" class="form-control"
+                                   value="{{ employer.location or '' }}"
+                                   placeholder="Hà Nội, TP.HCM, Đà Nẵng...">
+                        </div>
+                    </div> -->
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            Website công ty <span class="opt">(tuỳ chọn)</span>
+                        </label>
+                        <div class="input-icon-wrap">
+                            <i class="bi bi-globe2 field-icon"></i>
+                            <input type="url" name="company_website" class="form-control"
+                                   value="{{ employer.company_website or '' }}"
+                                   placeholder="https://company.com">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            Giới thiệu công ty <span class="opt">(tuỳ chọn)</span>
+                        </label>
+                        <div class="input-icon-wrap textarea-wrap">
+                            <i class="bi bi-card-text field-icon"></i>
+                            <textarea name="company_description" class="form-control"
+                                      placeholder="Mô tả lĩnh vực hoạt động, văn hoá công ty, số nhân viên..."
+                                      maxlength="2000"
+                                      style="padding-left:42px;">{{ employer.company_description or '' }}</textarea>
+                        </div>
+                        <small class="text-muted">Tối đa 2000 ký tự</small>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn-save btn">
+                            <i class="bi bi-check2-circle me-2"></i>Lưu thay đổi
+                        </button>
+                        <a href="{{ url_for('company_profile.view') }}"
+                           class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">
+                            Huỷ
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="info-card card">
+            <div class="card-body">
+                <p class="sec-title">Hướng dẫn</p>
+                <ul class="list-unstyled mb-0" style="font-size:.85rem; line-height:2.1; color:#6b7280;">
+                    <!-- <li>
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong class="text-dark">Tên công ty</strong> — bắt buộc, tối đa 255 ký tự
+                    </li> -->
+                    <li>
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong class="text-dark">Địa chỉ</strong> — thành phố hoặc khu vực hoạt động
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong class="text-dark">Website</strong> — URL đầy đủ có https://
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong class="text-dark">Giới thiệu</strong> — giúp ứng viên hiểu hơn về công ty
+                    </li>
+                </ul>
+
+                <hr class="my-3">
+
+                <div class="p-3 rounded-3"
+                     style="background:#fffbeb; border:1px solid #fde68a; font-size:.8rem; color:#92400e;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Tên, email, địa chỉ công ty không thể thay đổi tại đây. Liên hệ Admin nếu cần hỗ trợ.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

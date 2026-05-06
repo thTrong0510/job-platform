@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Lịch sử ứng tuyển{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử ứng tuyển</h3>
+            <p class="text-muted">Theo dõi trạng thái các công việc bạn đã nộp hồ sơ</p>
+        </div>
+    </div>
+
+    {% if applications %}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3">Công việc</th>
+                        <th class="py-3">Ngày nộp</th>
+                        <th class="py-3">CV sử dụng</th>
+                        <th class="py-3">Trạng thái</th>
+                        <th class="py-3 text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="company-logo-sm me-3 bg-primary-subtle text-primary rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold;">
+                                    {{ app.job.employer.company_name[0] | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ app.job.title }}</div>
+                                    <small class="text-muted">{{ app.job.employer.company_name }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ app.applied_at.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('candidate.view_cv', cv_id=app.cv_id, next=request.full_path) }}" class="text-decoration-none small">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>{{ app.cv.title }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if app.status == 'PENDING' %}
+                                <span class="badge rounded-pill bg-warning text-dark px-3">Đang chờ</span>
+                            {% elif app.status == 'ACCEPTED' %}
+                                <span class="badge rounded-pill bg-success px-3">Đã chấp nhận</span>
+                            {% elif app.status == 'REJECTED' %}
+                                <span class="badge rounded-pill bg-danger px-3">Từ chối</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-secondary px-3">{{ app.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('jobs.job_detail', job_id=app.job_id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                Xem tin gốc
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    {# Case: Chưa có ứng tuyển nào #}
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-inbox text-muted" style="font-size: 5rem;"></i>
+        </div>
+        <h4 class="fw-bold">Bạn chưa ứng tuyển công việc nào</h4>
+        <p class="text-muted mb-4">Hãy bắt đầu tìm kiếm cơ hội nghề nghiệp ngay hôm nay!</p>
+        <a href="{{ url_for('jobs.job_list') }}" class="btn btn-primary rounded-pill px-5 py-2">
+            Khám phá việc làm
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

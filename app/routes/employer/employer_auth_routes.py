@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.services.employer.employer_auth_service import EmployerAuthService
+from app.services.employer.dashboard_service import DashboardService
 from app.common.decorators import employer_required
-from app.common.info import get_current_user
+from app.common.info import get_current_employer
 
 employer_bp = Blueprint("employer", __name__, url_prefix="/employer")
 
@@ -83,6 +84,10 @@ def logout():
 @employer_bp.route("/dashboard")
 @employer_required
 def dashboard():
-    user_id  = get_current_user().id
-    employer = EmployerAuthService.get_employer_profile(user_id)
-    return render_template("pages/employer/dashboard.html", employer=employer)
+    employer = get_current_employer()
+    stats    = DashboardService.get_stats(employer.id) if employer else {}
+    return render_template(
+        "pages/employer/dashboard.html",
+        employer=employer,
+        stats=stats,
+    )

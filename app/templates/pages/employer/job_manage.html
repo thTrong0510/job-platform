@@ -95,16 +95,25 @@
         <th>Mức lương</th>
         <th>Hạn nộp</th>
         <th>Trạng thái</th>
-        <th class="text-end pe-4">Thao tác</th> {# Thêm cột này #}
+        <th class="text-end pe-4">Thao tác</th>
     </tr>
 </thead>
 				<tbody>
     {% for job in jobs %}
-    <tr>
+    {# >>> THÊM MỚI: Highlight row nếu job bị ẩn >>> #}
+    <tr {% if job.is_hidden %}style="background:#fff5f5;"{% endif %}>
         <td class="ps-4">
             <a href="{{ url_for('employer_jobs.detail', job_id=job.id) }}"
                 class="fw-semibold text-decoration-none text-dark d-block">
                 {{ job.title }}
+                {# >>> THÊM MỚI: Icon cảnh báo ẩn >>> #}
+                {% if job.is_hidden %}
+                <span class="badge ms-1"
+                      style="background:#fee2e2; color:#991b1b; font-size:.65rem;
+                             vertical-align:middle;">
+                    <i class="bi bi-eye-slash-fill me-1"></i>Bị ẩn bởi Admin
+                </span>
+                {% endif %}
             </a>
             <div class="small text-muted mt-1">
                 Đăng {{ job.created_at.strftime('%d/%m/%Y') }}
@@ -122,7 +131,13 @@
         </td>
         <td>{{ job.end_date.strftime('%d/%m/%Y') if job.end_date else '—' }}</td>
         <td>
-            {% if job.status == 'OPEN' %}
+            {% if job.is_hidden %}
+            {# >>> THÊM MỚI: Status đặc biệt khi bị ẩn >>> #}
+            <span class="badge rounded-pill px-2 py-1"
+                  style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-size:.72rem;">
+                <i class="bi bi-eye-slash-fill me-1"></i>Bị Admin ẩn
+            </span>
+            {% elif job.status == 'OPEN' %}
             <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle">
                 <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Đang tuyển
             </span>
@@ -133,20 +148,23 @@
             {% endif %}
         </td>
 
-        {# Cột thao tác mới #}
+        {# Cột thao tác #}
         <td class="text-end pe-4">
             <div class="d-flex justify-content-end gap-2">
+                {# Chỉ cho edit nếu tin chưa bị ẩn #}
+                {% if not job.is_hidden %}
                 <a href="{{ url_for('employer_jobs.edit', job_id=job.id) }}"
                    class="btn btn-sm btn-outline-primary"
                    title="Chỉnh sửa">
                     <i class="bi bi-pencil"></i>
                 </a>
-                <button type="button"
+				<button type="button"
                         class="btn btn-sm btn-outline-danger"
                         title="Xóa tin"
                         onclick="confirmDelete('{{ job.id }}', '{{ job.title }}')">
                     <i class="bi bi-trash"></i>
                 </button>
+                {% endif %}
             </div>
         </td>
     </tr>

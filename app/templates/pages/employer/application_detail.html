@@ -342,13 +342,6 @@
                     Cập nhật trạng thái
                 </h6>
 
-                {# Mock score notice #}
-                <div class="mock-notice mb-3">
-                    <i class="bi bi-info-circle-fill"></i>
-                    Điểm phù hợp đang dùng dữ liệu tạm (mock).
-                    Thuật toán matching sẽ được cập nhật ở phiên bản sau.
-                </div>
-
                 <form method="POST"
                       action="{{ url_for('employer_applications.update_status',
                                         application_id=application.id) }}">

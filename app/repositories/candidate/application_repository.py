@@ -15,3 +15,8 @@ class ApplicationRepository:
     def save(application):
         db.session.add(application)
         db.session.commit()
+
+    @staticmethod
+    def get_by_candidate_email(email):
+        return Application.query.filter_by(email=email) \
+            .order_by(Application.applied_at.desc()).all()

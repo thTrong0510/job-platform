@@ -37,13 +37,25 @@ class AdminJobRepository:
 
     # ─────────────────────────────────────────────────────────
     # Đếm theo trạng thái (cho stats)
+    # FIX: closed tính tất cả CLOSED (kể cả đang ẩn)
+    #      hidden tính tất cả is_hidden=True (kể cả OPEN hoặc CLOSED)
     # ─────────────────────────────────────────────────────────
     @staticmethod
     def count_stats():
-        total    = db.session.query(db.func.count(Job.id)).scalar() or 0
-        open_    = db.session.query(db.func.count(Job.id)).filter(Job.status == "OPEN",   Job.is_hidden == False).scalar() or 0
-        closed   = db.session.query(db.func.count(Job.id)).filter(Job.status == "CLOSED", Job.is_hidden == False).scalar() or 0
-        hidden   = db.session.query(db.func.count(Job.id)).filter(Job.is_hidden == True).scalar() or 0
+        total  = db.session.query(db.func.count(Job.id)).scalar() or 0
+        # Chỉ đếm OPEN đang hiển thị (không ẩn)
+        open_  = db.session.query(db.func.count(Job.id)).filter(
+            Job.status == "OPEN", Job.is_hidden == False
+        ).scalar() or 0
+        # Đếm TẤT CẢ CLOSED (bất kể đang ẩn hay không)
+        closed = db.session.query(db.func.count(Job.id)).filter(
+            Job.status == "CLOSED"
+        ).scalar() or 0
+        # Đếm TẤT CẢ job đang bị ẩn (bất kể OPEN hay CLOSED)
+        hidden = db.session.query(db.func.count(Job.id)).filter(
+            Job.is_hidden == True
+        ).scalar() or 0
+
         return {
             "total":  total,
             "open":   open_,
