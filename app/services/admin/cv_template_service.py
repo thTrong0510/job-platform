@@ -7,6 +7,7 @@ from app.repositories.admin.cv_template_repository import CVTemplateRepository
 from slugify import slugify
 from app.extensions import db
 from app.models.cv import CVTemplate
+from common.CloudinaryUtil import CloudinaryUtil
 
 
 class CVTemplateService:
@@ -59,10 +60,8 @@ class CVTemplateService:
 
         if file:
             # Lưu file mới
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(current_app.root_path, 'static/images/cv_templates', filename)
-            file.save(file_path)
-            data["preview_image"] = filename
+            preview_image = CloudinaryUtil.upload_image(file)
+            data["preview_image"] = preview_image
 
         try:
             # QUAN TRỌNG: Truyền cả template_id vào
