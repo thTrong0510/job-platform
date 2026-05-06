@@ -70,7 +70,7 @@
             <div class="card template-card h-100">
 
                 <div class="template-img-wrapper">
-                    <img src="{{ url_for('static', filename='images/cv_templates/' + t.preview) }}" class="w-100 template-img"
+                    <img src="{{ t.preview if t else url_for('static', filename='images/default-avatar.png') }}" class="w-100 template-img"
                         alt="Preview">
                 </div>
 
