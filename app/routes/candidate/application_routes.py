@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 from app.services.candidate.application_service import ApplicationService
-from common.info import get_current_user
+from app.common.info import get_current_user
 
 application_bp = Blueprint('application', __name__)
 
