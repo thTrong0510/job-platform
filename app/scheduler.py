@@ -15,7 +15,7 @@ def init_scheduler(app):
 
     scheduler.add_job(
         func=_send_recommendations,
-        trigger=CronTrigger(day_of_week="mon", hour=8, minute=0),
+        trigger=CronTrigger(day_of_week="mon", hour=16, minute=24),
         id="weekly_recommendation_email",
         replace_existing=True,
         coalesce=True,

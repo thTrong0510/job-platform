@@ -19,21 +19,22 @@ def create_app():
     mail.init_app(app)
 
     # register blueprints
-    from .routes.auth.auth_routes import auth_bp
-    from .routes.main_routes import main_bp
-    from .routes.candidate.manage_cvs import candidate_bp
-    from .routes.candidate.manage_profile import candidate_profile_bp
-    from .routes.candidate.cv_upload_routes import cv_upload_bp
-    from .routes.candidate.job_routes import job_bp
-    from .routes.employer.employer_auth_routes import employer_bp
-    from .routes.employer.job_routes import employer_job_bp
-    from .routes.employer.application_routes import employer_applications_bp
-    from .routes.candidate.notification_routes import notifications_bp
-    from .routes.employer.cv_preview_routes import employer_cv_preview_bp
+    from app.routes.auth.auth_routes import auth_bp
+    from app.routes.main_routes import main_bp
+    from app.routes.candidate.manage_cvs import candidate_bp
+    from app.routes.candidate.manage_profile import candidate_profile_bp
+    from app.routes.candidate.cv_upload_routes import cv_upload_bp
+    from app.routes.candidate.job_routes import job_bp
+    from app.routes.employer.employer_auth_routes import employer_bp
+    from app.routes.employer.job_routes import employer_job_bp
+    from app.routes.employer.application_routes import employer_applications_bp
+    from app.routes.candidate.notification_routes import notifications_bp
+    from app.routes.employer.cv_preview_routes import employer_cv_preview_bp
     from app.routes.candidate.cv_extraction_routes import cv_extraction_bp
     from app.routes.admin.user_routes import admin_user_bp
     from app.routes.auth.admin_auth_routes import admin_auth_bp
-    from .routes.admin.admin_job_routes import admin_jobs_bp
+    from app.routes.admin.admin_job_routes import admin_jobs_bp
+    from app.routes.auth.auth_routes import google_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -49,6 +50,8 @@ def create_app():
     app.register_blueprint(cv_extraction_bp)
     app.register_blueprint(admin_auth_bp)
     app.register_blueprint(admin_user_bp)
+    app.register_blueprint(google_bp, url_prefix="/login")
+    app.register_blueprint(admin_jobs_bp)
 
 
     # ── Context processor: inject unread count vào mọi template ──
@@ -63,7 +66,6 @@ def create_app():
             except Exception:
                 unread = 0
         return {"unread_notifications_count": unread}
-    app.register_blueprint(admin_jobs_bp)
 
     init_scheduler(app)
 

@@ -2461,12 +2461,13 @@ class TestCVTextExtractor:
 
    @pytest.fixture(autouse=True)
    def setup(self):
-       from app.services.employer.cv_text_extractor import CVTextExtractor
-       self.extractor = CVTextExtractor
        import sys
        from unittest.mock import MagicMock
 
        sys.modules["pdfplumber"] = MagicMock()
+
+       from app.services.employer.cv_text_extractor import CVTextExtractor
+       self.extractor = CVTextExtractor
 
 
    # ── extract (dispatch) ────────────────────────────────────────────
