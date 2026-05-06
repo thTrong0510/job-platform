@@ -12,6 +12,13 @@ class ApplicationRepository:
         ).first()
 
     @staticmethod
+    def find_by_job_and_email(job_id, email):
+        return Application.query.filter_by(
+            job_id=job_id,
+            email=email
+        ).first()
+
+    @staticmethod
     def save(application):
         db.session.add(application)
         db.session.commit()

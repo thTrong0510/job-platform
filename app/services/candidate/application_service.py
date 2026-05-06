@@ -7,9 +7,7 @@ class ApplicationService:
     @staticmethod
     def apply(email, job_id, cv_id):
 
-        existing = ApplicationRepository.find_by_job_and_cv(job_id, cv_id)
-
-        if existing:
+        if ApplicationRepository.find_by_job_and_cv(job_id, cv_id) or ApplicationRepository.find_by_job_and_email(job_id, email):
             raise ValueError("Bạn đã ứng tuyển bằng CV này rồi.")
 
         application = Application(
