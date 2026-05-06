@@ -7,7 +7,7 @@ from app.services.candidate.cv_skill_service import CVSkillService
 from app.services.candidate.cv_template_service import CvTemplateService
 from app.services.candidate.skill_service import SkillService
 from app.common.info import get_current_user
-from common.decorators import candidate_required
+from app.common.decorators import candidate_required
 
 candidate_bp = Blueprint("candidate", __name__, url_prefix="/candidate")
 
