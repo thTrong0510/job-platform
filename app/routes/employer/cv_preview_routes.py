@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template_string, abort
 from app.common.decorators import employer_required
-from app.common.info import get_current_employer
 from app.models.cv import CV
 from app.repositories.candidate.cv_skill_repository import CVSkillRepository
 

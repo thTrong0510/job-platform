@@ -25,7 +25,8 @@ class CVRepository:
     def get_upload_by_candidate(candidate_id: int):
         return CV.query.filter_by(
             candidate_id=candidate_id,
-            type="UPLOAD"
+            type="UPLOAD",
+            is_active=True
         ).order_by(CV.created_at.desc()).all()
 
     @staticmethod

@@ -14,3 +14,14 @@ class CloudinaryUtil:
         )
 
         return result.get("secure_url")
+
+    def upload_cv_to_cloudinary(file_path):
+        response = cloudinary.uploader.upload(
+            file_path,
+            resource_type="image",
+            folder="cv_uploads",
+            format="jpg",
+            access_mode="public"
+        )
+        # Lưu 'secure_url' này vào MySQL
+        return response.get("secure_url")
