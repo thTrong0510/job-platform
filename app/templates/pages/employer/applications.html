@@ -514,10 +514,7 @@
                     {# Status #}
                     <td class="py-3 text-center">
                         <span class="status-pill st-{{ app.status }}">
-                            {% if app.status == 'PENDING' %}⏳ Chờ duyệt
-                            {% elif app.status == 'REVIEWED' %}👁 Đang xem xét
-                            {% elif app.status == 'ACCEPTED' %}✅ Chấp nhận
-                            {% else %}❌ Từ chối{% endif %}
+                            {{app.status}}
                         </span>
                     </td>
 
