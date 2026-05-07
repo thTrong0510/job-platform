@@ -1,12 +1,15 @@
 from app.extensions import db
+from app.models.db_types import BigIntegerPK
 from sqlalchemy import Enum
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.mysql import JSON
+# KHÔNG dùng sqlalchemy.dialects.mysql.JSON vì chỉ chạy trên MySQL
+# db.JSON của SQLAlchemy tương thích cả MySQL lẫn SQLite
+from sqlalchemy import JSON
 
 class CVTemplate(db.Model):
     __tablename__ = "cv_templates"
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerPK, primary_key=True, autoincrement=True)
 
     name = db.Column(db.String(255), nullable=False)
     slug = db.Column(db.String(255), unique=True, nullable=False)
@@ -26,10 +29,11 @@ class CVTemplate(db.Model):
 
     cvs = db.relationship("CV", back_populates="template")
 
+
 class CV(db.Model):
     __tablename__ = "cvs"
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerPK, primary_key=True, autoincrement=True)
 
     candidate_id = db.Column(
         db.BigInteger,
@@ -52,7 +56,7 @@ class CV(db.Model):
         nullable=False
     )
 
-    # ONLINE
+    # ONLINE — dùng JSON chuẩn SQLAlchemy (tương thích MySQL + SQLite)
     content_json = db.Column(JSON)
 
     # UPLOAD

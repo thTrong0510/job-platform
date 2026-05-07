@@ -14,7 +14,7 @@ from app.models.recommendation import JobRecommendation
 from app.repositories.candidate.cv_skill_repository import CVSkillRepository
 from app.repositories.candidate.skill_repository import SkillRepository
 from app.services.employer.cv_text_extractor import CVTextExtractor
-from repositories.employer.recommend_job_repository import RecommendJobRepository
+from app.repositories.employer.recommend_job_repository import RecommendJobRepository
 
 # ── Khởi tạo Gemini client (lazy singleton) ──────────────────────
 _client = None

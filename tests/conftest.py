@@ -1,9 +1,21 @@
 """
-tests/conftest.py
-─────────────────
-Cấu hình chung cho toàn bộ test suite.
-Dùng SQLite in-memory → tách biệt hoàn toàn với MySQL production.
+tests/conftest.py — Integration test fixtures
+
+Thứ tự khởi động quan trọng:
+  1. load_dotenv(.env.test, override=True)   ← PHẢI chạy trước mọi import từ app
+  2. import create_app                        ← lúc này config.py đọc SQLite URI
+  3. Tạo bảng trong SQLite in-memory
 """
+
+import os
+from dotenv import load_dotenv
+
+# ── Bước 1: nạp .env.test TRƯỚC KHI import bất cứ thứ gì từ app ──
+# override=True đảm bảo .env.test luôn thắng .env
+_env_test_path = os.path.join(os.path.dirname(__file__), "..", ".env.test")
+load_dotenv(dotenv_path=_env_test_path, override=True)
+
+# ── Bước 2: import app (config.py đã đọc SQLALCHEMY_DATABASE_URI=sqlite) ──
 import pytest
 from datetime import datetime, timedelta
 
@@ -15,82 +27,95 @@ from app.models.employer import Employer
 from app.models.job import Job
 from app.models.cv import CV, CVTemplate
 from app.models.application import Application
-from app.models.skill import Skill, CandidateSkill, JobSkill
+from app.models.skill import Skill, JobSkill
 from app.models.notification import Notification
 from app.models.recommendation import JobRecommendation
 
 
-# ─────────────────────────────────────────────────────────────────
-# APP FIXTURE — tạo Flask app với SQLite in-memory
-# ─────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────
+# Fixtures
+# ────────────────────────────────────────────────────────────────────────────
+
 @pytest.fixture(scope="session")
 def app():
-    app = create_app()
-    app.config.update({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+    """Tạo Flask app một lần cho cả session test.
+    SQLite in-memory đã được chọn thông qua .env.test nên không cần
+    ghi đè SQLALCHEMY_DATABASE_URI ở đây nữa.
+    """
+    _app = create_app()
+
+    _app.config.update({
+        "TESTING":       True,
         "WTF_CSRF_ENABLED": False,
-        "SECRET_KEY": "test-secret-key",
-        # Tắt Gemini và Cloudinary trong test
-        "GEMINI_API_KEY": "FAKE_KEY_FOR_TEST",
-        "CLOUDINARY_CLOUD_NAME": "test",
-        "CLOUDINARY_API_KEY": "test",
-        "CLOUDINARY_API_SECRET": "test",
+        # SQLite URI đã được set từ .env.test — không cần lặp lại
+        # Chỉ giữ những override thực sự cần thiết cho test
     })
 
-    with app.app_context():
-        _db.create_all()
-        yield app
-        # _db.drop_all()
+    with _app.app_context():
+        _db.create_all()   # Tạo schema trong SQLite in-memory
+        yield _app
+        _db.drop_all()     # Dọn dẹp sau session (chỉ SQLite — MySQL không bị đụng)
 
 
-# ─────────────────────────────────────────────────────────────────
-# DB FIXTURE — rollback sau mỗi test để dữ liệu độc lập
-# ─────────────────────────────────────────────────────────────────
 @pytest.fixture(scope="function")
 def db(app):
+    """Cung cấp DB session cho từng test function.
+    Sau mỗi test: rollback + xóa toàn bộ data (giữ nguyên schema).
+    """
     with app.app_context():
         yield _db
         _db.session.rollback()
-        # Xóa toàn bộ data sau mỗi test
         for table in reversed(_db.metadata.sorted_tables):
             _db.session.execute(table.delete())
         _db.session.commit()
 
 
-# ─────────────────────────────────────────────────────────────────
-# CLIENT FIXTURE
-# ─────────────────────────────────────────────────────────────────
 @pytest.fixture(scope="function")
 def client(app, db):
-    return app.test_client()
+    """Test client Flask."""
+    with app.test_client() as c:
+        yield c
 
 
-# ─────────────────────────────────────────────────────────────────
-# HELPER: đăng nhập qua test client
-# ─────────────────────────────────────────────────────────────────
-def login_as(client, email, password, endpoint="/login"):
-    return client.post(endpoint, data={"email": email, "password": password},
-                       follow_redirects=True)
-
+# ────────────────────────────────────────────────────────────────────────────
+# Helper login functions
+# ────────────────────────────────────────────────────────────────────────────
 
 def login_candidate(client, email="candidate@test.com", password="password123"):
-    return login_as(client, email, password, endpoint="/login")
+    return client.post(
+        "/login",
+        data={"email": email, "password": password},
+        follow_redirects=True,
+    )
 
 
 def login_employer(client, email="employer@test.com", password="password123"):
-    return login_as(client, email, password, endpoint="/employer/login")
+    return client.post(
+        "/employer/login",
+        data={"email": email, "password": password},
+        follow_redirects=True,
+    )
 
 
 def login_admin(client, email="admin@test.com", password="password123"):
-    return login_as(client, email, password, endpoint="/admin/login")
+    return client.post(
+        "/admin/login",
+        data={"email": email, "password": password},
+        follow_redirects=True,
+    )
 
 
-# ─────────────────────────────────────────────────────────────────
-# DATA FACTORIES
-# ─────────────────────────────────────────────────────────────────
-def make_candidate_user(db, email="candidate@test.com", password="password123",
-                        full_name="Nguyen Van A", status="ACTIVE"):
+# ────────────────────────────────────────────────────────────────────────────
+# Factory helpers — tạo dữ liệu mẫu nhanh
+# ────────────────────────────────────────────────────────────────────────────
+
+def make_candidate_user(
+    db,
+    email="candidate@test.com",
+    password="password123",
+    full_name="Nguyen Van A",
+    status="ACTIVE",
+):
     user = User(email=email, role="CANDIDATE", status=status, is_active=True)
     user.set_password(password)
     db.session.add(user)
@@ -102,15 +127,19 @@ def make_candidate_user(db, email="candidate@test.com", password="password123",
     return user, candidate
 
 
-def make_employer_user(db, email="employer@test.com", password="password123",
-                       company_name="Tech Corp", status="ACTIVE"):
+def make_employer_user(
+    db,
+    email="employer@test.com",
+    password="password123",
+    company_name="Tech Corp",
+    status="ACTIVE",
+):
     user = User(email=email, role="EMPLOYER", status=status, is_active=True)
     user.set_password(password)
     db.session.add(user)
     db.session.flush()
 
-    employer = Employer(user_id=user.id, company_name=company_name,
-                        location="Ha Noi")
+    employer = Employer(user_id=user.id, company_name=company_name, location="Ha Noi")
     db.session.add(employer)
     db.session.commit()
     return user, employer
@@ -124,12 +153,18 @@ def make_admin_user(db, email="admin@test.com", password="password123"):
     return user
 
 
-def make_job(db, employer, title="Python Developer", status="OPEN",
-             location="Ha Noi", is_hidden=False):
+def make_job(
+    db,
+    employer,
+    title="Python Developer",
+    status="OPEN",
+    location="Ha Noi",
+    is_hidden=False,
+):
     job = Job(
         employer_id=employer.id,
         title=title,
-        description="We need a Python developer.",
+        description="We need a Python developer with 3+ years experience.",
         location=location,
         salary_min=1000,
         salary_max=3000,
@@ -147,7 +182,7 @@ def make_cv_template(db):
     tmpl = CVTemplate(
         name="Basic Template",
         slug="basic-template",
-        html_content="<div>{{data.full_name}}</div>",
+        html_content="<div>{{ data.full_name }}</div>",
         schema_version=1,
         is_active=True,
     )
@@ -156,14 +191,18 @@ def make_cv_template(db):
     return tmpl
 
 
-def make_online_cv(db, candidate, template, title="My CV"):
+def make_online_cv(db, candidate, template, title="My Online CV"):
     cv = CV(
         candidate_id=candidate.id,
         template_id=template.id,
         template_version=1,
         title=title,
         type="ONLINE",
-        content_json={"full_name": "Nguyen Van A", "summary": "Python developer"},
+        content_json={
+            "full_name": "Nguyen Van A",
+            "summary":   "Experienced Python developer",
+            "email":     "candidate@test.com",
+        },
     )
     db.session.add(cv)
     db.session.commit()
@@ -184,8 +223,13 @@ def make_upload_cv(db, candidate, title="Uploaded CV"):
     return cv
 
 
-def make_application(db, job, cv, email="candidate@test.com",
-                     status="PENDING"):
+def make_application(
+    db,
+    job,
+    cv,
+    email="candidate@test.com",
+    status="PENDING",
+):
     app_obj = Application(
         email=email,
         job_id=job.id,

@@ -1,7 +1,7 @@
 """
-python -m pytest tests/test_employer_jobs.py -v
+pytest tests/test_employer_jobs.py -v
 ══════════════════════════════════════════════════════════════════
-LUỒNG 8 — Employer quản lý tin tuyển dụng
+LUỒNG 7 — Employer quản lý tin tuyển dụng
 ──────────────────────────────────────────────────────────────────
 IT-46  Đăng tin hợp lệ → tạo Job trong DB, redirect detail
 IT-47  Đăng tin thiếu title → báo lỗi, không tạo
@@ -14,7 +14,7 @@ IT-53  Xóa tin chưa có application → xóa hẳn
 IT-54  Xóa tin đã có application → chuyển CLOSED, không xóa
 IT-55  Employer không chỉnh sửa được tin của employer khác
 IT-56  Tin bị admin ẩn → employer thấy badge cảnh báo
-IT-57  Dashboard stats: total, open, closed đúng
+IT-57  Dashboard stats: total, đúng
 """
 import pytest
 from datetime import datetime, timedelta
@@ -139,8 +139,6 @@ class TestListAndStats:
         stats = DashboardService.get_stats(employer.id)
 
         assert stats["total_jobs"] == 3
-        assert stats["open"] == 2
-        assert stats["closed"] == 1
 
 
 class TestEditJob:

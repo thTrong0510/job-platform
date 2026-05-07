@@ -1,9 +1,10 @@
 from app.extensions import db
+from app.models.db_types import BigIntegerPK
 
 class Skill(db.Model):
     __tablename__ = "skills"
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerPK, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
 
 

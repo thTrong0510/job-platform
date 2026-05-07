@@ -6,7 +6,7 @@ from app.services.candidate.job_service import JobService
 from app.common.info import get_current_candidate, get_current_user
 from app.services.candidate.application_service import ApplicationService
 from app.services.candidate.cv_service import CVService
-from common.decorators import candidate_required
+from app.common.decorators import candidate_required
 
 job_bp = Blueprint('jobs', __name__)
 

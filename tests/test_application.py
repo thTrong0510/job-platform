@@ -1,5 +1,5 @@
 """
-python -m pytest tests/test_application.py -v
+pytest tests/test_application.py -v
 ══════════════════════════════════════════════════════════════════
 LUỒNG 4 — Employer quản lý hồ sơ ứng tuyển
 LUỒNG 6 — Thông báo (notification)

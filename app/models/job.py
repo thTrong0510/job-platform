@@ -1,11 +1,12 @@
 from app.extensions import db
+from app.models.db_types import BigIntegerPK
 from sqlalchemy import Enum
 from sqlalchemy.sql import func
 
 class Job(db.Model):
     __tablename__ = "jobs"
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerPK, primary_key=True, autoincrement=True)
 
     employer_id = db.Column(
         db.BigInteger,
