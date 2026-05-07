@@ -1,3 +1,5 @@
+from datetime import date
+from app.extensions import db
 from app.models import CandidateSkill, CandidateExperience, Job
 from app.repositories.candidate.job_repository import JobRepository
 
@@ -96,3 +98,10 @@ class JobService:
         jobs_list = JobRepository.search_jobs(keyword=keyword, location=location, salary_min=salary_min, salary_max=salary_max, experience=experience, is_pagination=False)
         print(keyword, salary_min)
         return jobs_list
+
+
+    @staticmethod
+    def auto_close_expired_jobs():
+        today = date.today()
+        JobRepository.close_expired_jobs(today)
+        db.session.commit()

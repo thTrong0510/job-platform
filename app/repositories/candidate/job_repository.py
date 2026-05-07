@@ -72,3 +72,13 @@ class JobRepository:
     @staticmethod
     def find_by_id(job_id):
         return Job.query.get_or_404(job_id)
+
+    @staticmethod
+    def close_expired_jobs(today):
+        return db.session.query(Job).filter(
+            Job.end_date < today,
+            Job.status != "CLOSED"
+        ).update(
+            {"status": "CLOSED"},
+            synchronize_session=False
+        )
