@@ -1,10 +1,11 @@
 from app.extensions import db
+from app.models.db_types import BigIntegerPK
 from sqlalchemy.sql import func
 
 class Employer(db.Model):
     __tablename__ = "employers"
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerPK, primary_key=True, autoincrement=True)
 
     user_id = db.Column(
         db.BigInteger,

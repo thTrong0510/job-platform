@@ -1,5 +1,5 @@
 """
-python -m pytest tests/test_auth.py -v 
+pytest tests/test_auth.py -v 
 ══════════════════════════════════════════════════════════════════
 LUỒNG 1 — Auth & Session
 ──────────────────────────────────────────────────────────────────
@@ -27,9 +27,10 @@ class TestCandidateAuth:
             "fullname": "Nguyen Van A",
             "email": "newcandidate@test.com",
             "password": "password123",
+            "confirm_password": "password123",
         }, follow_redirects=False)
         # Redirect về login sau khi đăng ký thành công
-        assert resp.status_code in (200, 302)
+        assert resp.status_code == 302
 
         # Login
         resp = client.post("/login", data={

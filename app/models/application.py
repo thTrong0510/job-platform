@@ -1,4 +1,5 @@
 from app.extensions import db
+from app.models.db_types import BigIntegerPK
 from sqlalchemy import Enum
 from sqlalchemy.sql import func
 
@@ -8,7 +9,7 @@ class Application(db.Model):
         db.UniqueConstraint("job_id", "cv_id"),
     )
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerPK, primary_key=True, autoincrement=True)
 
     email = db.Column(db.String(255), nullable=False)
 
@@ -25,7 +26,7 @@ class Application(db.Model):
     )
 
     status = db.Column(
-        Enum('PENDING','REVIEWED','ACCEPTED','REJECTED', name='application_status'),
+        Enum('PENDING', 'REVIEWED', 'ACCEPTED', 'REJECTED', name='application_status'),
         default='PENDING'
     )
 
