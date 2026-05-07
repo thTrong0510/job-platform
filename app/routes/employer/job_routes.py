@@ -88,16 +88,14 @@ def edit(job_id):
     all_skills = SkillRepository.find_all()
 
     if request.method == 'POST':
-        start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
 
-        if start_date and end_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        if end_date:
+            start_date = datetime.now()
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
-
             if start_date > end_date:
                 flash(
-                    "Ngày kết thúc phải sau ngày bắt đầu.",
+                    "Ngày kết thúc phải sau ngày hôm nay.",
                     "danger")
                 return redirect(request.referrer)
         skill_list = JobService.parse_skills(request.form)

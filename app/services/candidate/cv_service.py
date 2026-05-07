@@ -70,7 +70,15 @@ class CVService:
     def delete_cv(cv_id: int):
         cv = CVService.get_cv_for_view(cv_id)
 
-        CVRepository.delete(cv)
+        if CVRepository.has_applications(cv_id):
+            CVRepository.update_status(cv, is_active=False)
+            message = "CV đã được ẩn vì có dữ liệu ứng tuyển liên quan."
+        else:
+            # Nếu chưa ứng tuyển: Xóa vĩnh viễn khỏi DB (Hard Delete)
+            CVRepository.delete(cv)
+            message = "Đã xóa CV thành công."
+
+        return True, message
 
     @staticmethod
     def exists_by_title(title: str):
