@@ -3,6 +3,7 @@ import uuid
 from werkzeug.utils import secure_filename
 from app.models.cv import CV
 from app.repositories.candidate.cv_upload_repository import CVUploadRepository
+from common import CloudinaryUtil
 
 ALLOWED_EXTENSIONS = {"pdf", "doc", "docx"}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -57,18 +58,19 @@ class CVUploadService:
             return False, "Kích thước file vượt quá 5MB."
 
         # Tạo folder nếu chưa có
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-        # Tạo tên file unique để tránh trùng lặp
+        # os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        #
+        # # Tạo tên file unique để tránh trùng lặp
+        # ext = original_filename.rsplit(".", 1)[1].lower()
+        # unique_filename = f"{uuid.uuid4().hex}.{ext}"
+        #
+        # save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+        # file.save(save_path)
+        #
+        # file_url = f"/static/uploads/cvs/{unique_filename}"
         original_filename = secure_filename(file.filename)
-        ext = original_filename.rsplit(".", 1)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex}.{ext}"
-
-        save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        file.save(save_path)
-
-        file_url = f"/static/uploads/cvs/{unique_filename}"
         cv_title = title.strip() if title and title.strip() else original_filename
+        file_url = CloudinaryUtil.CloudinaryUtil.upload_cv_to_cloudinary(file)
 
         cv = CV(
             candidate_id=candidate.id,
@@ -94,10 +96,12 @@ class CVUploadService:
         if not cv or cv.candidate_id != candidate.id:
             return False, "Không tìm thấy CV hoặc bạn không có quyền xóa."
 
-        # Xóa file vật lý
-        physical_path = os.path.join(UPLOAD_FOLDER, os.path.basename(cv.file_url))
-        if os.path.exists(physical_path):
-            os.remove(physical_path)
+        if CVUploadRepository.has_applications(cv_id):
+            CVUploadRepository.update_status(cv, is_active=False)
+            message = "CV đã được ẩn vì có dữ liệu ứng tuyển liên quan."
+        else:
+            # Nếu chưa ứng tuyển: Xóa vĩnh viễn khỏi DB (Hard Delete)
+            CVUploadRepository.delete_cv(cv)
+            message = "Đã xóa CV thành công."
 
-        CVUploadRepository.delete_cv(cv)
-        return True, "Đã xóa CV thành công."
+        return True, message

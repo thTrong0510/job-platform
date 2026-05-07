@@ -60,7 +60,7 @@ class CV(db.Model):
     file_name = db.Column(db.String(255))
     file_size = db.Column(db.BigInteger)
 
-    is_default = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
 
     created_at = db.Column(db.DateTime, server_default=func.now())
     updated_at = db.Column(db.DateTime,
