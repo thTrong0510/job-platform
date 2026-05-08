@@ -1,5 +1,3 @@
-# Scoring chỉ chạy khi employer chủ động nhấn nút "Tính điểm".
-
 from flask import (
     Blueprint, render_template, request,
     redirect, url_for, flash, abort
@@ -21,7 +19,6 @@ employer_applications_bp = Blueprint(
 @employer_required
 def index():
     employer = get_current_employer()
-
     filters = {
         "keyword":     request.args.get("keyword",     "").strip(),
         "status":      request.args.get("status",      "").strip(),
@@ -50,28 +47,28 @@ def index():
 @employer_required
 def detail(application_id):
     employer    = get_current_employer()
-    application = ApplicationService.get_application_detail(
-        application_id, employer.id
-    )
-
+    application = ApplicationService.get_application_detail(application_id, employer.id)
+ 
     if not application:
         abort(404)
-
-    # Auto REVIEWED khi nhà tuyển dụng mở xem lần đầu
+ 
+    # Auto REVIEWED khi mở lần đầu (chỉ khi PENDING)
     if application.status == "PENDING":
         success, _ = ApplicationService.update_status(
             application_id, employer.id, "REVIEWED"
         )
         if success:
             flash('Hồ sơ đã được chuyển sang trạng thái "Đang xem xét".', "info")
-            application = ApplicationService.get_application_detail(
-                application_id, employer.id
-            )
-
+            application = ApplicationService.get_application_detail(application_id, employer.id)
+ 
+    # Truyền tập trạng thái được phép chuyển sang template
+    allowed_transitions = ApplicationService.get_allowed_transitions(application.status)
+ 
     return render_template(
         "pages/employer/application_detail.html",
         employer=employer,
         application=application,
+        allowed_transitions=allowed_transitions,
     )
 
 
@@ -84,12 +81,12 @@ def update_status(application_id):
     employer   = get_current_employer()
     new_status = request.form.get("status", "").strip()
     back_to    = request.form.get("back_to", "detail")
-
+ 
     success, message = ApplicationService.update_status(
         application_id, employer.id, new_status
     )
     flash(message, "success" if success else "danger")
-
+ 
     if back_to == "list":
         return redirect(url_for("employer_applications.index"))
     return redirect(
@@ -105,7 +102,6 @@ def update_status(application_id):
 @employer_required
 def score_new():
     employer = get_current_employer()
-
     try:
         count = ApplicationService.auto_score_unscored(employer.id)
         if count > 0:
