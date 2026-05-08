@@ -13,8 +13,8 @@
                         <div class="mb-3">
                             <i class="bi bi-cpu-fill" style="font-size: 3rem;"></i>
                         </div>
-                        <h2 class="fw-bold">Trích xuất CV bằng AI</h2>
-                        <p class="opacity-75 mb-0">Công nghệ thông minh giúp tự động hóa hồ sơ của bạn</p>
+                        <h2 class="fw-bold">Trích xuất CV tự động</h2>
+                        <p class="opacity-75 mb-0">Tự động điền hồ sơ giúp quá trình tạo CV của bạn nhanh chóng và hiệu quả hơn.</p>
                     </div>
                     <p class="text-center text-muted mb-4">
                         Chọn một trong hai cách dưới đây để hệ thống tự động điền thông tin vào Profile.
@@ -24,12 +24,25 @@
                         <strong>Lưu ý:</strong> Thao tác này sẽ <strong>ghi đè toàn bộ</strong> thông tin hiện tại trong profile của bạn.
                     </div>
                     <form id="cvForm" method="POST" enctype="multipart/form-data">
-
-                        <!-- LỰA CHỌN 1: Chọn CV đã upload -->
+                        <!-- LỰA CHỌN 1: Chọn CV tạo online -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">1. Chọn từ CV tự tạo (Online)</label>
+                            {% if online_cvs %}
+                            <select name="cv_online_id" id="cvSelectOnline" class="form-select form-select-lg">
+                                <option value="">-- Chọn CV trực tuyến --</option>
+                                {% for cv in online_cvs %}
+                                <option value="{{ cv.id }}">{{ cv.title }}</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <div class="alert alert-info mb-0">Bạn chưa có CV trực tuyến nào.</div>
+                            {% endif %}
+                        </div>
+                        <!-- LỰA CHỌN 2: Chọn CV đã upload -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">1. Chọn từ CV đã upload</label>
                             {% if uploaded_cvs %}
-                            <select name="cv_id" id="cvSelect" class="form-select form-select-lg">
+                            <select name="cv_upload_id" id="cvSelectUpload" class="form-select form-select-lg">
                                 <option value="">-- Chọn CV đã upload --</option>
                                 {% for cv in uploaded_cvs %}
                                 <option value="{{ cv.id }}">
@@ -51,7 +64,7 @@
                             <hr class="flex-grow-1">
                         </div>
 
-                        <!-- LỰA CHỌN 2: Upload file mới -->
+                        <!-- LỰA CHỌN 3: Upload file mới -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">2. Upload file CV mới</label>
                             <input type="file" name="cv_file" id="cvFileInput" class="form-control form-control-lg"
@@ -126,30 +139,41 @@ document.addEventListener("DOMContentLoaded", function () {
     const confirmBtn = document.getElementById("confirmBtn");
     const submitBtn = document.getElementById("btnSubmit");
 
+    const selectOnline = document.getElementById('cvSelectOnline');
+    const selectUpload = document.getElementById('cvSelectUpload');
+    const fileInput = document.getElementById('cvFileInput');
+
+    // Hàm Reset các lựa chọn khác khi chọn 1 cái
+    function clearOthers(current) {
+        if (current !== selectOnline && selectOnline) selectOnline.value = "";
+        if (current !== selectUpload && selectUpload) selectUpload.value = "";
+        if (current !== fileInput && fileInput) fileInput.value = "";
+    }
+
+    if(selectOnline) selectOnline.addEventListener('change', () => clearOthers(selectOnline));
+    if(selectUpload) selectUpload.addEventListener('change', () => clearOthers(selectUpload));
+    if(fileInput) fileInput.addEventListener('change', () => clearOthers(fileInput));
+
     form.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const cvSelectEl = document.getElementById('cvSelect');
-        const cvSelect = cvSelectEl ? cvSelectEl.value : "";
-        const cvFile = document.getElementById('cvFileInput').files.length;
+        const valOnline = selectOnline ? selectOnline.value : "";
+        const valUpload = selectUpload ? selectUpload.value : "";
+        const hasFile = fileInput.files.length > 0;
 
-        if (!cvSelect && cvFile === 0) {
+        if (!valOnline && !valUpload && !hasFile) {
             alert("Vui lòng chọn một CV hoặc upload file!");
             return;
         }
 
-        if (cvSelect && cvFile > 0) {
-            alert("Chỉ chọn 1 trong 2 cách")
-            return;
-        }
-
-        modal.show();
+        modal.show()
     });
 
     confirmBtn.addEventListener("click", function () {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
         confirmBtn.disabled = true;
+        confirmBtn.innerHTML = 'Đang xử lý...';
         form.submit();
     });
 

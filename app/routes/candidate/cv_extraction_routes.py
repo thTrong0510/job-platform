@@ -37,7 +37,8 @@ def fill_from_cv():
 
     # GET: Hiển thị trang chọn CV
     uploaded_cvs = CVRepository.get_upload_by_candidate(candidate.id)
-    return render_template("pages/candidate/fill_from_cv.html", uploaded_cvs=uploaded_cvs)
+    online_cvs = CVRepository.get_online_by_candidate(candidate.id)
+    return render_template("pages/candidate/fill_from_cv.html", uploaded_cvs=uploaded_cvs, online_cvs=online_cvs)
 
 @cv_extraction_bp.route('/profile/save', methods=['POST'])
 @candidate_required

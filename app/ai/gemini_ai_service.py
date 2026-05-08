@@ -50,3 +50,4 @@ class GeminiAIService:
             )
         )
         return response.parsed
+
