@@ -1,9 +1,8 @@
 import os
-import uuid
 from werkzeug.utils import secure_filename
 from app.models.cv import CV
 from app.repositories.candidate.cv_upload_repository import CVUploadRepository
-from common import CloudinaryUtil
+from app.common.CloudinaryUtil import CloudinaryUtil
 
 ALLOWED_EXTENSIONS = {"pdf", "doc", "docx"}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
