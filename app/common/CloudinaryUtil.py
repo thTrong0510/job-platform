@@ -15,6 +15,7 @@ class CloudinaryUtil:
 
         return result.get("secure_url")
 
+    @staticmethod
     def upload_cv_to_cloudinary(file_path):
         response = cloudinary.uploader.upload(
             file_path,
