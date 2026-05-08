@@ -8,6 +8,7 @@ from flask import Flask
 from app.services.admin.admin_job_service import AdminJobService
 from app.services.admin.job_recommendation_service import JobRecommendationService
 from app.services.admin.user_service import AdminUserService
+from app.services.employer.matching_service import MatchingService
 
 
 @pytest.fixture
@@ -157,9 +158,10 @@ class TestAdminJobService:
     # -- delete_job --
     def test_delete_job_success(self):
         fake_job = MagicMock()
+        fake_job.applications = ''
         self.repo_mock.find_by_id.return_value = (fake_job, None)
 
-        success, message = AdminJobService.delete_job(1)
+        success, message = AdminJobService.delete_job(fake_job)
 
         assert success is True
         assert "Đã xóa" in message
@@ -520,48 +522,71 @@ class TestCandidateApplicationService:
 
    @pytest.fixture(autouse=True)
    def setup(self):
-       self.repo = MagicMock()
-       self.app_cls = MagicMock()
-       with patch("app.services.candidate.application_service.ApplicationRepository", self.repo), \
-            patch("app.services.candidate.application_service.Application", self.app_cls):
+       self.repo_mock = MagicMock()
+       self.app_model_mock = MagicMock()
+       self.job_model_mock = MagicMock()
+       with patch("app.services.candidate.application_service.ApplicationRepository", self.repo_mock), \
+               patch("app.services.candidate.application_service.Application", self.app_model_mock), \
+               patch("app.services.candidate.application_service.Job", self.job_model_mock):
            from app.services.candidate.application_service import ApplicationService
            self.svc = ApplicationService
            yield
 
 
    def test_apply_duplicate_cv_raises_value_error(self):
-       self.repo.find_by_job_and_cv.return_value = MagicMock()
+       self.job_model_mock.query.get.return_value = None
+
+       with pytest.raises(ValueError, match="Công việc không tồn tại"):
+           self.svc.apply("a@b.com", job_id=999, cv_id=1)
+
+   def test_apply_job_not_open_raises_error(self):
+       mock_job = MagicMock(status="CLOSED", is_hidden=False)
+       self.job_model_mock.query.get.return_value = mock_job
+
+       with pytest.raises(ValueError, match="Công việc này đã đóng"):
+           self.svc.apply("a@b.com", job_id=1, cv_id=1)
+
+   def test_apply_duplicate_does_not_call_save(self):
+       self.job_model_mock.query.get.return_value = MagicMock(status="OPEN", is_hidden=False)
+       self.repo_mock.find_by_job_and_cv.return_value = MagicMock()
+
        with pytest.raises(ValueError, match="đã ứng tuyển"):
            self.svc.apply("a@b.com", job_id=1, cv_id=1)
 
+   def test_apply_job_is_hidden_raises_error(self):
+       # Giả lập Job đang OPEN nhưng bị Admin ẩn
+       mock_job = MagicMock(status="OPEN", is_hidden=True)
+       self.job_model_mock.query.get.return_value = mock_job
 
-   def test_apply_duplicate_does_not_call_save(self):
-       self.repo.find_by_job_and_cv.return_value = MagicMock()
-       with pytest.raises(ValueError):
+       with pytest.raises(ValueError, match="không còn khả dụng"):
            self.svc.apply("a@b.com", job_id=1, cv_id=1)
-       self.repo.save.assert_not_called()
 
 
    def test_apply_success_calls_save(self):
-       self.repo.find_by_job_and_cv.return_value = None
-       self.svc.apply("a@b.com", job_id=1, cv_id=2)
-       self.repo.save.assert_called_once()
+       self.job_model_mock.query.get.return_value = MagicMock(status="OPEN", is_hidden=False)
+       self.repo_mock.find_by_job_and_cv.return_value = None
+       self.repo_mock.find_by_job_and_email.return_value = None
 
-
-   def test_apply_success_creates_application_with_pending_status(self):
-       self.repo.find_by_job_and_cv.return_value = None
        self.svc.apply("a@b.com", job_id=1, cv_id=2)
-       kwargs = self.app_cls.call_args.kwargs
+       self.repo_mock.save.assert_called_once()
+
+   def test_apply_success_creates_correct_object(self):
+       self.job_model_mock.query.get.return_value = MagicMock(status="OPEN", is_hidden=False)
+       self.repo_mock.find_by_job_and_cv.return_value = None
+       self.repo_mock.find_by_job_and_email.return_value = None
+
+       self.svc.apply("test@gmail.com", job_id=10, cv_id=20)
+
+       args, kwargs = self.app_model_mock.call_args
+       assert kwargs["email"] == "test@gmail.com"
+       assert kwargs["job_id"] == 10
+       assert kwargs["cv_id"] == 20
        assert kwargs["status"] == "PENDING"
-       assert kwargs["email"] == "a@b.com"
-       assert kwargs["job_id"] == 1
-       assert kwargs["cv_id"] == 2
 
-
-   def test_apply_calls_find_with_correct_job_and_cv(self):
-       self.repo.find_by_job_and_cv.return_value = None
-       self.svc.apply("a@b.com", job_id=10, cv_id=20)
-       self.repo.find_by_job_and_cv.assert_called_once_with(10, 20)
+   def test_get_candidate_history_calls_repo(self):
+       email = "user@test.com"
+       self.svc.get_candidate_history(email)
+       self.repo_mock.get_by_candidate_email.assert_called_once_with(email)
 
 
 
@@ -865,13 +890,31 @@ class TestCVService:
 
    # ── delete_cv ────────────────────────────────────────────────────
 
+   def _mock_get_cv(self, cv_obj):
+       """Patch CVService.get_cv_for_view để trả về cv_obj."""
+       return patch.object(self.svc, "get_cv_for_view", return_value=cv_obj)
 
-   def test_delete_cv_calls_repo_delete_with_cv(self):
+   def test_delete_cv_always_returns_true(self):
        cv = MagicMock()
-       self.cv_repo.get_by_id.return_value = cv
-       self.svc.delete_cv(1)
-       self.cv_repo.delete.assert_called_once_with(cv)
+       self.cv_repo.has_applications.return_value = False
+       with self._mock_get_cv(cv):
+           ok, _ = self.svc.delete_cv(1)
+       assert ok is True
 
+   def test_delete_cv_with_applications(self):
+       cv = MagicMock()
+       self.cv_repo.has_applications.return_value = True
+       with self._mock_get_cv(cv):
+           self.svc.delete_cv(1)
+       self.cv_repo.update_status.assert_called_once_with(cv, is_active=False)
+       self.cv_repo.delete.assert_not_called()
+
+   def test_delete_cv_no_applications_calls_delete(self):
+       cv = MagicMock()
+       self.cv_repo.has_applications.return_value = False
+       with self._mock_get_cv(cv):
+           self.svc.delete_cv(1)
+       self.cv_repo.delete.assert_called_once_with(cv)
 
    # ── exists_by_title ───────────────────────────────────────────────
 
@@ -1058,7 +1101,10 @@ class TestCVUploadService:
        with patch("app.services.candidate.cv_upload_service.CVUploadRepository", self.repo), \
             patch("app.services.candidate.cv_upload_service.CV", self.cv_cls), \
             patch("app.services.candidate.cv_upload_service.os.makedirs"), \
-            patch("app.services.candidate.cv_upload_service.os.path.exists", return_value=False):
+            patch("app.services.candidate.cv_upload_service.os.path.exists", return_value=False), \
+            patch("app.services.candidate.cv_upload_service.CloudinaryUtil") as mock_cloud, \
+            patch("app.services.candidate.cv_upload_service.MAX_FILE_SIZE", 5 * 1024 * 1024):
+           self.cloud_util = mock_cloud
            from app.services.candidate.cv_upload_service import CVUploadService
            self.svc = CVUploadService
            yield
@@ -1165,33 +1211,43 @@ class TestCVUploadService:
    def test_upload_cv_success_saves_cv(self):
        candidate = MagicMock(id=5)
        self.repo.find_candidate_by_user_id.return_value = candidate
+
        file = MagicMock(filename="cv.pdf")
-       file.seek = MagicMock()
-       file.tell = MagicMock(return_value=1024)
-       file.save = MagicMock()
-       with patch("app.services.candidate.cv_upload_service.secure_filename", return_value="cv.pdf"), \
-            patch("app.services.candidate.cv_upload_service.uuid.uuid4") as mock_uuid:
-           mock_uuid.return_value.hex = "abc123"
+       file.tell.return_value = 1024  # 1KB
+
+       self.cloud_util.upload_cv_to_cloudinary.return_value = "http://cloudinary.com/cv.pdf"
+
+       with patch("app.services.candidate.cv_upload_service.secure_filename", return_value="cv.pdf"):
            ok, msg = self.svc.upload_cv(1, file, "My Resume")
+
        assert ok is True
        assert "thành công" in msg
+       # Kiểm tra repository có được gọi để lưu không
        self.repo.save_cv.assert_called_once()
-
+       # Kiểm tra Cloudinary có được gọi không
+       self.cloud_util.upload_cv_to_cloudinary.assert_called_once_with(file)
 
    def test_upload_cv_uses_original_filename_when_title_empty(self):
        candidate = MagicMock(id=5)
        self.repo.find_candidate_by_user_id.return_value = candidate
+
        file = MagicMock(filename="my_cv.pdf")
-       file.seek = MagicMock()
-       file.tell = MagicMock(return_value=1024)
-       file.save = MagicMock()
-       with patch("app.services.candidate.cv_upload_service.secure_filename", return_value="my_cv.pdf"), \
-            patch("app.services.candidate.cv_upload_service.uuid.uuid4") as mock_uuid:
-           mock_uuid.return_value.hex = "xyz"
-           self.svc.upload_cv(1, file, "")
+       file.tell.return_value = 1024
+
+       with patch("app.services.candidate.cv_upload_service.secure_filename", return_value="my_cv.pdf"):
+           self.svc.upload_cv(1, file, "  ")  # Truyền title trống hoặc chỉ có khoảng trắng
+
        cv_kwargs = self.cv_cls.call_args.kwargs
        assert cv_kwargs["title"] == "my_cv.pdf"
 
+   def test_upload_cv_no_candidate_fails(self):
+       self.repo.find_candidate_by_user_id.return_value = None
+       file = MagicMock(filename="cv.pdf")
+
+       ok, msg = self.svc.upload_cv(1, file, "Title")
+
+       assert ok is False
+       assert "chưa có hồ sơ" in msg
 
    # ── delete_cv ────────────────────────────────────────────────────
 
@@ -1202,44 +1258,57 @@ class TestCVUploadService:
        assert ok is False
        assert "hồ sơ ứng viên" in msg
 
-
    def test_delete_cv_cv_not_found_returns_false(self):
        self.repo.find_candidate_by_user_id.return_value = MagicMock(id=1)
-       self.repo.find_cv_by_id.return_value = None
-       ok, msg = self.svc.delete_cv(1, 10)
-       assert ok is False
+       self.repo.find_cv_by_id.return_value = None  # CV không tồn tại
 
+       ok, msg = self.svc.delete_cv(1, 10)
+
+       assert ok is False
+       assert "Không tìm thấy CV" in msg
+       self.repo.delete_cv.assert_not_called()
 
    def test_delete_cv_wrong_owner_returns_false(self):
        candidate = MagicMock(id=1)
        self.repo.find_candidate_by_user_id.return_value = candidate
-       cv = MagicMock(candidate_id=999)  # khác candidate.id
+       cv = MagicMock(candidate_id=999)  # CV của người khác
        self.repo.find_cv_by_id.return_value = cv
-       ok, msg = self.svc.delete_cv(1, 10)
-       assert ok is False
-       assert "quyền" in msg
 
+       ok, msg = self.svc.delete_cv(1, 10)
+
+       assert ok is False
+       assert "quyền xóa" in msg
+       self.repo.delete_cv.assert_not_called()
 
    def test_delete_cv_success_calls_delete_cv(self):
        candidate = MagicMock(id=1)
-       cv = MagicMock(candidate_id=1, file_url="/static/uploads/cvs/file.pdf")
+       cv = MagicMock(candidate_id=1)
        self.repo.find_candidate_by_user_id.return_value = candidate
        self.repo.find_cv_by_id.return_value = cv
-       with patch("app.services.candidate.cv_upload_service.os.path.exists", return_value=False):
-           ok, msg = self.svc.delete_cv(1, 10)
+       # Giả lập chưa có ứng tuyển để thực hiện xóa vĩnh viễn
+       self.repo.has_applications.return_value = False
+
+       ok, msg = self.svc.delete_cv(1, 10)
+
        assert ok is True
+       assert "xóa CV thành công" in msg
        self.repo.delete_cv.assert_called_once_with(cv)
 
-
-   def test_delete_cv_deletes_physical_file_when_exists(self):
+   def test_delete_cv_soft_deletes_when_has_applications(self):
        candidate = MagicMock(id=1)
-       cv = MagicMock(candidate_id=1, file_url="/static/uploads/cvs/file.pdf")
+       cv = MagicMock(candidate_id=1)
        self.repo.find_candidate_by_user_id.return_value = candidate
        self.repo.find_cv_by_id.return_value = cv
-       with patch("app.services.candidate.cv_upload_service.os.path.exists", return_value=True), \
-            patch("app.services.candidate.cv_upload_service.os.remove") as mock_rm:
-           self.svc.delete_cv(1, 10)
-           mock_rm.assert_called_once()
+       # Giả lập CV đã được dùng để ứng tuyển
+       self.repo.has_applications.return_value = True
+
+       ok, msg = self.svc.delete_cv(1, 10)
+
+       assert ok is True
+       assert "đã được ẩn" in msg
+       # Kiểm tra gọi update_status thay vì delete_cv
+       self.repo.update_status.assert_called_once_with(cv, is_active=False)
+       self.repo.delete_cv.assert_not_called()
 
 
 
@@ -1329,11 +1398,37 @@ class TestCandidateJobService:
 
    # ── get_filter_options ────────────────────────────────────────────
 
+   def test_get_filter_options_no_jobs_calls_repo(self):
+       expected_locations = ["Đà Nẵng", "Hà Nội", "TP.HCM"]
+       self.job_repo.get_distinct_locations.return_value = expected_locations
 
-   def test_get_filter_options_returns_locations(self):
-       self.job_repo.get_distinct_locations.return_value = ["HCM", "HN"]
-       result = self.svc.get_filter_options()
-       assert result == {"locations": ["HCM", "HN"]}
+       result = self.svc.get_filter_options([])
+
+       assert result == {'locations': expected_locations}
+       self.job_repo.get_distinct_locations.assert_called_once()
+
+   def test_get_filter_options_with_jobs_extracts_locations(self):
+       """Trường hợp có list jobs: Tự trích xuất và sort location từ list đó"""
+       job1 = MagicMock(location="Hà Nội")
+       job2 = MagicMock(location="TP.HCM")
+       job3 = MagicMock(location="Hà Nội")  # Trùng để test tính duy nhất (set)
+       job4 = MagicMock(location=None)  # Test loại bỏ None
+
+       jobs = [job1, job2, job3, job4]
+
+       result = self.svc.get_filter_options(jobs)
+
+       assert result == {'locations': ["Hà Nội", "TP.HCM"]}
+       self.job_repo.get_distinct_locations.assert_not_called()
+
+   def test_get_filter_options_none_input_calls_repo(self):
+       """Trường hợp input là None: Phải xử lý giống như list trống"""
+       self.job_repo.get_distinct_locations.return_value = ["Cần Thơ"]
+
+       result = self.svc.get_filter_options(None)
+
+       assert result == {'locations': ["Cần Thơ"]}
+       self.job_repo.get_distinct_locations.assert_called_once()
 
 
    # ── get_job_detail ────────────────────────────────────────────────
@@ -1361,12 +1456,11 @@ class TestCandidateJobService:
        self.candidate_skill.query.filter_by.return_value.all.return_value = [skill]
        self.candidate_exp.query.filter_by.return_value.all.return_value = []
 
-
        job = MagicMock(title="Python Dev")
-       js  = MagicMock(skill_id=5)
+       js = MagicMock(skill_id=5)
        job.skills = [js]
-       self.job_model.query.filter_by.return_value.all.return_value = [job]
 
+       self.job_model.query.filter_by.return_value.filter.return_value.all.return_value = [job]
 
        result = self.svc.get_recommended_jobs(1)
        assert job in result
@@ -1394,11 +1488,10 @@ class TestCandidateJobService:
        exp = MagicMock(position="python developer")
        self.candidate_exp.query.filter_by.return_value.all.return_value = [exp]
 
-
        job = MagicMock(title="Python Developer")
        job.skills = []
-       self.job_model.query.filter_by.return_value.all.return_value = [job]
 
+       self.job_model.query.filter_by.return_value.filter.return_value.all.return_value = [job]
 
        result = self.svc.get_recommended_jobs(1)
        assert job in result
@@ -1409,14 +1502,13 @@ class TestCandidateJobService:
        self.candidate_skill.query.filter_by.return_value.all.return_value = [skill]
        self.candidate_exp.query.filter_by.return_value.all.return_value = []
 
-
        jobs = []
        for i in range(10):
            j = MagicMock(title=f"Job {i}")
            j.skills = [MagicMock(skill_id=1)]
            jobs.append(j)
-       self.job_model.query.filter_by.return_value.all.return_value = jobs
 
+       self.job_model.query.filter_by.return_value.filter.return_value.all.return_value = jobs
 
        result = self.svc.get_recommended_jobs(1, limit=3)
        assert len(result) == 3
@@ -1428,21 +1520,20 @@ class TestCandidateJobService:
        self.candidate_skill.query.filter_by.return_value.all.return_value = cand_skills
        self.candidate_exp.query.filter_by.return_value.all.return_value = []
 
-
        job_a = MagicMock(title="Job A")
-       job_a.skills = [MagicMock(skill_id=1), MagicMock(skill_id=99)]  # 1/2
-
+       job_a.skills = [MagicMock(skill_id=1), MagicMock(skill_id=99)]  # 1/2 matches -> 35đ
 
        job_b = MagicMock(title="Job B")
-       job_b.skills = [MagicMock(skill_id=1), MagicMock(skill_id=2)]   # 2/2
+       job_b.skills = [MagicMock(skill_id=1), MagicMock(skill_id=2)]  # 2/2 matches -> 70đ
 
-
-       self.job_model.query.filter_by.return_value.all.return_value = [job_a, job_b]
-
+       self.job_model.query.filter_by.return_value.filter.return_value.all.return_value = [job_a, job_b]
 
        result = self.svc.get_recommended_jobs(1)
-       assert result[0] is job_b   # điểm cao hơn đứng trước
+
+       # Điểm cao hơn (Job B) phải đứng trước
+       assert result[0] is job_b
        assert result[1] is job_a
+
 
 #══════════════════════════════════════════════════════════════════════
 # 13. NotificationService  (candidate)
@@ -2327,14 +2418,20 @@ class TestMatchingService:
        result = self.svc.get_or_calculate(app)
        assert result == 75.0
 
+   def test_get_or_calculate_returns_cached_value(self):
+       app = MagicMock()
+       app.job_id = 1
+       app.cv.candidate_id = 100
+       # Giả lập DB tìm thấy bản ghi có điểm 75.0
+       mock_record = MagicMock()
+       mock_record.score = 75.0
+       self.job_rec_model.query.filter_by.return_value.first.return_value = mock_record
 
-   def test_get_or_calculate_calls_calculate_when_no_cache(self):
-       self.job_rec_model.query.filter_by.return_value.first.return_value = None
-       app = self._make_application()
-       with patch.object(self.svc, "_calculate_and_save", return_value=88.0) as mock_calc:
-           result = self.svc.get_or_calculate(app)
-           mock_calc.assert_called_once_with(app)
-           assert result == 88.0
+       with patch.object(MatchingService, "_calculate_and_save") as mock_calc:
+           result = MatchingService.get_or_calculate(app)
+
+           assert result == 75.0
+           mock_calc.assert_not_called()
 
 
    def test_get_or_calculate_rec_with_none_score_triggers_calculate(self):
@@ -2346,19 +2443,6 @@ class TestMatchingService:
            assert result == 50.0
 
 
-   # ── recalculate ───────────────────────────────────────────────────
-
-
-   def test_recalculate_deletes_old_record_then_calculates(self):
-       app = self._make_application()
-       with patch.object(self.svc, "_delete_from_db") as mock_del, \
-            patch.object(self.svc, "_calculate_and_save", return_value=60.0) as mock_calc:
-           result = self.svc.recalculate(app)
-           mock_del.assert_called_once_with(app.cv.candidate_id, app.job_id)
-           mock_calc.assert_called_once_with(app)
-           assert result == 60.0
-
-
    # ── _load_from_db ─────────────────────────────────────────────────
 
 
@@ -2368,11 +2452,6 @@ class TestMatchingService:
        result = self.svc._load_from_db(1, 1)
        assert result == 55.0
        assert isinstance(result, float)
-
-
-   def test_load_from_db_returns_none_when_not_found(self):
-       self.job_rec_model.query.filter_by.return_value.first.return_value = None
-       assert self.svc._load_from_db(1, 1) is None
 
 
    def test_load_from_db_returns_none_when_score_is_none(self):

@@ -69,7 +69,7 @@ class CVUploadService:
         # file_url = f"/static/uploads/cvs/{unique_filename}"
         original_filename = secure_filename(file.filename)
         cv_title = title.strip() if title and title.strip() else original_filename
-        file_url = CloudinaryUtil.CloudinaryUtil.upload_cv_to_cloudinary(file)
+        file_url = CloudinaryUtil.upload_cv_to_cloudinary(file)
 
         cv = CV(
             candidate_id=candidate.id,
