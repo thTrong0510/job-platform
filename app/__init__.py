@@ -1,7 +1,7 @@
 from flask import Flask
-from .extensions import db, mail
+from app.extensions import db, mail
 from config import Config, init_cloudinary
-from .scheduler import init_scheduler
+from app.scheduler import init_scheduler
 
 
 def create_app():
@@ -14,28 +14,32 @@ def create_app():
     app.config["CLOUDINARY_API_KEY"] = "529253433446669"
     app.config["CLOUDINARY_API_SECRET"] = "_4PQw4A1aNKBkaX_gs2gfHviccA"
 
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
     init_cloudinary(app)
 
     mail.init_app(app)
 
     # register blueprints
-    from .routes.auth.auth_routes import auth_bp
-    from .routes.candidate.manage_cvs import candidate_bp
-    from .routes.candidate.manage_profile import candidate_profile_bp
-    from .routes.candidate.cv_upload_routes import cv_upload_bp
-    from .routes.candidate.job_routes import job_bp
-    from .routes.employer.employer_auth_routes import employer_bp
-    from .routes.employer.job_routes import employer_job_bp
-    from .routes.employer.application_routes import employer_applications_bp
-    from .routes.candidate.notification_routes import notifications_bp
-    from .routes.employer.cv_preview_routes import employer_cv_preview_bp
+    from app.routes.auth.auth_routes import auth_bp
+    from app.routes.candidate.manage_cvs import candidate_bp
+    from app.routes.candidate.manage_profile import candidate_profile_bp
+    from app.routes.candidate.cv_upload_routes import cv_upload_bp
+    from app.routes.candidate.job_routes import job_bp
+    from app.routes.employer.employer_auth_routes import employer_bp
+    from app.routes.employer.job_routes import employer_job_bp
+    from app.routes.employer.application_routes import employer_applications_bp
+    from app.routes.candidate.notification_routes import notifications_bp
+    from app.routes.employer.cv_preview_routes import employer_cv_preview_bp
     from app.routes.candidate.cv_extraction_routes import cv_extraction_bp
     from app.routes.admin.user_routes import admin_user_bp
     from app.routes.auth.admin_auth_routes import admin_auth_bp
-    from .routes.admin.admin_job_routes import admin_jobs_bp
-    from .routes.employer.company_profile_routes import company_profile_bp
-    from .routes.candidate.application_routes import application_bp
-    from .routes.admin.cv_template_routes import cv_temp_bp
+    from app.routes.admin.admin_job_routes import admin_jobs_bp
+    from app.routes.employer.company_profile_routes import company_profile_bp
+    from app.routes.candidate.application_routes import application_bp
+    from app.routes.admin.cv_template_routes import cv_temp_bp
     from app.routes.auth.auth_routes import google_bp
 
     app.register_blueprint(auth_bp)
