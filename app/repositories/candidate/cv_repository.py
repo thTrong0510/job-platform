@@ -1,3 +1,6 @@
+from sqlalchemy.orm import joinedload
+
+from app.models import CVSkill
 from app.models.cv import CV
 from app.extensions import db
 from app.models.application import Application
@@ -47,7 +50,9 @@ class CVRepository:
 
     @staticmethod
     def find_by_id_and_candidate(cv_id: int, candidate_id: int):
-        return CV.query.filter_by(
+        return CV.query.options(
+            joinedload(CV.skills).joinedload(CVSkill.skill)
+        ).filter_by(
             id=cv_id,
             candidate_id=candidate_id,
         ).first()

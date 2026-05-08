@@ -14,7 +14,7 @@ MIME_MAP = {
 class GeminiAIService:
     def __init__(self, api_key: str):
         self.client = genai.Client(api_key=api_key)
-        self.model_id = "gemini-1.5-flash"
+        self.model_id = "gemini-2.5-flash"
 
     def extract_cv_from_bytes(self, file_bytes: bytes, filename: str) -> CVExtractForProfile:
         """Khi user upload file mới, đọc từ bytes trong memory"""
@@ -50,3 +50,4 @@ class GeminiAIService:
             )
         )
         return response.parsed
+
