@@ -1,5 +1,3 @@
-import os
-
 from flask import current_app
 from app.ai.gemini_ai_service import GeminiAIService
 from app.common.file_utils import CVFileUtils
@@ -21,18 +19,15 @@ class CVExtractionService:
         cv_id = form.get('cv_id')
         file = files.get('cv_file')
 
-        full_path = None
-        temp_path = None
         try:
-            # Lấy path
+            ai_service = CVExtractionService.get_gemini_service()
             if cv_id:
+                """CV đã lưu → file_url là ảnh JPG trên Cloudinary"""
                 cv = CVRepository.find_by_id_and_candidate(cv_id, candidate_id)
                 if not cv or not cv.file_url or cv.type != "UPLOAD":
                     raise ValueError('Dữ liệu CV không hợp lệ hoặc đã bị xoá')
 
-                full_path = CVFileUtils.get_full_path(cv.file_url)
-                if not full_path or not os.path.exists(full_path):
-                    raise ValueError("File CV không tồn tại")
+                result = ai_service.extract_cv_from_image_url(cv.file_url)
 
             elif file and file.filename:
                 is_valid, msg = CVFileUtils.is_valid_size(file)
@@ -42,21 +37,15 @@ class CVExtractionService:
                 if not CVFileUtils.allowed_file(file.filename):
                     raise ValueError("Chỉ hỗ trợ file PDF, DOC, DOCX")
 
-                temp_path = CVFileUtils.save_temp(file)
-                full_path = temp_path
+                file_bytes = file.read()
+                result = ai_service.extract_cv_from_bytes(file_bytes, file.filename)
 
             else:
                 raise ValueError("Vui lòng chọn CV từ danh sách hoặc tải lên tệp mới")
-
-            # Gọi AI
-            ai_service = CVExtractionService.get_gemini_service()
-            result = ai_service.extract_cv_data(full_path)
 
             return result.model_dump()
         except ValueError as error:
             raise error
         except Exception as e:
+            current_app.logger.error(f"CV extraction error: {e}")
             raise RuntimeError("Hệ thống đang bận, vui lòng thử lại sau")
-        finally:
-            if temp_path and os.path.exists(temp_path):
-                CVFileUtils.delete_temp(temp_path)
