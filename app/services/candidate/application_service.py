@@ -19,7 +19,7 @@ class ApplicationService:
         # Kiểm tra đã ứng tuyển chưa
         if (ApplicationRepository.find_by_job_and_cv(job_id, cv_id)
                 or ApplicationRepository.find_by_job_and_email(job_id, email)):
-            raise ValueError("Bạn đã ứng tuyển bằng CV này rồi.")
+            raise ValueError("Job đã được ứng tuyển rồi.")
 
         application = Application(
             email=email,
