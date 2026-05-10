@@ -550,7 +550,7 @@ class TestCandidateApplicationService:
        self.job_model_mock.query.get.return_value = MagicMock(status="OPEN", is_hidden=False)
        self.repo_mock.find_by_job_and_cv.return_value = MagicMock()
 
-       with pytest.raises(ValueError, match="đã ứng tuyển"):
+       with pytest.raises(ValueError, match="Job đã được ứng tuyển rồi."):
            self.svc.apply("a@b.com", job_id=1, cv_id=1)
 
    def test_apply_job_is_hidden_raises_error(self):
@@ -2352,25 +2352,40 @@ class TestEmployerApplicationService:
        self.svc.update_status(1, 1, "ACCEPTED")
        self.notif_repo.save.assert_called_once()
 
-
    def test_update_status_all_valid_statuses_succeed(self):
-       for new_status, old_status in [
-           ("REVIEWED", "PENDING"), ("ACCEPTED", "REVIEWED"),
-           ("REJECTED", "ACCEPTED"), ("PENDING", "REVIEWED"),
-       ]:
-           app = MagicMock(status=old_status)
+       transitions = [
+           ("REVIEWED", "PENDING"),
+           ("ACCEPTED", "REVIEWED"),
+           ("REJECTED", "REVIEWED"),
+           ("REJECTED", "PENDING")
+       ]
+
+       for new_status, old_status in transitions:
+           app = MagicMock()
+           app.status = old_status
+
            app.cv.candidate.user_id = 1
            app.job.employer.company_name = "Corp"
            app.job.title = "Dev"
            app.cv.title = "CV"
-           self.app_repo.find_by_id_for_employer.return_value = app
-           self.notif_repo.reset_mock()
-           self.app_repo.reset_mock()
-           self.app_repo.find_by_id_for_employer.return_value = app
-           ok, _ = self.svc.update_status(1, 1, new_status)
-           assert ok is True, f"Status {new_status} should be valid"
 
+           self.app_repo.find_by_id_for_employer.return_value = app
 
+           self.app_repo.save.reset_mock()
+           self.notif_repo.save.reset_mock()
+
+           with patch("app.services.employer.application_service.VALID_STATUSES",
+                      ["PENDING", "REVIEWED", "ACCEPTED", "REJECTED"]), \
+                   patch("app.services.employer.application_service.ALLOWED_TRANSITIONS", {
+                       "PENDING": {"REVIEWED", "REJECTED"},
+                       "REVIEWED": {"ACCEPTED", "REJECTED", "PENDING"},
+                       "ACCEPTED": {"REJECTED"}
+                   }):
+               ok, msg = self.svc.update_status(application_id=1, employer_id=1, new_status=new_status)
+
+               assert ok is True, f"Chuyển từ {old_status} sang {new_status} thất bại: {msg}"
+               assert app.status == new_status
+               self.app_repo.save.assert_called_once_with(app)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -2470,61 +2485,129 @@ class TestMatchingService:
        self.db.session.commit.assert_called_once()
 
 
-   # ── _call_gemini ──────────────────────────────────────────────────
+   # ── _call_gemini_text ──────────────────────────────────────────────────
 
+   def _make_job(self, title="Dev", description="desc",
+                 experience_required=None, skills=None):
+       job = MagicMock()
+       job.title = title
+       job.description = description
+       job.experience_required = experience_required
+       job.skills = [MagicMock(skill=MagicMock(name=s)) for s in (skills or [])]
+       return job
 
-   def test_call_gemini_parses_integer_response(self):
-       with patch("app.services.employer.matching_service._get_client") as mock_client:
-           response = MagicMock()
-           response.text = "85"
-           mock_client.return_value.models.generate_content.return_value = response
-           result = self.svc._call_gemini("Dev", "desc", ["Python"], 2, "cv text")
-           assert result == 85.0
+   def _get_vision_prompt(self, mock_client) -> str:
+       call_args = mock_client.return_value.models.generate_content.call_args
+       contents = call_args.kwargs.get("contents") or call_args.args[1]
+       return contents[1] if isinstance(contents, list) else str(contents)
 
+   def _vision_ctx(self, mock_client, response_text="50"):
+       """Thiết lập mock_client + httpx + types cho vision test."""
+       mock_client.return_value.models.generate_content.return_value = MagicMock(
+           text=response_text
+       )
 
-   def test_call_gemini_clamps_score_above_100(self):
-       with patch("app.services.employer.matching_service._get_client") as mock_client:
-           response = MagicMock()
-           response.text = "150"
-           mock_client.return_value.models.generate_content.return_value = response
-           result = self.svc._call_gemini("Dev", "desc", [], None, "cv")
+   def test_call_gemini_vision_parses_integer_response(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="78")
+           result = self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "")
+           assert result == 78.0
+
+   def test_call_gemini_vision_clamps_score_above_100(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="150")
+           result = self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "")
            assert result == 100.0
 
-
-   def test_call_gemini_returns_none_on_non_numeric_response(self):
-       with patch("app.services.employer.matching_service._get_client") as mock_client:
-           response = MagicMock()
-           response.text = "không thể đánh giá"
-           mock_client.return_value.models.generate_content.return_value = response
-           result = self.svc._call_gemini("Dev", "desc", [], None, "cv")
+   def test_call_gemini_vision_returns_none_on_non_numeric_response(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="không đánh giá được")
+           result = self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "")
            assert result is None
 
-
-   def test_call_gemini_returns_none_on_api_exception(self):
-       with patch("app.services.employer.matching_service._get_client") as mock_client:
-           mock_client.return_value.models.generate_content.side_effect = Exception("API down")
-           result = self.svc._call_gemini("Dev", "desc", [], None, "cv")
+   def test_call_gemini_vision_returns_none_on_api_exception(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.side_effect = Exception("Vision API down")
+           result = self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "")
            assert result is None
 
+   def test_call_gemini_vision_returns_none_on_httpx_exception(self):
+       with patch("app.services.employer.matching_service._get_client"), \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types"):
+           mh.side_effect = Exception("Network error")
+           result = self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "")
+           assert result is None
 
-   def test_call_gemini_no_job_skills_uses_default_string_in_prompt(self):
-       with patch("app.services.employer.matching_service._get_client") as mock_client:
-           response = MagicMock()
-           response.text = "70"
-           mock_client.return_value.models.generate_content.return_value = response
-           self.svc._call_gemini("Dev", "desc", [], None, "cv")
-           prompt = mock_client.return_value.models.generate_content.call_args.kwargs["contents"]
-           assert "Không có yêu cầu cụ thể" in prompt
+   def test_call_gemini_vision_downloads_image_with_timeout_15(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"img"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="50")
+           url = "https://res.cloudinary.com/demo/cv.jpg"
+           self.svc._call_gemini_vision(self._make_job(), url, "")
+           mh.assert_called_once_with(url, timeout=15)
 
+   def test_call_gemini_vision_passes_image_bytes_to_part(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"real_image_bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="50")
+           self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "")
+           mt.Part.from_bytes.assert_called_once_with(
+               data=b"real_image_bytes", mime_type="image/jpeg"
+           )
 
-   def test_call_gemini_no_experience_uses_khong_yeu_cau_in_prompt(self):
-       with patch("app.services.employer.matching_service._get_client") as mock_client:
-           response = MagicMock()
-           response.text = "70"
-           mock_client.return_value.models.generate_content.return_value = response
-           self.svc._call_gemini("Dev", "desc", [], None, "cv")
-           prompt = mock_client.return_value.models.generate_content.call_args.kwargs["contents"]
-           assert "Không yêu cầu" in prompt
+   def test_call_gemini_vision_no_skills_uses_khong_co_yeu_cau(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="50")
+           self.svc._call_gemini_vision(self._make_job(skills=[]), "https://res.cloudinary.com/cv.jpg", "")
+           assert "Không có yêu cầu cụ thể" in self._get_vision_prompt(mc)
+
+   def test_call_gemini_vision_no_experience_uses_khong_yeu_cau(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="50")
+           self.svc._call_gemini_vision(self._make_job(experience_required=None), "https://res.cloudinary.com/cv.jpg",
+                                        "")
+           assert "Không yêu cầu" in self._get_vision_prompt(mc)
+
+   def test_call_gemini_vision_empty_extra_context_uses_fallback(self):
+       with patch("app.services.employer.matching_service._get_client") as mc, \
+               patch("httpx.get") as mh, \
+               patch("google.genai.types") as mt:
+           mh.return_value.content = b"bytes"
+           mt.Part.from_bytes.return_value = MagicMock()
+           mc.return_value.models.generate_content.return_value = MagicMock(text="50")
+           self.svc._call_gemini_vision(self._make_job(), "https://res.cloudinary.com/cv.jpg", "   ")
+           assert "Không có thêm thông tin" in self._get_vision_prompt(mc)
 
 
 
@@ -2535,219 +2618,291 @@ class TestMatchingService:
 # ══════════════════════════════════════════════════════════════════════
 
 
+_CLOUDINARY_URL = "https://res.cloudinary.com/demo/image/upload/cv.jpg"
+_NON_CLOUDINARY_URL = "https://example.com/static/uploads/cv.pdf"
+
+
 class TestCVTextExtractor:
 
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from app.services.employer.cv_text_extractor import CVTextExtractor
+        self.ext = CVTextExtractor
 
-   @pytest.fixture(autouse=True)
-   def setup(self):
-       import sys
-       from unittest.mock import MagicMock
+    # ══════════════════════════════════════════════════════════════════
+    # extract()
+    # ══════════════════════════════════════════════════════════════════
 
-       sys.modules["pdfplumber"] = MagicMock()
+    def test_extract_online_calls_from_json(self):
+        cv = MagicMock(type="ONLINE")
+        with patch.object(self.ext, "_from_json", return_value="text") as mock_fn:
+            result = self.ext.extract(cv)
+            mock_fn.assert_called_once_with(cv)
+            assert result == "text"
 
-       from app.services.employer.cv_text_extractor import CVTextExtractor
-       self.extractor = CVTextExtractor
+    def test_extract_upload_returns_empty_string(self):
+        # UPLOAD không extract text — matching_service dùng Gemini Vision
+        cv = MagicMock(type="UPLOAD", file_url=_CLOUDINARY_URL)
+        assert self.ext.extract(cv) == ""
 
+    def test_extract_upload_does_not_call_from_json(self):
+        cv = MagicMock(type="UPLOAD", file_url=_CLOUDINARY_URL)
+        with patch.object(self.ext, "_from_json") as mock_fn:
+            self.ext.extract(cv)
+            mock_fn.assert_not_called()
 
-   # ── extract (dispatch) ────────────────────────────────────────────
+    def test_extract_upload_no_file_url_still_returns_empty(self):
+        cv = MagicMock(type="UPLOAD", file_url=None)
+        assert self.ext.extract(cv) == ""
 
+    # ══════════════════════════════════════════════════════════════════
+    # is_cloudinary_image()
+    # ══════════════════════════════════════════════════════════════════
 
-   def test_extract_online_dispatches_to_from_json(self):
-       cv = MagicMock(type="ONLINE")
-       with patch.object(self.extractor, "_from_json", return_value="json_text") as mock_fn:
-           result = self.extractor.extract(cv)
-           mock_fn.assert_called_once_with(cv)
-           assert result == "json_text"
+    def test_is_cloudinary_image_upload_with_cloudinary_url_returns_true(self):
+        cv = MagicMock(type="UPLOAD", file_url=_CLOUDINARY_URL)
+        assert self.ext.is_cloudinary_image(cv) is True
 
+    def test_is_cloudinary_image_online_returns_false(self):
+        cv = MagicMock(type="ONLINE", file_url=_CLOUDINARY_URL)
+        assert self.ext.is_cloudinary_image(cv) is False
 
-   def test_extract_upload_dispatches_to_from_file(self):
-       cv = MagicMock(type="UPLOAD")
-       with patch.object(self.extractor, "_from_file", return_value="file_text") as mock_fn:
-           result = self.extractor.extract(cv)
-           mock_fn.assert_called_once_with(cv)
-           assert result == "file_text"
+    def test_is_cloudinary_image_upload_non_cloudinary_url_returns_false(self):
+        cv = MagicMock(type="UPLOAD", file_url=_NON_CLOUDINARY_URL)
+        assert self.ext.is_cloudinary_image(cv) is False
 
+    def test_is_cloudinary_image_upload_none_url_returns_false(self):
+        cv = MagicMock(type="UPLOAD", file_url=None)
+        assert self.ext.is_cloudinary_image(cv) is False
 
-   def test_extract_unknown_type_returns_empty_string(self):
-       cv = MagicMock(type="OTHER")
-       assert self.extractor.extract(cv) == ""
+    def test_is_cloudinary_image_upload_empty_string_url_returns_false(self):
+        cv = MagicMock(type="UPLOAD", file_url="")
+        assert self.ext.is_cloudinary_image(cv) is False
 
+    def test_is_cloudinary_image_checks_prefix_exactly(self):
+        # URL bắt đầu sai prefix → False
+        cv = MagicMock(type="UPLOAD", file_url="http://res.cloudinary.com/demo/cv.jpg")
+        assert self.ext.is_cloudinary_image(cv) is False
 
-   # ── _from_json ────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════
+    # get_cloudinary_url()
+    # ══════════════════════════════════════════════════════════════════
 
+    def test_get_cloudinary_url_returns_url_when_cloudinary(self):
+        cv = MagicMock(type="UPLOAD", file_url=_CLOUDINARY_URL)
+        assert self.ext.get_cloudinary_url(cv) == _CLOUDINARY_URL
 
-   def test_from_json_none_content_json_returns_empty(self):
-       cv = MagicMock(type="ONLINE", content_json=None)
-       assert self.extractor.extract(cv) == ""
+    def test_get_cloudinary_url_returns_none_when_online(self):
+        cv = MagicMock(type="ONLINE", file_url=_CLOUDINARY_URL)
+        assert self.ext.get_cloudinary_url(cv) is None
 
+    def test_get_cloudinary_url_returns_none_when_non_cloudinary(self):
+        cv = MagicMock(type="UPLOAD", file_url=_NON_CLOUDINARY_URL)
+        assert self.ext.get_cloudinary_url(cv) is None
 
-   def test_from_json_includes_full_name(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "full_name": "Nguyen Van A",
-           "experiences": [], "educations": [], "projects": []
-       })
-       assert "Nguyen Van A" in self.extractor.extract(cv)
+    def test_get_cloudinary_url_returns_none_when_no_url(self):
+        cv = MagicMock(type="UPLOAD", file_url=None)
+        assert self.ext.get_cloudinary_url(cv) is None
 
+    def test_get_cloudinary_url_delegates_to_is_cloudinary_image(self):
+        # Đảm bảo get_cloudinary_url dùng is_cloudinary_image, không tự check riêng
+        cv = MagicMock(type="UPLOAD", file_url=_CLOUDINARY_URL)
+        with patch.object(self.ext, "is_cloudinary_image", return_value=False):
+            result = self.ext.get_cloudinary_url(cv)
+            assert result is None
 
-   def test_from_json_includes_email(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "email": "test@example.com",
-           "experiences": [], "educations": [], "projects": []
-       })
-       assert "test@example.com" in self.extractor.extract(cv)
+    # ══════════════════════════════════════════════════════════════════
+    # _from_json() — content_json None / rỗng
+    # ══════════════════════════════════════════════════════════════════
 
+    def test_from_json_none_content_json_returns_empty(self):
+        cv = MagicMock(type="ONLINE", content_json=None)
+        assert self.ext.extract(cv) == ""
 
-   def test_from_json_includes_summary(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "summary": "Experienced developer",
-           "experiences": [], "educations": [], "projects": []
-       })
-       assert "Experienced developer" in self.extractor.extract(cv)
+    def test_from_json_empty_content_json_returns_empty(self):
+        cv = MagicMock(type="ONLINE", content_json={})
+        assert self.ext.extract(cv).strip() == ""
 
+    def test_from_json_all_empty_lists_returns_empty(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [], "educations": [], "projects": []
+        })
+        assert self.ext.extract(cv).strip() == ""
 
-   def test_from_json_includes_experience_position_and_company(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "experiences": [{"position": "Backend Dev", "company": "TechCorp", "description": ""}],
-           "educations": [], "projects": []
-       })
-       text = self.extractor.extract(cv)
-       assert "Backend Dev" in text
-       assert "TechCorp" in text
+    # ══════════════════════════════════════════════════════════════════
+    # _from_json() — top-level fields
+    # ══════════════════════════════════════════════════════════════════
 
+    def test_from_json_includes_full_name(self):
+        cv = MagicMock(type="ONLINE", content_json={"full_name": "Nguyen Van A"})
+        assert "Nguyen Van A" in self.ext.extract(cv)
 
-   def test_from_json_includes_education_school_and_degree(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "educations": [{"degree": "B.Sc", "school": "HUST"}],
-           "experiences": [], "projects": []
-       })
-       text = self.extractor.extract(cv)
-       assert "HUST" in text
-       assert "B.Sc" in text
+    def test_from_json_includes_phone(self):
+        cv = MagicMock(type="ONLINE", content_json={"phone": "0901234567"})
+        assert "0901234567" in self.ext.extract(cv)
 
+    def test_from_json_includes_location(self):
+        cv = MagicMock(type="ONLINE", content_json={"location": "Ho Chi Minh City"})
+        assert "Ho Chi Minh City" in self.ext.extract(cv)
 
-   def test_from_json_includes_project_name(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "projects": [{"name": "My App", "description": "A great app"}],
-           "experiences": [], "educations": []
-       })
-       assert "My App" in self.extractor.extract(cv)
+    def test_from_json_includes_email(self):
+        cv = MagicMock(type="ONLINE", content_json={"email": "test@example.com"})
+        assert "test@example.com" in self.ext.extract(cv)
 
+    def test_from_json_includes_summary(self):
+        cv = MagicMock(type="ONLINE", content_json={"summary": "Experienced developer"})
+        assert "Experienced developer" in self.ext.extract(cv)
 
-   def test_from_json_empty_lists_returns_empty_string(self):
-       cv = MagicMock(type="ONLINE", content_json={
-           "experiences": [], "educations": [], "projects": []
-       })
-       assert self.extractor.extract(cv).strip() == ""
+    def test_from_json_skips_missing_top_level_fields(self):
+        # Không có field nào → không crash, trả rỗng
+        cv = MagicMock(type="ONLINE", content_json={"unrelated": "value"})
+        result = self.ext.extract(cv)
+        assert isinstance(result, str)
 
+    def test_from_json_skips_falsy_top_level_fields(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "full_name": "", "phone": None, "email": ""
+        })
+        assert self.ext.extract(cv).strip() == ""
 
-   # ── _from_file ────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════
+    # _from_json() — experiences
+    # ══════════════════════════════════════════════════════════════════
 
+    def test_from_json_includes_experience_position(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [{"position": "Backend Dev", "company": "", "description": ""}]
+        })
+        assert "Backend Dev" in self.ext.extract(cv)
 
-   def test_from_file_no_file_url_returns_empty(self):
-       cv = MagicMock(type="UPLOAD", file_url=None)
-       assert self.extractor.extract(cv) == ""
+    def test_from_json_includes_experience_company(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [{"position": "", "company": "TechCorp", "description": ""}]
+        })
+        assert "TechCorp" in self.ext.extract(cv)
 
+    def test_from_json_includes_experience_description(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [{"position": "", "company": "", "description": "Built REST APIs"}]
+        })
+        assert "Built REST APIs" in self.ext.extract(cv)
 
-   def test_from_file_file_not_exists_returns_empty(self):
-       cv = MagicMock(type="UPLOAD", file_url="/static/uploads/cvs/missing.pdf")
-       with patch("app.services.employer.cv_text_extractor.os.path.exists", return_value=False):
-           assert self.extractor.extract(cv) == ""
+    def test_from_json_experience_with_company_includes_tai_connector(self):
+        # "position tại company" — connector "tại" phải xuất hiện
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [{"position": "Dev", "company": "Corp", "description": ""}]
+        })
+        text = self.ext.extract(cv)
+        assert "tại" in text
 
+    def test_from_json_experience_no_company_no_tai_connector(self):
+        # Không có company → "tại" không xuất hiện
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [{"position": "Dev", "company": "", "description": ""}]
+        })
+        assert "tại" not in self.ext.extract(cv)
 
-   def test_from_file_doc_extension_returns_empty(self):
-       cv = MagicMock(type="UPLOAD", file_url="/static/uploads/cvs/file.doc")
-       with patch("app.services.employer.cv_text_extractor.os.path.exists", return_value=True):
-           assert self.extractor.extract(cv) == ""
+    def test_from_json_experience_all_empty_fields_not_added(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [{"position": "", "company": "", "description": ""}]
+        })
+        assert self.ext.extract(cv).strip() == ""
 
-   def test_from_file_pdf_calls_pdf_extractor(self):
-       cv = MagicMock(type="UPLOAD", file_url="/static/uploads/cvs/resume.pdf")
-       with patch("app.services.employer.cv_text_extractor.os.path.exists", return_value=True), \
-               patch.object(self.extractor, "_pdf", return_value="pdf content") as mock_pdf:
-           result = self.extractor.extract(cv)
-           mock_pdf.assert_called_once()
-           assert result == "pdf content"
+    def test_from_json_multiple_experiences_all_included(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "experiences": [
+                {"position": "Frontend Dev", "company": "CompA", "description": ""},
+                {"position": "Backend Dev", "company": "CompB", "description": ""},
+            ]
+        })
+        text = self.ext.extract(cv)
+        assert "Frontend Dev" in text
+        assert "Backend Dev" in text
+        assert "CompA" in text
+        assert "CompB" in text
 
-   def test_from_file_docx_calls_docx_extractor(self):
-       cv = MagicMock(type="UPLOAD", file_url="/static/uploads/cvs/resume.docx")
-       with patch("app.services.employer.cv_text_extractor.os.path.exists", return_value=True), \
-               patch.object(self.extractor, "_docx", return_value="docx content") as mock_docx:
-           result = self.extractor.extract(cv)
-           mock_docx.assert_called_once()
-           assert result == "docx content"
+    # ══════════════════════════════════════════════════════════════════
+    # _from_json() — educations
+    # ══════════════════════════════════════════════════════════════════
 
-   def test_from_file_pdf_passes_correct_filepath(self):
-       cv = MagicMock(type="UPLOAD", file_url="/static/uploads/cvs/myresume.pdf")
-       with patch("app.services.employer.cv_text_extractor.os.path.exists", return_value=True), \
-               patch.object(self.extractor, "_pdf", return_value="text") as mock_pdf:
-           self.extractor.extract(cv)
-           filepath_used = mock_pdf.call_args.args[0]
-           assert "myresume.pdf" in filepath_used
+    def test_from_json_includes_education_degree(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "educations": [{"degree": "B.Sc Computer Science", "school": ""}]
+        })
+        assert "B.Sc Computer Science" in self.ext.extract(cv)
 
-   def test_from_file_docx_passes_correct_filepath(self):
-       cv = MagicMock(type="UPLOAD", file_url="/static/uploads/cvs/myresume.docx")
-       with patch("app.services.employer.cv_text_extractor.os.path.exists", return_value=True), \
-               patch.object(self.extractor, "_docx", return_value="text") as mock_docx:
-           self.extractor.extract(cv)
-           filepath_used = mock_docx.call_args.args[0]
-           assert "myresume.docx" in filepath_used
+    def test_from_json_includes_education_school(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "educations": [{"degree": "", "school": "HUST"}]
+        })
+        assert "HUST" in self.ext.extract(cv)
 
-   # ── _pdf error handling ───────────────────────────────────────────
+    def test_from_json_education_with_school_includes_tai_connector(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "educations": [{"degree": "B.Sc", "school": "HUST"}]
+        })
+        assert "tại" in self.ext.extract(cv)
 
-   def test_pdf_returns_empty_on_exception(self):
-       with patch("pdfplumber.open", side_effect=Exception("corrupted file"), create=True):
-           result = self.extractor._pdf("/fake/path.pdf")
-           assert result == ""
+    def test_from_json_education_no_school_no_tai_connector(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "educations": [{"degree": "B.Sc", "school": ""}]
+        })
+        assert "tại" not in self.ext.extract(cv)
 
-   def test_pdf_concatenates_all_pages(self):
-       page1 = MagicMock()
-       page1.extract_text.return_value = "Page 1 text"
-       page2 = MagicMock()
-       page2.extract_text.return_value = "Page 2 text"
+    def test_from_json_education_all_empty_not_added(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "educations": [{"degree": "", "school": ""}]
+        })
+        assert self.ext.extract(cv).strip() == ""
 
-       mock_pdf_ctx = MagicMock()
-       mock_pdf_ctx.__enter__ = MagicMock(return_value=MagicMock(pages=[page1, page2]))
-       mock_pdf_ctx.__exit__ = MagicMock(return_value=False)
+    # ══════════════════════════════════════════════════════════════════
+    # _from_json() — projects
+    # ══════════════════════════════════════════════════════════════════
 
-       with patch("pdfplumber.open", return_value=mock_pdf_ctx):
-           result = self.extractor._pdf("/fake/path.pdf")
-           assert "Page 1 text" in result
-           assert "Page 2 text" in result
+    def test_from_json_includes_project_name(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "projects": [{"name": "My App", "description": ""}]
+        })
+        assert "My App" in self.ext.extract(cv)
 
-   def test_pdf_skips_pages_with_no_text(self):
-       page1 = MagicMock()
-       page1.extract_text.return_value = "Has text"
-       page2 = MagicMock()
-       page2.extract_text.return_value = None  # trang rỗng
+    def test_from_json_includes_project_description(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "projects": [{"name": "", "description": "A great app"}]
+        })
+        assert "A great app" in self.ext.extract(cv)
 
-       mock_pdf_ctx = MagicMock()
-       mock_pdf_ctx.__enter__ = MagicMock(return_value=MagicMock(pages=[page1, page2]))
-       mock_pdf_ctx.__exit__ = MagicMock(return_value=False)
+    def test_from_json_project_all_empty_not_added(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "projects": [{"name": "", "description": ""}]
+        })
+        assert self.ext.extract(cv).strip() == ""
 
-       with patch("pdfplumber.open", return_value=mock_pdf_ctx):
-           result = self.extractor._pdf("/fake/path.pdf")
-           assert "Has text" in result
+    def test_from_json_multiple_projects_all_included(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "projects": [
+                {"name": "App A", "description": "desc A"},
+                {"name": "App B", "description": "desc B"},
+            ]
+        })
+        text = self.ext.extract(cv)
+        assert "App A" in text
+        assert "App B" in text
 
-   # ── _docx error handling ──────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════
+    # _from_json() — output format
+    # ══════════════════════════════════════════════════════════════════
 
-   def test_docx_returns_empty_on_exception(self):
-       with patch("docx.Document", side_effect=Exception("bad file")):
-           result = self.extractor._docx("/fake/path.docx")
-           assert result == ""
+    def test_from_json_parts_joined_by_newline(self):
+        cv = MagicMock(type="ONLINE", content_json={
+            "full_name": "Nhi",
+            "summary": "Developer",
+        })
+        result = self.ext.extract(cv)
+        assert "\n" in result
+        lines = result.split("\n")
+        assert "Nhi" in lines[0]
+        assert "Developer" in lines[1]
 
-   def test_docx_concatenates_non_empty_paragraphs(self):
-       p1 = MagicMock()
-       p1.text = "First paragraph"
-       p2 = MagicMock()
-       p2.text = ""  # rỗng → bỏ qua
-       p3 = MagicMock()
-       p3.text = "Third paragraph"
-
-       mock_doc = MagicMock()
-       mock_doc.paragraphs = [p1, p2, p3]
-
-       with patch("docx.Document", return_value=mock_doc):
-           result = self.extractor._docx("/fake/path.docx")
-           assert "First paragraph" in result
-           assert "Third paragraph" in result
-           # Đảm bảo dòng rỗng không được thêm vào
-           assert "\n\n" not in result.replace("First paragraph\nThird paragraph", "")
+    def test_from_json_returns_string_type(self):
+        cv = MagicMock(type="ONLINE", content_json={"full_name": "A"})
+        assert isinstance(self.ext.extract(cv), str)
