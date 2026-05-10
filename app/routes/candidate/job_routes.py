@@ -12,6 +12,7 @@ job_bp = Blueprint('jobs', __name__)
 
 @job_bp.route('/', methods=['GET'])
 def job_list():
+    print(url_for("google.authorized", _external=True))
     filters = {
         'keyword': request.args.get('keyword', ''),
         'location': request.args.get('location', ''),
